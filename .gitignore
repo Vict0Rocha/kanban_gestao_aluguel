@@ -1,0 +1,7 @@
+# OS/editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+
+# Local Claude Code scratch state (not part of the app)
+.claude/settings.local.json
