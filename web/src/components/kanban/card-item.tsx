@@ -43,21 +43,24 @@ export function CardItem({
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      onClick={() => setDetailOpen(true)}
-      className={cn(
-        // touch-manipulation (not touch-none) keeps vertical scrolling
-        // available on the card itself; the TouchSensor's delay is what
-        // distinguishes a swipe from a drag.
-        "group relative cursor-pointer touch-manipulation rounded-xl border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md",
-        isDragging && "opacity-40"
-      )}
-    >
-      <AlertDialog>
+    // AlertDialogContent and CardDetailDialog are siblings of the sortable
+    // div below, never descendants of it. React bubbles synthetic events
+    // (click, keydown, mousedown...) through the JSX tree, not the portaled
+    // DOM position, so a dialog nested inside this div would leak every
+    // keystroke and click to dnd-kit's drag listeners underneath — that's
+    // what broke typing spaces and selecting text in the detail form.
+    <AlertDialog>
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        onClick={() => setDetailOpen(true)}
+        className={cn(
+          "group relative cursor-pointer touch-manipulation rounded-xl border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md",
+          isDragging && "opacity-40"
+        )}
+      >
         <AlertDialogTrigger
           render={
             <Button
@@ -66,58 +69,55 @@ export function CardItem({
               className="absolute top-1.5 right-1.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
               aria-label="Excluir card"
               onPointerDown={(event) => event.stopPropagation()}
+              onMouseDown={(event) => event.stopPropagation()}
               onClick={(event) => event.stopPropagation()}
             />
           }
         >
           <Trash2 className="size-3.5" />
         </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir este imóvel do board?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {card.endereco} — essa ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              variant="destructive"
-              onClick={() => onDelete(card.id)}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
-      <p className="pr-6 text-sm font-semibold text-foreground">
-        {card.endereco}
-      </p>
-      <p className="mt-0.5 text-xs text-muted-foreground">
-        {card.proprietario}
-      </p>
-      {card.inquilino && (
-        <p className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
-          <User className="size-3" />
-          {card.inquilino}
+        <p className="pr-6 text-sm font-semibold text-foreground">
+          {card.proprietario}
         </p>
-      )}
-      <p className="mt-2 text-sm font-semibold text-primary">
-        {formatCurrency(card.valor)}
-      </p>
-
-      <div
-        onClick={(event) => event.stopPropagation()}
-        onPointerDown={(event) => event.stopPropagation()}
-      >
-        <CardDetailDialog
-          card={card}
-          open={detailOpen}
-          onOpenChange={setDetailOpen}
-          onSave={onUpdate}
-        />
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          {card.endereco}
+        </p>
+        {card.inquilino && (
+          <p className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+            <User className="size-3" />
+            {card.inquilino}
+          </p>
+        )}
+        <p className="mt-2 text-sm font-semibold text-primary">
+          {formatCurrency(card.valor)}
+        </p>
       </div>
-    </div>
+
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Excluir este imóvel do board?</AlertDialogTitle>
+          <AlertDialogDescription>
+            {card.endereco} — essa ação não pode ser desfeita.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={() => onDelete(card.id)}
+          >
+            Excluir
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+
+      <CardDetailDialog
+        card={card}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        onSave={onUpdate}
+      />
+    </AlertDialog>
   )
 }
