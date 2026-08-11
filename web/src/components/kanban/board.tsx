@@ -37,6 +37,7 @@ import {
 import { Column } from "@/components/kanban/column"
 import { CardItem } from "@/components/kanban/card-item"
 import { AddColumnForm } from "@/components/kanban/add-column-form"
+import { WriteErrorToast } from "@/components/kanban/write-error-toast"
 
 function findColumnOf(columns: ColumnType[], id: string): ColumnType | undefined {
   return (
@@ -55,6 +56,34 @@ export function Board({
   const [columns, setColumns] = React.useState(initialColumns)
   const [activeCard, setActiveCard] = React.useState<Card | null>(null)
   const [activeColumn, setActiveColumn] = React.useState<ColumnType | null>(null)
+  const [writeError, setWriteError] = React.useState<string | null>(null)
+
+  // Estado do board no início do arraste. Um arraste entre colunas já alterou
+  // `columns` no onDragOver antes do onDragEnd rodar, então este é o único
+  // ponto de volta correto se a gravação for recusada.
+  const dragSnapshot = React.useRef<ColumnType[] | null>(null)
+
+  const dismissWriteError = React.useCallback(() => setWriteError(null), [])
+
+  /**
+   * Escrita otimista: aplica na tela primeiro, grava depois. Se o banco
+   * recusar — RLS barrando alguém removido da allowlist com a sessão aberta,
+   * ou a rede caindo — devolve o board ao estado anterior e avisa, em vez de
+   * deixar a interface mostrando uma mudança que não foi persistida.
+   */
+  function persistOrRevert(
+    optimistic: ColumnType[],
+    revertTo: ColumnType[],
+    persist: () => Promise<unknown>,
+    message: string
+  ) {
+    setColumns(optimistic)
+    persist().catch((error) => {
+      console.error(error)
+      setColumns(revertTo)
+      setWriteError(message)
+    })
+  }
 
   // Mouse and touch are split on purpose. A single PointerSensor would need
   // `touch-action: none` on every card, which kills scrolling a long column
@@ -70,6 +99,7 @@ export function Board({
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event
+    dragSnapshot.current = columns
     if (active.data.current?.type === "column") {
       setActiveColumn(columns.find((c) => c.id === active.id) ?? null)
     } else {
@@ -120,25 +150,32 @@ export function Board({
     const { active, over } = event
     setActiveCard(null)
     setActiveColumn(null)
+
+    const revertTo = dragSnapshot.current ?? columns
+    dragSnapshot.current = null
+
     if (!over) return
 
     if (active.data.current?.type === "column") {
       if (active.id === over.id) return
 
-      setColumns((prev) => {
-        const oldIndex = prev.findIndex((c) => c.id === active.id)
-        const newIndex = prev.findIndex((c) => c.id === over.id)
-        const reordered = arrayMove(prev, oldIndex, newIndex)
+      const oldIndex = columns.findIndex((c) => c.id === active.id)
+      const newIndex = columns.findIndex((c) => c.id === over.id)
+      if (oldIndex === -1 || newIndex === -1) return
 
-        const newPosition = positionBetween(
-          reordered[newIndex - 1]?.position,
-          reordered[newIndex + 1]?.position
-        )
-        reordered[newIndex] = { ...reordered[newIndex], position: newPosition }
+      const reordered = arrayMove(columns, oldIndex, newIndex)
+      const newPosition = positionBetween(
+        reordered[newIndex - 1]?.position,
+        reordered[newIndex + 1]?.position
+      )
+      reordered[newIndex] = { ...reordered[newIndex], position: newPosition }
 
-        updateColumnPosition(active.id as string, newPosition).catch(console.error)
-        return reordered
-      })
+      persistOrRevert(
+        reordered,
+        revertTo,
+        () => updateColumnPosition(active.id as string, newPosition),
+        "Não foi possível mover a coluna."
+      )
       return
     }
 
@@ -146,27 +183,32 @@ export function Board({
     const columnId = findColumnOf(columns, active.id as string)?.id
     if (!columnId) return
 
-    setColumns((prev) => {
-      const col = prev.find((c) => c.id === columnId)
-      if (!col) return prev
+    const col = columns.find((c) => c.id === columnId)
+    if (!col) return
 
-      const activeIndex = col.cards.findIndex((c) => c.id === active.id)
-      let overIndex = col.cards.findIndex((c) => c.id === over.id)
-      if (overIndex === -1) overIndex = col.cards.length - 1
+    const activeIndex = col.cards.findIndex((c) => c.id === active.id)
+    let overIndex = col.cards.findIndex((c) => c.id === over.id)
+    if (overIndex === -1) overIndex = col.cards.length - 1
 
-      const reorderedCards =
-        activeIndex === overIndex ? col.cards : arrayMove(col.cards, activeIndex, overIndex)
+    // Sempre uma cópia: sem o spread, o caso "não mudou de índice" devolvia o
+    // próprio array do state e a linha de position abaixo o mutava no lugar.
+    const reorderedCards =
+      activeIndex === overIndex
+        ? [...col.cards]
+        : arrayMove(col.cards, activeIndex, overIndex)
 
-      const newPosition = positionBetween(
-        reorderedCards[overIndex - 1]?.position,
-        reorderedCards[overIndex + 1]?.position
-      )
-      reorderedCards[overIndex] = { ...reorderedCards[overIndex], position: newPosition }
+    const newPosition = positionBetween(
+      reorderedCards[overIndex - 1]?.position,
+      reorderedCards[overIndex + 1]?.position
+    )
+    reorderedCards[overIndex] = { ...reorderedCards[overIndex], position: newPosition }
 
-      moveCard(active.id as string, columnId, newPosition).catch(console.error)
-
-      return prev.map((c) => (c.id === columnId ? { ...c, cards: reorderedCards } : c))
-    })
+    persistOrRevert(
+      columns.map((c) => (c.id === columnId ? { ...c, cards: reorderedCards } : c)),
+      revertTo,
+      () => moveCard(active.id as string, columnId, newPosition),
+      "Não foi possível mover o imóvel."
+    )
   }
 
   async function handleCreateColumn(name: string) {
@@ -177,13 +219,21 @@ export function Board({
   }
 
   async function handleRenameColumn(id: string, name: string) {
-    setColumns((prev) => prev.map((c) => (c.id === id ? { ...c, name } : c)))
-    renameColumn(id, name).catch(console.error)
+    persistOrRevert(
+      columns.map((c) => (c.id === id ? { ...c, name } : c)),
+      columns,
+      () => renameColumn(id, name),
+      "Não foi possível renomear a coluna."
+    )
   }
 
   async function handleDeleteColumn(id: string) {
-    setColumns((prev) => prev.filter((c) => c.id !== id))
-    deleteColumn(id).catch(console.error)
+    persistOrRevert(
+      columns.filter((c) => c.id !== id),
+      columns,
+      () => deleteColumn(id),
+      "Não foi possível excluir a coluna."
+    )
   }
 
   async function handleCreateCard(
@@ -210,10 +260,15 @@ export function Board({
   }
 
   async function handleDeleteCard(id: string) {
-    setColumns((prev) =>
-      prev.map((c) => ({ ...c, cards: c.cards.filter((card) => card.id !== id) }))
+    persistOrRevert(
+      columns.map((c) => ({
+        ...c,
+        cards: c.cards.filter((card) => card.id !== id),
+      })),
+      columns,
+      () => deleteCard(id),
+      "Não foi possível excluir o imóvel."
     )
-    deleteCard(id).catch(console.error)
   }
 
   return (
@@ -274,6 +329,8 @@ export function Board({
           </div>
         )}
       </DragOverlay>
+
+      <WriteErrorToast message={writeError} onDismiss={dismissWriteError} />
     </DndContext>
   )
 }
