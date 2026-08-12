@@ -25,17 +25,24 @@ import {
 
 export function CardItem({
   card,
+  searching = false,
   onDelete,
   onUpdate,
 }: {
   card: Card
+  /** Busca ativa: arrastar fica travado, mas abrir o card continua valendo. */
+  searching?: boolean
   onDelete: (id: string) => void
   onUpdate: (id: string, input: CardDetailsInput) => Promise<void>
 }) {
   const [detailOpen, setDetailOpen] = React.useState(false)
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: card.id, data: { type: "card", columnId: card.column_id } })
+    useSortable({
+      id: card.id,
+      data: { type: "card", columnId: card.column_id },
+      disabled: searching,
+    })
 
   const style = {
     transform: CSS.Transform.toString(transform),

@@ -7,7 +7,7 @@ import { CSS } from "@dnd-kit/utilities"
 import { GripVertical, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import type { Column as ColumnType } from "@/lib/kanban/types"
+import type { FilteredColumn } from "@/lib/kanban/search"
 import type { CardDetailsInput } from "@/lib/kanban/queries"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,13 +27,16 @@ import {
 
 export function Column({
   column,
+  searching,
   onRename,
   onDeleteColumn,
   onDeleteCard,
   onUpdateCard,
   onCreateCard,
 }: {
-  column: ColumnType
+  /** `cards` já vem filtrado pela busca; `totalCards` é o tamanho real. */
+  column: FilteredColumn
+  searching: boolean
   onRename: (id: string, name: string) => void
   onDeleteColumn: (id: string) => void
   onDeleteCard: (id: string) => void
@@ -47,7 +50,7 @@ export function Column({
   const [name, setName] = React.useState(column.name)
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: column.id, data: { type: "column" } })
+    useSortable({ id: column.id, data: { type: "column" }, disabled: searching })
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -78,8 +81,18 @@ export function Column({
           type="button"
           {...attributes}
           {...listeners}
-          className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
-          aria-label="Reordenar coluna"
+          disabled={searching}
+          className={cn(
+            "touch-none text-muted-foreground",
+            searching
+              ? "cursor-not-allowed opacity-40"
+              : "cursor-grab hover:text-foreground active:cursor-grabbing"
+          )}
+          aria-label={
+            searching
+              ? "Reordenar coluna (indisponível durante a busca)"
+              : "Reordenar coluna"
+          }
         >
           <GripVertical className="size-4" />
         </button>
@@ -108,6 +121,14 @@ export function Column({
             {column.name}
           </button>
         )}
+
+        {/* Durante a busca o contador diz quanto da coluna está escondido, para
+            que "2 de 14" não seja lido como "esta coluna só tem 2 imóveis". */}
+        <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+          {searching
+            ? `${column.cards.length} de ${column.totalCards}`
+            : column.totalCards}
+        </span>
 
         <AlertDialog>
           <AlertDialogTrigger
@@ -153,6 +174,7 @@ export function Column({
             <CardItem
               key={card.id}
               card={card}
+              searching={searching}
               onDelete={onDeleteCard}
               onUpdate={onUpdateCard}
             />
@@ -161,16 +183,20 @@ export function Column({
 
         {column.cards.length === 0 && (
           <p className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-xs text-muted-foreground">
-            Arraste um imóvel para cá ou adicione um novo abaixo.
+            {searching
+              ? "Nenhum imóvel desta coluna corresponde à busca."
+              : "Arraste um imóvel para cá ou adicione um novo abaixo."}
           </p>
         )}
       </div>
 
-      <div className="p-2">
-        <AddCardDialog
-          onCreate={(input) => onCreateCard(column.id, input)}
-        />
-      </div>
+      {!searching && (
+        <div className="p-2">
+          <AddCardDialog
+            onCreate={(input) => onCreateCard(column.id, input)}
+          />
+        </div>
+      )}
     </div>
   )
 }
