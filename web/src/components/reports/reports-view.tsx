@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Building2, CalendarClock, UserX, Wallet } from "lucide-react"
+import { Building2, CalendarClock, FilterX, UserX, Wallet } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/kanban/format"
@@ -9,22 +9,29 @@ import type { Column } from "@/lib/kanban/types"
 import {
   EXPIRING_WINDOW_DAYS,
   buildReport,
+  cardStatus,
   parseISODate,
   type ContractStatus,
 } from "@/lib/kanban/report"
+import { buildMatcher, countCards } from "@/lib/kanban/search"
+import { SearchField } from "@/components/search-field"
 import { StatTile } from "@/components/reports/stat-tile"
 import { ColumnBarChart } from "@/components/reports/column-bar-chart"
 import { ContractsTable } from "@/components/reports/contracts-table"
 
-type StatusFilter = ContractStatus | "todos"
-
-const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
-  { value: "todos", label: "Todos" },
+const STATUS_OPTIONS: { value: ContractStatus; label: string }[] = [
   { value: "vencido", label: "Vencidos" },
   { value: "vencendo", label: "Vencendo" },
   { value: "em_dia", label: "Em dia" },
   { value: "sem_data", label: "Sem data" },
 ]
+
+/** Conjunto vazio = nenhum filtro daquela linha, ou seja, tudo passa. */
+function toggle<T>(current: Set<T>, value: T): Set<T> {
+  const next = new Set(current)
+  if (!next.delete(value)) next.add(value)
+  return next
+}
 
 function FilterChip({
   active,
@@ -52,6 +59,23 @@ function FilterChip({
   )
 }
 
+function FilterRow({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="w-20 shrink-0 text-xs font-semibold text-muted-foreground uppercase">
+        {label}
+      </span>
+      {children}
+    </div>
+  )
+}
+
 export function ReportsView({
   columns,
   todayISO,
@@ -60,42 +84,49 @@ export function ReportsView({
   /** Fixed on the server so SSR and hydration agree on "today". */
   todayISO: string
 }) {
-  const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("todos")
-  const [columnFilter, setColumnFilter] = React.useState<string>("todas")
+  // Conjuntos em vez de valor único: as linhas de filtro se combinam entre si
+  // (coluna 1 + coluna 2 com contratos vencidos + sem data, por exemplo), e
+  // dentro de cada linha as opções somam em vez de se substituir.
+  const [statusFilters, setStatusFilters] = React.useState<Set<ContractStatus>>(
+    new Set()
+  )
+  const [columnFilters, setColumnFilters] = React.useState<Set<string>>(new Set())
+  const [query, setQuery] = React.useState("")
 
   const today = React.useMemo(() => parseISODate(todayISO), [todayISO])
 
-  // One filter row scopes every report below it, so the tiles, the chart and
-  // the table always describe the same slice of data.
+  // Um único pipeline alimenta os indicadores, o gráfico e a tabela, para que
+  // os três descrevam sempre a mesma fatia de dados.
   const filteredColumns = React.useMemo(() => {
-    const byColumn =
-      columnFilter === "todas"
-        ? columns
-        : columns.filter((column) => column.id === columnFilter)
+    const matchesQuery = buildMatcher(query)
 
-    if (statusFilter === "todos") return byColumn
-
-    // Re-run the status classification per card using the same reference
-    // date the report uses, so the filter can't disagree with the badges.
-    const full = buildReport(byColumn, today)
-    const allowed = new Set(
-      full.contratos
-        .filter((row) => row.status === statusFilter)
-        .map((row) => row.card.id)
-    )
-
-    return byColumn.map((column) => ({
-      ...column,
-      cards: column.cards.filter((card) => allowed.has(card.id)),
-    }))
-  }, [columns, columnFilter, statusFilter, today])
+    return columns
+      .filter((column) => columnFilters.size === 0 || columnFilters.has(column.id))
+      .map((column) => ({
+        ...column,
+        cards: column.cards.filter(
+          (card) =>
+            matchesQuery(card) &&
+            (statusFilters.size === 0 ||
+              statusFilters.has(cardStatus(card, today)))
+        ),
+      }))
+  }, [columns, columnFilters, statusFilters, query, today])
 
   const report = React.useMemo(
     () => buildReport(filteredColumns, today),
     [filteredColumns, today]
   )
 
-  const isFiltered = statusFilter !== "todos" || columnFilter !== "todas"
+  const totalCards = React.useMemo(() => countCards(columns), [columns])
+  const isFiltered =
+    statusFilters.size > 0 || columnFilters.size > 0 || query.trim() !== ""
+
+  function clearFilters() {
+    setStatusFilters(new Set())
+    setColumnFilters(new Set())
+    setQuery("")
+  }
 
   return (
     <div className="flex flex-col gap-5 p-6">
@@ -109,40 +140,73 @@ export function ReportsView({
       </div>
 
       <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="w-20 text-xs font-semibold text-muted-foreground uppercase">
-            Contrato
-          </span>
-          {STATUS_FILTERS.map((filter) => (
-            <FilterChip
-              key={filter.value}
-              active={statusFilter === filter.value}
-              onClick={() => setStatusFilter(filter.value)}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <SearchField
+            value={query}
+            onChange={setQuery}
+            resultSummary={`${report.totalImoveis} de ${totalCards} imóveis`}
+          />
+          {isFiltered && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
-              {filter.label}
+              <FilterX className="size-3.5" />
+              Limpar filtros
+            </button>
+          )}
+        </div>
+
+        <FilterRow label="Contrato">
+          <FilterChip
+            active={statusFilters.size === 0}
+            onClick={() => setStatusFilters(new Set())}
+          >
+            Todos
+          </FilterChip>
+          {STATUS_OPTIONS.map((option) => (
+            <FilterChip
+              key={option.value}
+              active={statusFilters.has(option.value)}
+              onClick={() =>
+                setStatusFilters((current) => toggle(current, option.value))
+              }
+            >
+              {option.label}
             </FilterChip>
           ))}
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="w-20 text-xs font-semibold text-muted-foreground uppercase">
-            Coluna
-          </span>
+        </FilterRow>
+
+        <FilterRow label="Coluna">
           <FilterChip
-            active={columnFilter === "todas"}
-            onClick={() => setColumnFilter("todas")}
+            active={columnFilters.size === 0}
+            onClick={() => setColumnFilters(new Set())}
           >
             Todas
           </FilterChip>
           {columns.map((column) => (
             <FilterChip
               key={column.id}
-              active={columnFilter === column.id}
-              onClick={() => setColumnFilter(column.id)}
+              active={columnFilters.has(column.id)}
+              onClick={() =>
+                setColumnFilters((current) => toggle(current, column.id))
+              }
             >
               {column.name}
             </FilterChip>
           ))}
-        </div>
+        </FilterRow>
+
+        {isFiltered && (
+          <p className="text-xs text-muted-foreground">
+            Mostrando{" "}
+            <span className="font-semibold text-foreground">
+              {report.totalImoveis}
+            </span>{" "}
+            de {totalCards} imóveis.
+          </p>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

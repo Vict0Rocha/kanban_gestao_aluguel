@@ -23,6 +23,8 @@ import {
 
 import type { Card, Column as ColumnType } from "@/lib/kanban/types"
 import { positionBetween } from "@/lib/kanban/position"
+import { countCards, filterColumns, isSearching } from "@/lib/kanban/search"
+import { SearchField } from "@/components/search-field"
 import {
   createCard,
   createColumn,
@@ -57,6 +59,19 @@ export function Board({
   const [activeCard, setActiveCard] = React.useState<Card | null>(null)
   const [activeColumn, setActiveColumn] = React.useState<ColumnType | null>(null)
   const [writeError, setWriteError] = React.useState<string | null>(null)
+  const [query, setQuery] = React.useState("")
+
+  // A busca só muda o que é exibido: `columns` continua sendo a ordem real do
+  // board, e é sempre dela que as gravações partem. Enquanto houver busca o
+  // arraste fica travado (ver `searching` mais abaixo), porque soltar um card
+  // numa lista filtrada o colocaria entre vizinhos que não estão na tela.
+  const searching = isSearching(query)
+  const visibleColumns = React.useMemo(
+    () => filterColumns(columns, query),
+    [columns, query]
+  )
+  const totalCards = countCards(columns)
+  const matchCount = countCards(visibleColumns)
 
   // Estado do board no início do arraste. Um arraste entre colunas já alterou
   // `columns` no onDragOver antes do onDragEnd rodar, então este é o único
@@ -284,17 +299,40 @@ export function Board({
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 pt-4 md:px-6">
+        <SearchField
+          value={query}
+          onChange={setQuery}
+          resultSummary={
+            searching ? `${matchCount} de ${totalCards} imóveis` : undefined
+          }
+        />
+        {searching && (
+          <p className="text-xs text-muted-foreground">
+            {matchCount === 0 ? (
+              "Nenhum imóvel encontrado."
+            ) : (
+              <>
+                <span className="font-semibold text-foreground">{matchCount}</span>
+                {` de ${totalCards} imóveis · limpe a busca para reordenar`}
+              </>
+            )}
+          </p>
+        )}
+      </div>
+
       {/* flex-1 + min-h-0 (not h-full) so the board takes the space left over
           by the page header rather than a full copy of the parent's height. */}
       <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-4 md:p-6">
         <SortableContext
-          items={columns.map((c) => c.id)}
+          items={visibleColumns.map((c) => c.id)}
           strategy={horizontalListSortingStrategy}
         >
-          {columns.map((column) => (
+          {visibleColumns.map((column) => (
             <Column
               key={column.id}
               column={column}
+              searching={searching}
               onRename={handleRenameColumn}
               onDeleteColumn={handleDeleteColumn}
               onDeleteCard={handleDeleteCard}
@@ -316,7 +354,9 @@ export function Board({
           </div>
         )}
 
-        <AddColumnForm onCreate={handleCreateColumn} />
+        {/* Criar coluna ou imóvel durante a busca produziria algo que some da
+            tela no mesmo instante, por não bater com o texto pesquisado. */}
+        {!searching && <AddColumnForm onCreate={handleCreateColumn} />}
       </div>
 
       <DragOverlay>

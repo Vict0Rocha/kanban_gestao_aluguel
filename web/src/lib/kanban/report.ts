@@ -60,6 +60,20 @@ export function contractStatus(
   return "em_dia"
 }
 
+/** Null quando o card não tem fim de contrato — não há prazo a contar. */
+export function daysLeftFor(card: Card, today: Date): number | null {
+  return card.periodo_fim ? daysBetween(today, parseISODate(card.periodo_fim)) : null
+}
+
+/**
+ * Fonte única da situação de um card. Os filtros da tela de relatórios chamam
+ * isto diretamente, em vez de montar um relatório inteiro só para descobrir a
+ * situação de cada card — assim filtro e etiqueta nunca podem discordar.
+ */
+export function cardStatus(card: Card, today: Date): ContractStatus {
+  return contractStatus(daysLeftFor(card, today))
+}
+
 export function buildReport(columns: Column[], today: Date = new Date()): Report {
   const contratos: ContractRow[] = []
   const porColuna: ColumnBreakdown[] = []
@@ -79,9 +93,7 @@ export function buildReport(columns: Column[], today: Date = new Date()): Report
       valorColuna += card.valor
       if (!card.inquilino) semInquilino += 1
 
-      const daysLeft = card.periodo_fim
-        ? daysBetween(today, parseISODate(card.periodo_fim))
-        : null
+      const daysLeft = daysLeftFor(card, today)
       const status = contractStatus(daysLeft)
 
       if (status === "vencendo") vencendo += 1
