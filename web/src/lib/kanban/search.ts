@@ -69,29 +69,26 @@ export function buildMatcher(query: string): CardMatcher {
   }
 }
 
-export function cardMatches(card: Card, query: string): boolean {
-  return buildMatcher(query)(card)
-}
-
-/** Mantém a contagem original para o board mostrar "2 de 14" na coluna. */
-export type FilteredColumn = Column & { totalCards: number }
-
 /**
- * Sempre devolve todas as colunas, mesmo as que ficaram sem nenhum card: sumir
- * com a coluna inteira esconderia justamente a informação que a busca existe
- * para dar — em que etapa do processo o imóvel está (ou não está).
+ * Ids dos cards que batem, para o board realçar sem tirar ninguém da lista.
+ *
+ * O board destaca em vez de filtrar justamente para poder continuar arrastando
+ * durante a busca: como todo card segue montado, a posição gravada é sempre
+ * calculada entre os vizinhos reais, que são os mesmos que estão na tela.
+ * Já os relatórios filtram de verdade — lá o resultado é uma soma, e um card
+ * fora do filtro não pode entrar na conta.
  */
-export function filterColumns(
-  columns: Column[],
-  query: string
-): FilteredColumn[] {
+export function matchingIds(columns: Column[], query: string): Set<string> {
   const matches = buildMatcher(query)
+  const ids = new Set<string>()
 
-  return columns.map((column) => ({
-    ...column,
-    cards: column.cards.filter(matches),
-    totalCards: column.cards.length,
-  }))
+  for (const column of columns) {
+    for (const card of column.cards) {
+      if (matches(card)) ids.add(card.id)
+    }
+  }
+
+  return ids
 }
 
 export function countCards(columns: Column[]): number {
