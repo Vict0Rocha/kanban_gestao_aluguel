@@ -25,24 +25,25 @@ import {
 
 export function CardItem({
   card,
-  searching = false,
+  matched,
   onDelete,
   onUpdate,
 }: {
   card: Card
-  /** Busca ativa: arrastar fica travado, mas abrir o card continua valendo. */
-  searching?: boolean
+  /**
+   * `undefined` = sem busca ativa, todos os cards em estado normal.
+   * `true`/`false` = bate ou não bate com o que foi digitado. O card que não
+   * bate só esmaece: continua legível, clicável e arrastável, porque a busca
+   * aqui serve para achar um imóvel no meio dos outros, não para escondê-los.
+   */
+  matched?: boolean
   onDelete: (id: string) => void
   onUpdate: (id: string, input: CardDetailsInput) => Promise<void>
 }) {
   const [detailOpen, setDetailOpen] = React.useState(false)
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({
-      id: card.id,
-      data: { type: "card", columnId: card.column_id },
-      disabled: searching,
-    })
+    useSortable({ id: card.id, data: { type: "card", columnId: card.column_id } })
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -63,8 +64,13 @@ export function CardItem({
         {...attributes}
         {...listeners}
         onClick={() => setDetailOpen(true)}
+        data-match={matched === undefined ? undefined : matched}
         className={cn(
-          "group relative cursor-pointer touch-manipulation rounded-xl border border-border bg-card p-3 shadow-sm transition-shadow hover:shadow-md",
+          "group relative cursor-pointer touch-manipulation rounded-xl border border-border bg-card p-3 shadow-sm transition-all hover:shadow-md",
+          matched === true && "border-primary ring-2 ring-primary/60",
+          // Esmaecido, não apagado: ainda dá para ler o card ao lado e
+          // comparar com o que a busca destacou.
+          matched === false && "opacity-45 hover:opacity-100",
           isDragging && "opacity-40"
         )}
       >

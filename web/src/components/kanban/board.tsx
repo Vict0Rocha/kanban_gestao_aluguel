@@ -23,7 +23,7 @@ import {
 
 import type { Card, Column as ColumnType } from "@/lib/kanban/types"
 import { positionBetween } from "@/lib/kanban/position"
-import { countCards, filterColumns, isSearching } from "@/lib/kanban/search"
+import { countCards, isSearching, matchingIds } from "@/lib/kanban/search"
 import { SearchField } from "@/components/search-field"
 import {
   createCard,
@@ -61,17 +61,17 @@ export function Board({
   const [writeError, setWriteError] = React.useState<string | null>(null)
   const [query, setQuery] = React.useState("")
 
-  // A busca só muda o que é exibido: `columns` continua sendo a ordem real do
-  // board, e é sempre dela que as gravações partem. Enquanto houver busca o
-  // arraste fica travado (ver `searching` mais abaixo), porque soltar um card
-  // numa lista filtrada o colocaria entre vizinhos que não estão na tela.
+  // A busca aqui realça, não filtra: os cards que não batem continuam na tela,
+  // apenas esmaecidos. Como nenhum card sai da lista, arrastar segue liberado
+  // durante a busca — a posição gravada é calculada entre os vizinhos reais,
+  // que são exatamente os que o usuário vê ao soltar.
   const searching = isSearching(query)
-  const visibleColumns = React.useMemo(
-    () => filterColumns(columns, query),
+  const matchedIds = React.useMemo(
+    () => matchingIds(columns, query),
     [columns, query]
   )
   const totalCards = countCards(columns)
-  const matchCount = countCards(visibleColumns)
+  const matchCount = matchedIds.size
 
   // Estado do board no início do arraste. Um arraste entre colunas já alterou
   // `columns` no onDragOver antes do onDragEnd rodar, então este é o único
@@ -304,7 +304,9 @@ export function Board({
           value={query}
           onChange={setQuery}
           resultSummary={
-            searching ? `${matchCount} de ${totalCards} imóveis` : undefined
+            searching
+              ? `${matchCount} de ${totalCards} imóveis em destaque`
+              : undefined
           }
         />
         {searching && (
@@ -314,7 +316,7 @@ export function Board({
             ) : (
               <>
                 <span className="font-semibold text-foreground">{matchCount}</span>
-                {` de ${totalCards} imóveis · limpe a busca para reordenar`}
+                {` de ${totalCards} imóveis em destaque`}
               </>
             )}
           </p>
@@ -325,14 +327,15 @@ export function Board({
           by the page header rather than a full copy of the parent's height. */}
       <div className="flex min-h-0 flex-1 gap-4 overflow-x-auto p-4 md:p-6">
         <SortableContext
-          items={visibleColumns.map((c) => c.id)}
+          items={columns.map((c) => c.id)}
           strategy={horizontalListSortingStrategy}
         >
-          {visibleColumns.map((column) => (
+          {columns.map((column) => (
             <Column
               key={column.id}
               column={column}
               searching={searching}
+              matchedIds={matchedIds}
               onRename={handleRenameColumn}
               onDeleteColumn={handleDeleteColumn}
               onDeleteCard={handleDeleteCard}
@@ -354,9 +357,7 @@ export function Board({
           </div>
         )}
 
-        {/* Criar coluna ou imóvel durante a busca produziria algo que some da
-            tela no mesmo instante, por não bater com o texto pesquisado. */}
-        {!searching && <AddColumnForm onCreate={handleCreateColumn} />}
+        <AddColumnForm onCreate={handleCreateColumn} />
       </div>
 
       <DragOverlay>
