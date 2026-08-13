@@ -8,7 +8,7 @@ import { Trash2, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/kanban/format"
 import type { Card } from "@/lib/kanban/types"
-import type { CardDetailsInput } from "@/lib/kanban/queries"
+import type { CardDetailsInput } from "@/lib/kanban/types"
 import { Button } from "@/components/ui/button"
 import { CardDetailDialog } from "@/components/kanban/card-detail-dialog"
 import {
