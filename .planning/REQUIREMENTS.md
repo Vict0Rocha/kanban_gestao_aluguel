@@ -15,7 +15,7 @@ Requisitos desta fase: estabilizar e documentar, sem feature nova de produto.
 
 ### SEC
 
-- [ ] **SEC-01**: Mensagens de erro do Postgres (violação de constraint, negação de RLS) não aparecem mais no console do navegador em produção
+- [x] **SEC-01**: ~~Mensagens de erro do Postgres não aparecem no console do navegador em produção~~ — **já era verdade; requisito nasceu de um falso positivo**. Verificado em 2026-08-14: os 9 `console.error` apontados estão em `web/src/lib/kanban/actions.ts`, que é `"use server"` — rodam no servidor e vão para os logs da Vercel, nunca para o navegador. O que chega ao cliente passa por `erroDoBanco()`, que mapeia apenas o *código* do erro (`23514`, `23503`, `PGRST116`) para uma frase em português; o objeto de erro cru do Supabase não sai do servidor. Busca por `error.message`/`error.details`/`error.hint`/`JSON.stringify(error)` em todo o `src/` encontrou só [board.tsx:106](../web/src/components/kanban/board.tsx:106), lendo a mensagem já sanitizada. Nenhuma mudança de código foi necessária.
 - [ ] **SEC-02**: "Leaked Password Protection" está ligado no Supabase Auth
 - [ ] **SEC-03**: Verificação de e-mail está ligada no Supabase Auth
 
@@ -58,7 +58,7 @@ Preenchido na criação do roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SEC-01 | Phase 1 | Pending |
+| SEC-01 | Phase 1 | Complete (falso positivo — nada a corrigir) |
 | SEC-02 | Phase 1 | Pending |
 | SEC-03 | Phase 1 | Pending |
 | ROBUST-01 | Phase 2 | Pending |
@@ -71,7 +71,10 @@ Preenchido na criação do roadmap.
 - v1 requirements: 8 total
 - Mapped to phases: 8
 - Unmapped: 0 ✓
+- Complete: 1 (SEC-01, resolvido por verificação)
+
+**Nota de calibragem:** `SEC-01` veio de `.planning/codebase/CONCERNS.md`, gerado por um modelo rápido (haiku) que confundiu código `"use server"` com código `"use client"`. Os demais itens daquele documento devem ser tratados como **hipóteses a verificar**, não como fatos — vários são reais (allowlist silenciosa, schema inicial permissivo), mas cada um merece confirmação antes de virar trabalho.
 
 ---
 *Requirements defined: 2026-08-14*
-*Last updated: 2026-08-14 after roadmap creation*
+*Last updated: 2026-08-14 after SEC-01 verification (falso positivo)*

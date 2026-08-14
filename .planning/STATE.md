@@ -21,11 +21,11 @@ See: .planning/PROJECT.md (updated 2026-08-14)
 ## Current Position
 
 Phase: 1 of 3 (Fechar pendências de segurança)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-08-14 — Roadmap criado (3 fases), REQUIREMENTS.md com traceability completa
+Plan: 1 of 2 in current phase
+Status: In progress — aguardando dois toggles no painel do Supabase (só o dono do projeto pode acionar)
+Last activity: 2026-08-14 — SEC-01 verificado e marcado como falso positivo; nenhuma mudança de código necessária
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 12%
 
 ## Performance Metrics
 
@@ -63,6 +63,9 @@ Nenhum ainda.
 
 ### Blockers/Concerns
 
+- **`.planning/codebase/CONCERNS.md` contém hipóteses, não fatos.** `SEC-01` nasceu de um achado que não sobreviveu à verificação (o documento confundiu `"use server"` com `"use client"` e apontou vazamento de erro que não existe). Tratar cada item restante daquele documento como hipótese a confirmar antes de virar trabalho. Achados que já sabemos serem reais: allowlist silenciosa e schema inicial permissivo.
+- **Phase 1 depende de ação no painel do Supabase**: SEC-02 (Leaked Password Protection) e SEC-03 (verificação de e-mail) são toggles que só o dono do projeto aciona. Atenção ao SEC-03: ativar confirmação de e-mail pode afetar contas existentes não confirmadas — conferir em Authentication → Users antes de ligar, para evitar o mesmo tipo de bloqueio que ocorreu no episódio do CAPTCHA.
+
 - Esta plataforma não reconhece tipos de subagente customizados de `.claude/agents/*.md` (roster fixo: claude, claude-code-guide, Explore, general-purpose, Plan, statusline-setup). Qualquer comando futuro do GSD que dependa de um subagente dedicado (`/gsd-plan-phase`, `/gsd-execute-phase` etc.) vai precisar da mesma adaptação manual usada no mapeamento de código e na criação do roadmap.
 - `CLAUDE.md` na raiz do projeto ainda não foi gerado — o boilerplate padrão do GSD assume que os subagentes funcionam; decidiu-se adiar até haver um texto que reflita a realidade desta plataforma.
 
@@ -78,5 +81,5 @@ Itens reconhecidos e adiados para v2 (ver REQUIREMENTS.md):
 ## Session Continuity
 
 Last session: 2026-08-14
-Stopped at: Roadmap de 3 fases criado e aprovado; pronto para começar o planejamento da Phase 1
+Stopped at: SEC-01 verificado (falso positivo, sem mudança de código). Phase 1 travada em SEC-02/SEC-03, que dependem de toggles no painel do Supabase.
 Resume file: None

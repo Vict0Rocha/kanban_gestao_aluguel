@@ -2,16 +2,20 @@
 
 **Analysis Date:** 2026-08-14
 
+> ⚠️ **Este documento contém hipóteses, não fatos verificados.** Foi gerado por um
+> modelo rápido varrendo o código, e pelo menos um achado não sobreviveu à
+> verificação (ver a anotação em "Console.error logging in production code" e em
+> "Console.error may leak error context"). Confirme cada item antes de transformá-lo
+> em trabalho.
+
 ## Tech Debt
 
-**Console.error logging in production code:**
-- Issue: `console.error()` called directly in server actions and components without sanitization; database error objects may leak details to browser logs
-- Files: 
-  - `web/src/lib/kanban/actions.ts` (lines 176, 201, 226, 250, 295, 331, 358, 381, 441)
-  - `web/src/components/kanban/board.tsx` (line 100)
-  - `web/src/components/alerts/alerts-panel.tsx`
-- Impact: Error messages and stack traces visible in browser console; unclear if sensitive data (SQL, structure) could leak
-- Fix approach: Wrap error logging in `if (process.env.NODE_ENV === 'development')` or use a logging service that respects environment
+**~~Console.error logging in production code:~~ ❌ FALSO POSITIVO — verificado 2026-08-14**
+- Alegação original: `console.error()` em server actions e componentes vazaria objetos de erro do banco para os logs do navegador
+- **Por que está errado:** `web/src/lib/kanban/actions.ts` é `"use server"`. Os 9 `console.error` ali rodam no servidor e vão para os logs da Vercel — nunca para o console do navegador. Logar erro de banco no servidor é o comportamento correto, não um vazamento.
+- **O que o navegador realmente recebe:** a Server Action retorna `{ ok: false, error }` onde a mensagem vem de `erroDoBanco()`, que mapeia apenas o *código* do erro (`23514`, `23503`, `PGRST116`) para uma frase em português. O objeto de erro cru do Supabase não sai do servidor. O `console.error` em `board.tsx` (`"use client"`) loga essa string já sanitizada.
+- **Evidência:** busca por `error.message`/`error.details`/`error.hint`/`JSON.stringify(error)` em todo o `src/` retorna uma única ocorrência — `board.tsx:106` — lendo a mensagem sanitizada.
+- **Conclusão:** nenhuma mudança necessária. Aplicar o "fix" sugerido (`if NODE_ENV === 'development'`) só removeria diagnóstico útil dos logs do servidor.
 
 **Large component size:**
 - Issue: Board component is 385 lines, handling drag-drop state, search state, optimistic updates, and error recovery
@@ -56,11 +60,10 @@
   - Audit `allowed_members` membership on deployment
   - Consider a post-migration test in CI to verify RLS enforcement
 
-**Console.error may leak error context:**
-- Risk: Postgres error messages (constraint violations, RLS denials, syntax errors) written to browser console; could reveal schema structure or security logic to attacker with page access
-- Files: `web/src/lib/kanban/actions.ts`, `web/src/components/kanban/board.tsx`
-- Current mitigation: Error messages already sanitized before returning to UI (e.g., "O banco é a autoridade final; aqui a checagem existe para devolver uma mensagem que faça sentido"). Server-side errors not leaked to user.
-- Recommendations: Disable console.error or filter to development only (see Tech Debt section above)
+**~~Console.error may leak error context:~~ ❌ FALSO POSITIVO — verificado 2026-08-14**
+- Mesmo engano da seção Tech Debt acima: mensagens do Postgres não são escritas no console do navegador. `actions.ts` é `"use server"`.
+- O próprio texto original já reconhecia que "error messages are already sanitized before returning to UI" — o que contradiz a alegação de risco no mesmo item.
+- **Conclusão:** nenhuma ação necessária.
 
 **Login page UX does not warn of allowlist requirement:**
 - Risk: User enters email/password, logs in successfully, sees empty board; could lead to support burden or confusion

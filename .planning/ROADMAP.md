@@ -20,15 +20,16 @@ Esta fase estabiliza e documenta o Kanban Aluguel sem adicionar features novas. 
 **Goal**: Nenhum dos itens de segurança identificados em CONCERNS.md continua pendente
 **Mode:** mvp
 **Depends on**: Nothing (first phase)
-**Requirements**: SEC-01, SEC-02, SEC-03
+**Requirements**: SEC-01 ✓, SEC-02, SEC-03
 **Success Criteria** (what must be TRUE):
-  1. Uma escrita rejeitada pelo banco (constraint ou RLS) não produz nenhuma mensagem de erro do Postgres no console do navegador em produção
+  1. ✓ Uma escrita rejeitada pelo banco (constraint ou RLS) não produz nenhuma mensagem de erro do Postgres no console do navegador em produção — **já era verdade antes desta fase** (ver SEC-01 em REQUIREMENTS.md); a arquitetura de Server Actions + `erroDoBanco()` já sanitiza por desenho
   2. "Leaked Password Protection" aparece ativado no painel do Supabase Auth
   3. Verificação de e-mail aparece ativada no painel do Supabase Auth
-**Plans**: TBD
+**Plans**: 0 de código — o que resta são dois toggles no painel do Supabase, que só o dono do projeto pode acionar
 
 Plans:
-- [ ] 01-01: TBD
+- [x] 01-01: Verificar SEC-01 — concluído 2026-08-14, nenhuma mudança de código necessária
+- [ ] 01-02: (usuário) Ligar Leaked Password Protection e verificação de e-mail no painel
 
 ### Phase 2: Robustez de interface
 **Goal**: A interface se recupera de erros em vez de quebrar silenciosamente ou travar o usuário sem explicação
@@ -64,6 +65,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Fechar pendências de segurança | 0/? | Not started | - |
+| 1. Fechar pendências de segurança | 1/2 | In progress (aguardando toggles no painel) | - |
 | 2. Robustez de interface | 0/? | Not started | - |
 | 3. Documentação no Obsidian | 0/? | Not started | - |
