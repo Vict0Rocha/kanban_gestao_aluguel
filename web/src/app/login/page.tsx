@@ -7,7 +7,6 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Turnstile, turnstileEnabled } from "@/components/turnstile"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -15,15 +14,9 @@ export default function LoginPage() {
   const [password, setPassword] = React.useState("")
   const [error, setError] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(false)
-  const [captchaToken, setCaptchaToken] = React.useState<string | null>(null)
-
-  // Sem o desafio configurado, não há o que esperar antes de enviar.
-  const aguardandoDesafio = turnstileEnabled && !captchaToken
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
-    if (aguardandoDesafio) return
-
     setLoading(true)
     setError(null)
 
@@ -31,20 +24,10 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      // Quem confere é o Supabase, no servidor, contra a secret key do painel.
-      ...(captchaToken ? { options: { captchaToken } } : {}),
     })
 
     if (error) {
-      // O Supabase distingue credencial errada de desafio recusado; sem essa
-      // separação, um token expirado apareceria como "senha incorreta" e a
-      // pessoa ficaria tentando de novo sem entender o motivo.
-      setError(
-        error.message.toLowerCase().includes("captcha")
-          ? "Verificação de segurança expirou. Tente novamente."
-          : "E-mail ou senha incorretos."
-      )
-      setCaptchaToken(null)
+      setError("E-mail ou senha incorretos.")
       setLoading(false)
       return
     }
@@ -93,15 +76,9 @@ export default function LoginPage() {
             />
           </div>
 
-          <Turnstile onToken={setCaptchaToken} onError={setError} />
-
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <Button
-            type="submit"
-            disabled={loading || aguardandoDesafio}
-            className="mt-2"
-          >
+          <Button type="submit" disabled={loading} className="mt-2">
             {loading ? "Entrando..." : "Entrar"}
           </Button>
         </form>
