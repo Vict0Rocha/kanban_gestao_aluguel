@@ -12,7 +12,7 @@ type TurnstileApi = {
       sitekey: string
       callback: (token: string) => void
       "expired-callback": () => void
-      "error-callback": () => void
+      "error-callback": (code?: string) => void
       theme?: "light" | "dark" | "auto"
     }
   ) => string
@@ -71,12 +71,32 @@ function loadScript(): Promise<void> {
  * adulterado que pule esta etapa simplesmente não recebe token válido, e o
  * login é recusado do outro lado.
  */
+/**
+ * A Cloudflare devolve um código no erro; sem ele a tela diz apenas "não deu
+ * certo" e a causa vira adivinhação. Os dois primeiros aparecem em configuração
+ * nova e têm conserto diferente, então vale distinguir.
+ */
+function explicarErro(code?: string): string {
+  if (code?.startsWith("110200")) {
+    return "Este endereço não está autorizado na configuração do Turnstile."
+  }
+  if (code?.startsWith("110100") || code?.startsWith("110110")) {
+    return "A chave do Turnstile (site key) parece inválida."
+  }
+  if (code?.startsWith("300") || code?.startsWith("600")) {
+    return "A verificação de segurança falhou. Recarregue a página."
+  }
+  return code
+    ? `Não foi possível carregar a verificação de segurança (código ${code}).`
+    : "Não foi possível carregar a verificação de segurança. Recarregue a página."
+}
+
 export function Turnstile({
   onToken,
   onError,
 }: {
   onToken: (token: string | null) => void
-  onError: () => void
+  onError: (message: string) => void
 }) {
   const containerRef = React.useRef<HTMLDivElement>(null)
   const onTokenRef = React.useRef(onToken)
@@ -105,12 +125,19 @@ export function Turnstile({
           // O token vale poucos minutos. Ao expirar, zera para o formulário
           // pedir um novo desafio em vez de enviar algo que já não serve.
           "expired-callback": () => onTokenRef.current(null),
-          "error-callback": () => onErrorRef.current(),
+          "error-callback": (code) => {
+            console.error("turnstile", code)
+            onErrorRef.current(explicarErro(code))
+          },
           theme: "auto",
         })
       })
       .catch(() => {
-        if (!cancelled) onErrorRef.current()
+        if (!cancelled) {
+          onErrorRef.current(
+            "Não foi possível carregar a verificação de segurança. Verifique sua conexão."
+          )
+        }
       })
 
     return () => {

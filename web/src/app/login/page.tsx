@@ -93,14 +93,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <Turnstile
-            onToken={setCaptchaToken}
-            onError={() =>
-              setError(
-                "Não foi possível carregar a verificação de segurança. Recarregue a página."
-              )
-            }
-          />
+          <Turnstile onToken={setCaptchaToken} onError={setError} />
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
