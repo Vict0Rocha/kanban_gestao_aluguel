@@ -179,10 +179,10 @@
 - Blocks: Weak account security; relies on Supabase project settings
 - Priority: **Low** — can rely on Supabase Auth admin to enforce, but app could add client-side UX hint
 
-**No email verification:**
-- Problem: Supabase Auth does not require email verification; user can enter any email
-- Blocks: Typos lead to unreachable accounts; no proof of ownership
-- Priority: **Medium** — should be enabled at Supabase Auth level, not app layer
+**~~No email verification:~~ ❌ FALSO POSITIVO — verificado 2026-08-14**
+- Alegação original: Supabase Auth não exigiria verificação de e-mail
+- **Por que está errado:** `GET /auth/v1/settings` retorna `mailer_autoconfirm: false` — o Supabase **exige** confirmação de e-mail; não confirma automaticamente. Terceiro achado deste documento a não se sustentar após verificação.
+- **Conclusão:** nenhuma ação necessária.
 
 **No audit log of RLS denials:**
 - Problem: When a user is removed from `allowed_members`, their queries silently fail with zero rows (not an error); no record of why

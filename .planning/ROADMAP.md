@@ -35,14 +35,15 @@ Plans:
 **Goal**: A interface se recupera de erros em vez de quebrar silenciosamente ou travar o usuário sem explicação
 **Mode:** mvp
 **Depends on**: Nothing (independente da Phase 1, sequenciada depois por convenção)
-**Requirements**: ROBUST-01, ROBUST-02
+**Requirements**: ROBUST-01 ✓, ROBUST-02 ✓
 **Success Criteria** (what must be TRUE):
-  1. Um erro de renderização dentro do board mostra uma tela de recuperação com opção de recarregar, em vez de página em branco
-  2. Um usuário que faz login sem estar na allowlist vê uma mensagem explicando por que o board está vazio, em vez de silêncio
-**Plans**: TBD
+  1. ✓ Um erro de renderização dentro do board mostra uma tela de recuperação com opção de recarregar, em vez de página em branco
+  2. ⚠️ Um usuário que faz login sem estar na allowlist vê uma mensagem explicando por que o board está vazio, em vez de silêncio — código escrito e revisado, **falta confirmação com login real** (o navegador embutido ficou instável durante a verificação, mesmo problema já visto com o Turnstile)
+**Plans**: 2/2 código escrito
 
 Plans:
-- [ ] 02-01: TBD
+- [x] 02-01: Error Boundary em dois níveis (`app/error.tsx`, `app/(app)/error.tsx`)
+- [x] 02-02: Tela de acesso pendente via `is_team_member()` RPC no `(app)/layout.tsx` — aguardando confirmação com login real
 
 ### Phase 3: Documentação no Obsidian
 **Goal**: O projeto tem uma fonte de verdade legível por humanos, cobrindo arquitetura, decisões e segurança
@@ -65,6 +66,6 @@ Phases execute in numeric order: 1 → 2 → 3
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Fechar pendências de segurança | 1/2 | In progress (aguardando toggles no painel) | - |
-| 2. Robustez de interface | 0/? | Not started | - |
-| 3. Documentação no Obsidian | 0/? | Not started | - |
+| 1. Fechar pendências de segurança | 1/2 | In progress (aguardando toggles no painel, pausado por escolha do usuário) | - |
+| 2. Robustez de interface | 2/2 | Código completo, aguardando confirmação com login real | - |
+| 3. Documentação no Obsidian | 3/3 | Complete — 22 notas no vault | 2026-08-14 |

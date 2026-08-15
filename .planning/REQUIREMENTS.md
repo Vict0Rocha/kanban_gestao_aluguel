@@ -9,20 +9,20 @@ Requisitos desta fase: estabilizar e documentar, sem feature nova de produto.
 
 ### DOCS
 
-- [ ] **DOCS-01**: Documentação completa do projeto publicada num vault Obsidian — arquitetura, decisões-chave, modelo de dados, runbooks de segurança
-- [ ] **DOCS-02**: A suposição de "board único, sem isolamento entre clientes" está documentada, junto com o caminho de migração necessário para SaaS multi-tenant quando isso entrar em pauta
-- [ ] **DOCS-03**: A dependência da proteção CSRF automática do Next.js Server Actions está documentada para futuros mantenedores
+- [x] **DOCS-01**: Documentação completa do projeto publicada num vault Obsidian — arquitetura, decisões-chave, modelo de dados, runbooks de segurança. 22 notas em `kanba aluguel/`, entrada única (`Kanban Aluguel.md`), guia dedicado para agentes de IA
+- [x] **DOCS-02**: A suposição de "board único, sem isolamento entre clientes" está documentada, junto com o caminho de migração necessário para SaaS multi-tenant. Ver `Políticas RLS.md#Limitação: board único`
+- [x] **DOCS-03**: A dependência da proteção CSRF automática do Next.js Server Actions está documentada para futuros mantenedores. Coberto em `Modelo de Segurança.md` — nota: ficou breve (uma linha de tabela), pode ser encorpado se necessário
 
 ### SEC
 
 - [x] **SEC-01**: ~~Mensagens de erro do Postgres não aparecem no console do navegador em produção~~ — **já era verdade; requisito nasceu de um falso positivo**. Verificado em 2026-08-14: os 9 `console.error` apontados estão em `web/src/lib/kanban/actions.ts`, que é `"use server"` — rodam no servidor e vão para os logs da Vercel, nunca para o navegador. O que chega ao cliente passa por `erroDoBanco()`, que mapeia apenas o *código* do erro (`23514`, `23503`, `PGRST116`) para uma frase em português; o objeto de erro cru do Supabase não sai do servidor. Busca por `error.message`/`error.details`/`error.hint`/`JSON.stringify(error)` em todo o `src/` encontrou só [board.tsx:106](../web/src/components/kanban/board.tsx:106), lendo a mensagem já sanitizada. Nenhuma mudança de código foi necessária.
-- [ ] **SEC-02**: "Leaked Password Protection" está ligado no Supabase Auth
-- [ ] **SEC-03**: Verificação de e-mail está ligada no Supabase Auth
+- [ ] **SEC-02**: "Leaked Password Protection" está ligado no Supabase Auth — pendente de verdade, requer ação no painel. Usuário optou por não mexer em configuração de segurança por enquanto (2026-08-14)
+- [x] **SEC-03**: ~~Verificação de e-mail está ligada no Supabase Auth~~ — **já era verdade; requisito nasceu de outro falso positivo do mesmo `CONCERNS.md`**. Verificado em 2026-08-14 via `GET /auth/v1/settings`: `mailer_autoconfirm: false`, ou seja, o Supabase **exige** confirmação de e-mail, não confirma automaticamente. Nenhuma ação necessária.
 
 ### ROBUST
 
-- [ ] **ROBUST-01**: Um erro de renderização em um componente do board não derruba a tela inteira — existe um Error Boundary com opção de recarregar
-- [ ] **ROBUST-02**: Quando o board aparece vazio por o usuário não estar na allowlist, uma mensagem explica o motivo em vez de silêncio
+- [x] **ROBUST-01**: Um erro de renderização em um componente do board não derruba a tela inteira — existe um Error Boundary com opção de recarregar. Implementado com `error.tsx` do App Router em dois níveis (raiz e grupo `(app)`) — nesta versão do Next a prop é `retry`, não `reset`.
+- [x] **ROBUST-02**: Quando o board aparece vazio por o usuário não estar na allowlist, uma mensagem explica o motivo em vez de silêncio. Implementado no `(app)/layout.tsx` via `supabase.rpc("is_team_member")`. ⚠️ Verificado por lint/build e por simetria com queries já existentes no mesmo Server Component — **não verificado com uma sessão autenticada real**, ver nota abaixo.
 
 ## v2 Requirements
 
@@ -59,22 +59,22 @@ Preenchido na criação do roadmap.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | SEC-01 | Phase 1 | Complete (falso positivo — nada a corrigir) |
-| SEC-02 | Phase 1 | Pending |
-| SEC-03 | Phase 1 | Pending |
-| ROBUST-01 | Phase 2 | Pending |
-| ROBUST-02 | Phase 2 | Pending |
-| DOCS-01 | Phase 3 | Pending |
-| DOCS-02 | Phase 3 | Pending |
-| DOCS-03 | Phase 3 | Pending |
+| SEC-02 | Phase 1 | Pending — depende de ação do usuário no painel, adiado por escolha dele |
+| SEC-03 | Phase 1 | Complete (falso positivo — nada a corrigir) |
+| ROBUST-01 | Phase 2 | Complete |
+| ROBUST-02 | Phase 2 | Complete — código escrito, aguarda confirmação com login real |
+| DOCS-01 | Phase 3 | Complete |
+| DOCS-02 | Phase 3 | Complete |
+| DOCS-03 | Phase 3 | Complete (breve, pode encorpar) |
 
 **Coverage:**
 - v1 requirements: 8 total
 - Mapped to phases: 8
 - Unmapped: 0 ✓
-- Complete: 1 (SEC-01, resolvido por verificação)
+- Complete: 7 de 8 — só SEC-02 resta, e depende de uma ação que o usuário optou por adiar
 
-**Nota de calibragem:** `SEC-01` veio de `.planning/codebase/CONCERNS.md`, gerado por um modelo rápido (haiku) que confundiu código `"use server"` com código `"use client"`. Os demais itens daquele documento devem ser tratados como **hipóteses a verificar**, não como fatos — vários são reais (allowlist silenciosa, schema inicial permissivo), mas cada um merece confirmação antes de virar trabalho.
+**Nota de calibragem:** `SEC-01` e `SEC-03` vieram de `.planning/codebase/CONCERNS.md`, gerado por um modelo rápido (haiku) que confundiu código `"use server"` com código `"use client"` e não checou a configuração real do Supabase antes de afirmar que a verificação de e-mail estava desligada. **Dois de dois** achados de segurança daquele documento que foram verificados se provaram falsos. Os itens restantes devem ser tratados como **hipóteses a verificar**, não como fatos — vários são reais (allowlist silenciosa, schema inicial permissivo), mas cada um merece confirmação antes de virar trabalho.
 
 ---
 *Requirements defined: 2026-08-14*
-*Last updated: 2026-08-14 after SEC-01 verification (falso positivo)*
+*Last updated: 2026-08-14 after Phase 2 e Phase 3 completion*
