@@ -82,6 +82,6 @@ Itens reconhecidos e adiados para v2 (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-14
-Stopped at: Phase 2 e Phase 3 concluídas. Falta confirmar ROBUST-02 com login real e decidir sobre SEC-02 quando o usuário quiser retomar segurança.
+Last session: 2026-08-16
+Stopped at: PRs #7 e #8 mesclados em main, nessa ordem (o #7 estava aberto e esquecido havia dias). Error Boundary testado de verdade via erro injetado e revertido; tela de acesso pendente testada isolada. Falta confirmar ROBUST-02 com login real e decidir sobre SEC-02 quando o usuário quiser retomar segurança.
 Resume file: None
