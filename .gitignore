@@ -5,3 +5,15 @@ Thumbs.db
 
 # Local Claude Code scratch state (not part of the app)
 .claude/settings.local.json
+
+# GSD Core (github.com/open-gsd/gsd-core) — installed tool payload, not project
+# content. Reinstall with: npx @opengsd/gsd-core@latest --claude --local
+# .planning/ (its actual output — codebase maps, project docs) stays tracked.
+.claude/gsd-core/
+.claude/commands/
+.claude/agents/
+.claude/hooks/
+.claude/scripts/
+.claude/.gsd-profile
+.claude/gsd-file-manifest.json
+.claude/gsd-install-state.json
