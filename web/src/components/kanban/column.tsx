@@ -8,7 +8,7 @@ import { GripVertical, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import type { Column as ColumnType } from "@/lib/kanban/types"
-import type { CardDetailsInput } from "@/lib/kanban/queries"
+import type { CardDetailsInput } from "@/lib/kanban/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CardItem } from "@/components/kanban/card-item"

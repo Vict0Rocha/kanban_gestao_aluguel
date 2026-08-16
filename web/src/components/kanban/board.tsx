@@ -21,7 +21,11 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable"
 
-import type { Card, Column as ColumnType } from "@/lib/kanban/types"
+import type {
+  Card,
+  CardDetailsInput,
+  Column as ColumnType,
+} from "@/lib/kanban/types"
 import { positionBetween } from "@/lib/kanban/position"
 import { countCards, isSearching, matchingIds } from "@/lib/kanban/search"
 import { SearchField } from "@/components/search-field"
@@ -34,7 +38,6 @@ import {
   renameColumn,
   updateCard,
   updateColumnPosition,
-  type CardDetailsInput,
 } from "@/lib/kanban/queries"
 import { Column } from "@/components/kanban/column"
 import { CardItem } from "@/components/kanban/card-item"
@@ -93,10 +96,15 @@ export function Board({
     message: string
   ) {
     setColumns(optimistic)
-    persist().catch((error) => {
+    persist().catch((error: unknown) => {
       console.error(error)
       setColumns(revertTo)
-      setWriteError(message)
+      // A Server Action explica o que houve ("O valor do aluguel precisa ser
+      // maior que zero", "sem permissão ou o registro já não existe"). O texto
+      // genérico só entra se a falha vier de antes disso — rede fora, por
+      // exemplo, quando nem chegou a haver resposta do servidor.
+      const doServidor = error instanceof Error ? error.message : ""
+      setWriteError(doServidor || message)
     })
   }
 

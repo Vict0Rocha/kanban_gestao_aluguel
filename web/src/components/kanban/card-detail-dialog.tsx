@@ -3,7 +3,7 @@
 import * as React from "react"
 
 import type { Card } from "@/lib/kanban/types"
-import type { CardDetailsInput } from "@/lib/kanban/queries"
+import type { CardDetailsInput } from "@/lib/kanban/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
