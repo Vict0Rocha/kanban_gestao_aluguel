@@ -144,3 +144,99 @@ create policy "team full access parcelas"
 -- aqui: a migration 20260811010000_security_advisor_fixes.sql já
 -- os ajustou (revogado de public/anon, mantido em authenticated),
 -- e regravá-los poderia reabrir o acesso à função para o papel anon.
+
+
+-- ------------------------------------------------------------
+-- Seção 6 — parcela_lancamentos: livro-razão append-only
+--
+-- Baixa parcial, acréscimo, desconto e correção pós-conciliação
+-- são todos o mesmo INSERT — nunca um UPDATE na parcela. O valor
+-- devido e o valor pago de uma parcela são somas dos lançamentos,
+-- jamais colunas mutáveis que poderiam divergir do livro-razão.
+-- É por isso que não existe (e não deve existir) uma tabela de
+-- auditoria paralela: o histórico é o próprio dado.
+-- ------------------------------------------------------------
+
+create table if not exists public.parcela_lancamentos (
+  id uuid primary key default gen_random_uuid(),
+  parcela_id uuid not null references public.parcelas(id) on delete cascade,
+  tipo text not null,
+  valor numeric(12,2) not null default 0,
+  data date not null default current_date,
+  observacao text,
+  motivo text,
+  criado_por uuid references public.profiles(id),
+  criado_em timestamptz not null default now()
+);
+
+
+-- ------------------------------------------------------------
+-- Seção 7 — constraints de parcela_lancamentos
+-- ------------------------------------------------------------
+
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_tipo_valido;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_valor_nao_negativo;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_valor_exigido;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_destrava_exige_motivo;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_motivo_tamanho;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_observacao_tamanho;
+
+alter table public.parcela_lancamentos
+  add constraint parcela_lancamentos_tipo_valido
+    check (tipo in ('pagamento', 'acrescimo', 'desconto', 'destrava')),
+  add constraint parcela_lancamentos_valor_nao_negativo
+    check (valor >= 0 and valor < 10000000),
+  add constraint parcela_lancamentos_valor_exigido
+    check (tipo = 'destrava' or valor > 0),
+  add constraint parcela_lancamentos_destrava_exige_motivo
+    check (tipo <> 'destrava' or (motivo is not null and length(btrim(motivo)) >= 1)),
+  add constraint parcela_lancamentos_motivo_tamanho
+    check (motivo is null or length(motivo) <= 500),
+  add constraint parcela_lancamentos_observacao_tamanho
+    check (observacao is null or length(observacao) <= 2000);
+
+-- parcela_lancamentos_valor_nao_negativo usa >= 0 (e não > 0, como
+-- em parcelas.valor_original) porque um lançamento tipo='destrava'
+-- é um evento de estado, não financeiro, e carrega valor 0.
+--
+-- parcela_lancamentos_valor_exigido vai além do piso do desenho
+-- original: um lançamento pagamento/acrescimo/desconto de valor
+-- zero não representa nenhum evento financeiro real — é lixo no
+-- livro-razão. Só destrava tem permissão de valor 0, e isso já é
+-- coberto pela outra constraint.
+--
+-- parcela_lancamentos_destrava_exige_motivo é a constraint da qual
+-- a Phase 7 (conciliação/destrava, CONCIL-03) depende: o motivo
+-- obrigatório de um destrava é garantia de banco, não regra de
+-- formulário — btrim faz um motivo só com espaços em branco contar
+-- como vazio.
+--
+-- parcela_lancamentos_observacao_tamanho espelha
+-- cards_observacoes_tamanho (20260811000000_security_hardening.sql).
+
+
+-- ------------------------------------------------------------
+-- Seção 8 — índice de parcela_lancamentos
+-- ------------------------------------------------------------
+
+create index if not exists parcela_lancamentos_parcela_id_idx
+  on public.parcela_lancamentos (parcela_id);
+-- O livro-razão é sempre lido por parcela (histórico de uma
+-- parcela específica); nenhum índice único cobre esta coluna
+-- sozinha.
+
+
+-- ------------------------------------------------------------
+-- Seção 9 — RLS de parcela_lancamentos
+-- ------------------------------------------------------------
+
+alter table public.parcela_lancamentos enable row level security;
+
+drop policy if exists "team full access parcela_lancamentos" on public.parcela_lancamentos;
+
+create policy "team full access parcela_lancamentos"
+  on public.parcela_lancamentos for all to authenticated
+  using (public.is_team_member())
+  with check (public.is_team_member());
+
+-- Mesma forma da Seção 5 — nenhum outro predicado de autorização.

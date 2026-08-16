@@ -103,7 +103,48 @@ create policy "team full access parcelas"
   using (public.is_team_member())
   with check (public.is_team_member());
 
--- >>> SEÇÕES 6-9 (parcela_lancamentos, primeira passagem) entram aqui na Task 2 <<<
+create table if not exists public.parcela_lancamentos (
+  id uuid primary key default gen_random_uuid(),
+  parcela_id uuid not null references public.parcelas(id) on delete cascade,
+  tipo text not null,
+  valor numeric(12,2) not null default 0,
+  data date not null default current_date,
+  observacao text,
+  motivo text,
+  criado_por uuid references public.profiles(id),
+  criado_em timestamptz not null default now()
+);
+
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_tipo_valido;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_valor_nao_negativo;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_valor_exigido;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_destrava_exige_motivo;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_motivo_tamanho;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_observacao_tamanho;
+
+alter table public.parcela_lancamentos
+  add constraint parcela_lancamentos_tipo_valido
+    check (tipo in ('pagamento', 'acrescimo', 'desconto', 'destrava')),
+  add constraint parcela_lancamentos_valor_nao_negativo
+    check (valor >= 0 and valor < 10000000),
+  add constraint parcela_lancamentos_valor_exigido
+    check (tipo = 'destrava' or valor > 0),
+  add constraint parcela_lancamentos_destrava_exige_motivo
+    check (tipo <> 'destrava' or (motivo is not null and length(btrim(motivo)) >= 1)),
+  add constraint parcela_lancamentos_motivo_tamanho
+    check (motivo is null or length(motivo) <= 500),
+  add constraint parcela_lancamentos_observacao_tamanho
+    check (observacao is null or length(observacao) <= 2000);
+
+create index if not exists parcela_lancamentos_parcela_id_idx
+  on public.parcela_lancamentos (parcela_id);
+
+alter table public.parcela_lancamentos enable row level security;
+drop policy if exists "team full access parcela_lancamentos" on public.parcela_lancamentos;
+create policy "team full access parcela_lancamentos"
+  on public.parcela_lancamentos for all to authenticated
+  using (public.is_team_member())
+  with check (public.is_team_member());
 
 -- ---- (b) DDL da migração — segunda passagem (prova de idempotência) ----
 
@@ -149,7 +190,48 @@ create policy "team full access parcelas"
   using (public.is_team_member())
   with check (public.is_team_member());
 
--- >>> SEÇÕES 6-9 (parcela_lancamentos, segunda passagem) entram aqui na Task 2 <<<
+create table if not exists public.parcela_lancamentos (
+  id uuid primary key default gen_random_uuid(),
+  parcela_id uuid not null references public.parcelas(id) on delete cascade,
+  tipo text not null,
+  valor numeric(12,2) not null default 0,
+  data date not null default current_date,
+  observacao text,
+  motivo text,
+  criado_por uuid references public.profiles(id),
+  criado_em timestamptz not null default now()
+);
+
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_tipo_valido;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_valor_nao_negativo;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_valor_exigido;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_destrava_exige_motivo;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_motivo_tamanho;
+alter table public.parcela_lancamentos drop constraint if exists parcela_lancamentos_observacao_tamanho;
+
+alter table public.parcela_lancamentos
+  add constraint parcela_lancamentos_tipo_valido
+    check (tipo in ('pagamento', 'acrescimo', 'desconto', 'destrava')),
+  add constraint parcela_lancamentos_valor_nao_negativo
+    check (valor >= 0 and valor < 10000000),
+  add constraint parcela_lancamentos_valor_exigido
+    check (tipo = 'destrava' or valor > 0),
+  add constraint parcela_lancamentos_destrava_exige_motivo
+    check (tipo <> 'destrava' or (motivo is not null and length(btrim(motivo)) >= 1)),
+  add constraint parcela_lancamentos_motivo_tamanho
+    check (motivo is null or length(motivo) <= 500),
+  add constraint parcela_lancamentos_observacao_tamanho
+    check (observacao is null or length(observacao) <= 2000);
+
+create index if not exists parcela_lancamentos_parcela_id_idx
+  on public.parcela_lancamentos (parcela_id);
+
+alter table public.parcela_lancamentos enable row level security;
+drop policy if exists "team full access parcela_lancamentos" on public.parcela_lancamentos;
+create policy "team full access parcela_lancamentos"
+  on public.parcela_lancamentos for all to authenticated
+  using (public.is_team_member())
+  with check (public.is_team_member());
 
 -- ---- (c) cards existentes continuam intactos --------------------
 
@@ -242,6 +324,82 @@ begin
 end $$;
 
 
--- >>> Os BLOCOS de parcela_lancamentos, os BLOCOS de RLS e a
--- >>> PARTE B chegam nas próximas tasks deste plano. Este arquivo
--- >>> ainda não está completo.
+-- ============================================================
+-- BLOCO 4 — REGRAS DE `parcela_lancamentos` (mesma transação —
+-- não rode `begin;` de novo)
+--
+-- Insere uma parcela de apoio, prova o caminho feliz (pagamento
+-- válido, destrava com motivo preenchido) e testa, uma a uma, que
+-- cada regra proibida é recusada pelo banco.
+-- ============================================================
+
+do $$
+declare
+  v_card_id uuid;
+  v_parcela_id uuid;
+begin
+  v_card_id := current_setting('app.card_teste')::uuid;
+
+  -- parcela de apoio para os lançamentos deste bloco
+  insert into public.parcelas (card_id, competencia, vencimento, valor_original)
+  values (v_card_id, (date_trunc('month', current_date) + interval '5 months')::date, current_date, 1500.00)
+  returning id into v_parcela_id;
+
+  -- caminho feliz: pagamento válido
+  insert into public.parcela_lancamentos (parcela_id, tipo, valor)
+  values (v_parcela_id, 'pagamento', 500.00);
+
+  -- caminho feliz: destrava com motivo preenchido
+  insert into public.parcela_lancamentos (parcela_id, tipo, valor, motivo)
+  values (v_parcela_id, 'destrava', 0, 'correção de teste do ensaio');
+
+  -- ---- tipo fora do conjunto permitido -----------------------------
+  begin
+    insert into public.parcela_lancamentos (parcela_id, tipo, valor)
+    values (v_parcela_id, 'estorno', 100.00);
+    raise exception 'FALHOU: parcela_lancamentos_tipo_valido deveria ter recusado tipo estorno';
+  exception when check_violation then
+    raise notice 'OK recusado: parcela_lancamentos_tipo_valido';
+  end;
+
+  -- ---- valor negativo num pagamento ----------------------------------
+  begin
+    insert into public.parcela_lancamentos (parcela_id, tipo, valor)
+    values (v_parcela_id, 'pagamento', -50.00);
+    raise exception 'FALHOU: parcela_lancamentos_valor_nao_negativo deveria ter recusado valor negativo';
+  exception when check_violation then
+    raise notice 'OK recusado: parcela_lancamentos_valor_nao_negativo';
+  end;
+
+  -- ---- valor zero num pagamento ----------------------------------------
+  begin
+    insert into public.parcela_lancamentos (parcela_id, tipo, valor)
+    values (v_parcela_id, 'pagamento', 0);
+    raise exception 'FALHOU: parcela_lancamentos_valor_exigido deveria ter recusado pagamento de valor 0';
+  exception when check_violation then
+    raise notice 'OK recusado: parcela_lancamentos_valor_exigido';
+  end;
+
+  -- ---- destrava com motivo nulo -------------------------------------------
+  begin
+    insert into public.parcela_lancamentos (parcela_id, tipo, valor, motivo)
+    values (v_parcela_id, 'destrava', 0, null);
+    raise exception 'FALHOU: parcela_lancamentos_destrava_exige_motivo deveria ter recusado motivo nulo';
+  exception when check_violation then
+    raise notice 'OK recusado: parcela_lancamentos_destrava_exige_motivo (nulo)';
+  end;
+
+  -- ---- destrava com motivo só espaços --------------------------------------
+  begin
+    insert into public.parcela_lancamentos (parcela_id, tipo, valor, motivo)
+    values (v_parcela_id, 'destrava', 0, '   ');
+    raise exception 'FALHOU: parcela_lancamentos_destrava_exige_motivo deveria ter recusado motivo em branco';
+  exception when check_violation then
+    raise notice 'OK recusado: parcela_lancamentos_destrava_exige_motivo (em branco)';
+  end;
+
+end $$;
+
+
+-- >>> Os BLOCOS de RLS (6, 7) e a PARTE B chegam na próxima task
+-- >>> deste plano. Este arquivo ainda não está completo.
