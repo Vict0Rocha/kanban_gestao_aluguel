@@ -104,16 +104,49 @@ Reconhecidos, mas fora do roadmap desta milestone.
 
 ## Traceability
 
-Preenchido na criação do roadmap.
+Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração continua da v1.0, que usou 1-3. Ver `.planning/ROADMAP.md`.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| — | — | Aguardando roadmap |
+| FINSEG-01 | Phase 4 | Pendente |
+| FINSEG-02 | Phase 4 | Pendente |
+| FINDOC-01 | Phase 4 | Pendente |
+| CONTRATO-01 | Phase 5 | Pendente |
+| CONTRATO-02 | Phase 5 | Pendente |
+| PARCELA-01 | Phase 5 | Pendente |
+| PARCELA-02 | Phase 5 | Pendente |
+| PARCELA-03 | Phase 5 | Pendente |
+| PARCELA-04 | Phase 5 | Pendente |
+| FINUI-01 | Phase 5 | Pendente |
+| FINUI-02 | Phase 5 | Pendente |
+| FINUI-03 | Phase 5 | Pendente |
+| BAIXA-01 | Phase 6 | Pendente |
+| BAIXA-02 | Phase 6 | Pendente |
+| BAIXA-03 | Phase 6 | Pendente |
+| BAIXA-04 | Phase 6 | Pendente |
+| BAIXA-05 | Phase 6 | Pendente |
+| FINUI-04 | Phase 6 | Pendente |
+| FINSEG-03 | Phase 6 | Pendente |
+| CONCIL-01 | Phase 7 | Pendente |
+| CONCIL-02 | Phase 7 | Pendente |
+| CONCIL-03 | Phase 7 | Pendente |
+| CONCIL-04 | Phase 7 | Pendente |
+| FINREL-01 | Phase 8 | Pendente |
+| FINREL-02 | Phase 8 | Pendente |
+| FINREL-03 | Phase 8 | Pendente |
+| FINREL-04 | Phase 8 | Pendente |
+| FINREL-05 | Phase 8 | Pendente |
 
 **Coverage:**
-- v2.0 requirements: 26 total
-- Mapped to phases: TBD
-- Unmapped: TBD
+- v2.0 requirements: 28 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, Phase 7: 4, Phase 8: 5
+- Mapped to phases: 28
+- Unmapped: 0
+
+> **Correção de contagem:** este documento dizia "26 total". A soma real das categorias da v2.0 (CONTRATO 2 + PARCELA 4 + BAIXA 5 + CONCIL 4 + FINUI 4 + FINREL 5 + FINSEG 3 + FINDOC 1) é **28**. Nenhum requisito foi adicionado ou removido — só a contagem estava errada.
+
+**Fora do escopo de fases:** `SEC-02` (Leaked Password Protection, herdado da v1.0) não aparece na tabela de propósito — é toggle no painel do Supabase, não trabalho de código, adiado por escolha do usuário.
+
+**Pilares cruzados:** FINSEG-01/02 (RLS e CHECK constraints) e FINSEG-03 (`erroDoBanco()`) estão ancorados na fase em que ficam de fato verificáveis — as fases seguintes não os re-implementam, mas confirmam nos próprios critérios que continuam valendo. Mesma lógica para CONTRATO-02, cuja parte "parcelas antigas continuam gerenciáveis" é reconfirmada nos critérios da Phase 6.
 
 ---
 
@@ -140,4 +173,4 @@ Milestone de estabilização e documentação, sem feature nova. 7 de 8 requisit
 **Nota de calibragem herdada:** `SEC-01` e `SEC-03` vieram de `.planning/codebase/CONCERNS.md`, gerado por um modelo rápido. **Dois de dois** achados de segurança daquele documento que foram verificados se provaram falsos. Tratar os itens restantes como **hipóteses a verificar**, não fatos — relevante se algum for reaproveitado na v2.0.
 
 ---
-*Requirements v2.0 defined: 2026-08-16*
+*Requirements v2.0 defined: 2026-08-16 — traceability preenchida na criação do roadmap (Phases 4-8)*
