@@ -2,13 +2,17 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-status: planning
-last_updated: "2026-08-16T17:20:00.000Z"
+current_phase: 4
+current_phase_name: Fundação financeira
+status: executing
+stopped_at: "Roadmap da v2.0 escrito — Phases 4-8, 28 de 28 requisitos mapeados, traceability preenchida em REQUIREMENTS.md. Próximo passo: `/gsd-plan-phase 4`. Pendências herdadas da v1.0 continuam abertas: confirmar ROBUST-02 com login real e decidir sobre SEC-02 quando o usuário quiser retomar segurança."
+last_updated: "2026-08-16T17:12:23.054Z"
 last_activity: 2026-08-16
+last_activity_desc: Phase 4 execution started
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
+  total_plans: 4
   completed_plans: 0
   percent: 0
 ---
@@ -20,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 4 — Fundação financeira (schema, RLS, CHECK constraints e documentação do modelo)
+**Current focus:** Phase 4 — Fundação financeira
 
 ## Current Position
 
-Phase: 4 de 5 — Fundação financeira (não iniciada)
-Plan: —
-Status: Roadmap da v2.0 criado; aguardando planejamento da Phase 4
-Last activity: 2026-08-16 — Roadmap v2.0 escrito (Phases 4-8, 28 requisitos mapeados)
+Phase: 4 (Fundação financeira) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 4
+Last activity: 2026-08-16 — Phase 4 execution started
 
 **Ordem de execução:** 4 → 5 → 6 → 7 → 8. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
