@@ -44,10 +44,13 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
   3. O banco recusa sozinho, mesmo com o SQL escrito na mão: valor negativo, status fora de `aberta|parcial|paga|conciliada`, tipo de lançamento fora de `pagamento|acrescimo|desconto|destrava`, destrava sem motivo, e uma segunda parcela para o mesmo `(card_id, competencia)`
   4. `docs/data-model.md` mostra `parcelas` e `parcela_lancamentos` no diagrama de entidades e explica, no mesmo estilo "decisão + porquê" da seção existente, por que o financeiro é livro-razão append-only, por que a geração é preguiçosa em vez de cron, e por que `ativo` é flag manual em vez de derivada de `periodo_fim`
 **Pilares cruzados**: esta fase é onde os pilares de segurança do módulo (FINSEG-01, FINSEG-02) passam a existir e a ser testáveis diretamente no banco; as fases seguintes não os re-implementam, mas cada uma confirma que continuam valendo quando a operação vem pela UI
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 04-01: TBD
+- [ ] 04-01-PLAN.md — Escrever a migração aditiva (`cards.ativo`, `parcelas`, `parcela_lancamentos`, 10 CHECK constraints, índice único, RLS via `is_team_member()`) e o runbook `supabase/verificacao_financeiro.sql`
+- [ ] 04-02-PLAN.md — Ensaiar a migração no SQL Editor de produção dentro de uma transação desfeita no fim, provando RLS e CHECKs sem gravar nada
+- [ ] 04-03-PLAN.md — Aplicar em produção com `supabase db push` (atrás de checkpoint de decisão) e conferir que nada quebrou
+- [ ] 04-04-PLAN.md — Documentar as entidades e as três decisões não-óbvias em `docs/data-model.md`
 
 ### Phase 5: Aba Financeiro com parcelas automáticas
 **Goal**: O gestor abre a aba Financeiro e já encontra as parcelas do mês atual e do próximo mês dos contratos ativos, sem ter pedido nada e sem risco de duplicar
@@ -122,7 +125,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 4. Fundação financeira | 0/TBD | Not started | - |
+| 4. Fundação financeira | 0/4 | Planned | - |
 | 5. Aba Financeiro com parcelas automáticas | 0/TBD | Not started | - |
 | 6. Baixa e ajustes de parcela | 0/TBD | Not started | - |
 | 7. Conciliação e destrava rastreada | 0/TBD | Not started | - |
