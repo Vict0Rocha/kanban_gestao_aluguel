@@ -17,6 +17,20 @@ Dar visibilidade e controle sobre a situação de cada contrato de aluguel — q
 - **Success metric**: Ainda não definido — não há cobrança nem múltiplos usuários hoje para medir.
 - **Strategy notes**: —
 
+## Current Milestone: v2.0 Módulo Financeiro
+
+**Goal:** Dar ao gestor controle mensal dos recebimentos de aluguel — dar baixa, conciliar e acompanhar parcelas — dentro do próprio sistema, sem planilha e sem burocracia extra.
+
+**Target features:**
+- Contrato ativo/inativo, com toggle direto no card do board
+- Geração automática e preguiçosa de parcelas (mês atual + próximo mês), sem job agendado
+- Baixa de parcelas com pagamento parcial, acréscimos e descontos
+- Conciliação (trava contra edição acidental) com destrava rastreada por motivo
+- Aba Financeiro com visões separadas de mês atual e próximo mês
+- Relatórios financeiros: pagas, a vencer, vencidas, conciliadas
+
+**Spec aprovada:** `.planning/financeiro-modulo-prompt.md` — decisões de produto já fechadas com o usuário durante a ideação (2026-08-16). Não re-perguntar o que está na tabela de decisões travadas daquele documento.
+
 ## Requirements
 
 ### Validated
@@ -32,20 +46,24 @@ Dar visibilidade e controle sobre a situação de cada contrato de aluguel — q
 - ✓ Autorização em duas camadas: cadastro público fechado + allowlist (`allowed_members`) checada pelas RLS policies — a sessão do usuário nunca ignora o RLS — existing
 - ✓ Escrita passa por Server Actions no servidor (não direto do navegador pro banco), com validação server-side espelhando as CHECK constraints do banco — existing
 - ✓ Deploy contínuo na Vercel a partir da branch `main` — existing
+- ✓ Error Boundary em dois níveis (`app/error.tsx`, `app/(app)/error.tsx`) — board sobrevive a erro de renderização — v1.0 Phase 2
+- ✓ Tela de "acesso pendente" para quem loga fora da allowlist, em vez de board vazio sem explicação — v1.0 Phase 2
+- ✓ Documentação completa no vault Obsidian (22 notas: arquitetura, dados, segurança, operação, armadilhas) — v1.0 Phase 3
 
 ### Active
 
-<!-- Escopo desta fase: estabilizar e documentar, sem feature nova. -->
+<!-- Escopo da v2.0: módulo financeiro. Detalhes em .planning/REQUIREMENTS.md e na spec aprovada. -->
 
-- [ ] Documentação detalhada do projeto no Obsidian (arquitetura, decisões, modelo de dados, runbooks de segurança) como fonte de verdade principal para consulta humana
-- [ ] Fechar itens de robustez/segurança pendentes identificados em `.planning/codebase/CONCERNS.md` (ex.: `console.error` expondo mensagem de erro do Postgres no console do navegador; falta de Error Boundary; Board component grande demais)
-- [ ] Ligar "Leaked Password Protection" no painel do Supabase (pendente desde a revisão de segurança anterior)
+- [ ] Módulo financeiro: parcelas mensais com baixa, conciliação (trava), correção rastreada e relatórios — ver `.planning/financeiro-modulo-prompt.md`
+- [ ] Ligar "Leaked Password Protection" no painel do Supabase — herdado da v1.0, adiado por escolha do usuário; é toggle de painel, não trabalho de código
 
 ### Out of Scope
 
 <!-- Visão de longo prazo, explicitamente fora desta fase. -->
 
-- Módulo financeiro (contas a pagar/receber, conciliação, boletos) — visão de longo prazo, não detalhada ainda; entra em fase futura própria
+- Contas a **pagar**, boletos e cobrança automatizada — a v2.0 cobre apenas contas a receber (parcelas de aluguel); emissão de boleto exige integração bancária, fora de escopo
+- Conciliação bancária automática (importar extrato/OFX) — a v2.0 define "conciliar" como trava manual interna; o schema é desenhado para não inviabilizar isso depois
+- Backfill histórico de parcelas dos meses já passados dos ~46 imóveis — confirmado fora da v2.0; geração começa do mês corrente em diante
 - Módulo de relatórios para tomada de decisão (além dos relatórios operacionais já existentes) — visão de longo prazo, escopo não definido
 - Emissão de relatório para declaração de IR dos proprietários — definido como relatório informativo (PDF/planilha com o resumo do aluguel recebido no ano, para o proprietário ou contador preencher manualmente); sem integração oficial com Receita Federal/e-CAC. Fora desta fase.
 - SaaS multi-tenant (múltiplas administradoras usando o sistema, cada uma isolada) — visão de longo prazo confirmada como modelo "cada empresa com board isolado". Exige reformar o schema (tenant_id em todas as tabelas) e o RLS (hoje é um allowlist único compartilhado, não pensado para isolar clientes entre si). Fora desta fase, mas ver Key Decisions.
@@ -78,7 +96,11 @@ Ver `.planning/codebase/` para o mapeamento técnico completo (stack, arquitetur
 | RLS por allowlist (`allowed_members`) + cadastro público fechado, em vez de apenas `auth.role() = 'authenticated'` | Cadastro público aberto expunha toda a base a qualquer pessoa da internet; corrigido em 2026-08-11 | ✓ Good |
 | Escritas via Server Actions com sessão do usuário, não `service_role` | Mantém o RLS como rede de proteção mesmo se a camada de validação nova tiver bug — falha fechada, não aberta | ✓ Good |
 | GSD Core (ferramenta de planejamento) instalada localmente, mas seu payload (`.claude/gsd-core`, `commands/`, `agents/`, `hooks/`) fica fora do git | 676 arquivos / ~10,5 MB, maior que o app inteiro; é ferramenta reinstalável (`npx @opengsd/gsd-core@latest`), não conteúdo do projeto | ✓ Good |
-| Subagentes customizados do GSD (`gsd-codebase-mapper` etc.) não existem nesta plataforma — adaptados para `general-purpose` com o papel embutido no prompt | Esta plataforma tem um roster fixo de tipos de agente, diferente do Claude Code CLI nativo que o GSD assume | ⚠️ Revisit — funciona, mas exige adaptação manual a cada comando GSD que dependa de subagente dedicado |
+| Subagentes customizados do GSD (`gsd-codebase-mapper` etc.) não existem nesta plataforma — adaptados para `general-purpose` com o papel embutido no prompt | Esta plataforma tem um roster fixo de tipos de agente, diferente do Claude Code CLI nativo que o GSD assume | ✗ Desatualizado — em 2026-08-16 o `init.new-milestone` reportou `agents_installed: true` e nenhum agente faltando; os subagentes GSD estão disponíveis e devem ser usados pelo nome |
+| Financeiro modelado como livro-razão append-only (`parcela_lancamentos`), não como campos editáveis na parcela | Baixa parcial, acréscimo, desconto e correção pós-conciliação viram todos a mesma operação — inserir um lançamento. Histórico nunca é sobrescrito, então rastreabilidade sai sem tabela de auditoria paralela | — Pending (v2.0) |
+| Parcelas geradas de forma preguiçosa na leitura (mês atual + próximo), sem job agendado | Mesmo padrão já validado em `alerts.ts`; evita cron com chave privilegiada, que seria uma superfície de ataque nova e um ponto de falha silenciosa | — Pending (v2.0) |
+| `cards.ativo` é flag manual, não derivada de `periodo_fim` | Contrato pode seguir ativo por prazo indeterminado ou ser encerrado antes do previsto — derivar da data erraria nos dois casos. Toggle fica direto no card do board, por escolha do usuário (velocidade no dia a dia) | — Pending (v2.0) |
+| "Conciliar" = trava manual interna, não conciliação bancária | O usuário quer proteção contra edição acidental, não importação de extrato; reduz muito o escopo sem perder o valor pedido | — Pending (v2.0) |
 
 ## Evolution
 
@@ -99,4 +121,4 @@ Este documento evolui em transições de fase e marcos do projeto.
 5. Atualizar Context com o estado atual
 
 ---
-*Last updated: 2026-08-14 after initialization*
+*Last updated: 2026-08-16 — início do milestone v2.0 Módulo Financeiro*
