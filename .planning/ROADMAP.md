@@ -28,7 +28,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - Decimal phases (5.1, 5.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 4: Fundação financeira** - Banco aceita parcelas e lançamentos só de quem está na allowlist, recusa dado inválido por conta própria, e o modelo está documentado
-- [ ] **Phase 5: Aba Financeiro com parcelas automáticas** - Abrir a aba mostra as parcelas do mês atual e do próximo mês de cada contrato ativo, sem clicar em "gerar"
+- [x] **Phase 5: Aba Financeiro com parcelas automáticas** - Abrir a aba mostra as parcelas do mês atual e do próximo mês de cada contrato ativo, sem clicar em "gerar"
 - [ ] **Phase 6: Baixa e ajustes de parcela** - Registrar recebimento total ou parcial, multa e desconto, com histórico que nunca é sobrescrito
 - [ ] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
 - [ ] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
@@ -64,21 +64,21 @@ Plans:
 **Requirements**: CONTRATO-01, CONTRATO-02, PARCELA-01, PARCELA-02, PARCELA-03, PARCELA-04, FINUI-01, FINUI-02, FINUI-03
 **Success Criteria** (what must be TRUE):
 
-  1. Existe uma aba "Financeiro" na navegação, ao lado de Board e Relatórios, com visões separadas de "Mês atual" e "Próximo mês"; abri-la pela primeira vez no mês faz aparecerem as parcelas de cada contrato ativo nas duas visões, sem nenhum botão de "gerar"
-  2. Reabrir e recarregar a aba várias vezes não duplica nada: continua uma parcela por contrato por competência
-  3. Cada linha mostra, em português comum, a situação da parcela (a vencer ou vencida — calculada na leitura a partir do vencimento, não gravada), o valor devido e o valor já pago
-  4. O contrato é marcado como ativo ou inativo direto no card do board, sem abrir o modal de edição; contrato inativo para de ganhar parcelas novas, e as parcelas que ele já tinha continuam listadas e acessíveis no Financeiro
-  5. Nenhuma parcela aparece em competência fora do período do contrato (antes do início ou depois do fim), e mudar o valor do aluguel de um card não altera o valor de uma parcela já gerada — só a próxima nasce com o valor novo
+  1. ✓ Existe uma aba "Financeiro" na navegação, ao lado de Board e Relatórios, com visões separadas de "Mês atual" e "Próximo mês"; abri-la pela primeira vez no mês faz aparecerem as parcelas de cada contrato ativo nas duas visões, sem nenhum botão de "gerar" — confirmado em produção: 46 parcelas em agosto/2026, 45 em setembro/2026 (uma a menos por período de contrato, comportamento correto)
+  2. ✓ Reabrir e recarregar a aba várias vezes não duplica nada: continua uma parcela por contrato por competência — confirmado com 3 recargas + navegação cruzada, contagens idênticas, zero duplicata
+  3. ✓ Cada linha mostra, em português comum, a situação da parcela (a vencer ou vencida — calculada na leitura a partir do vencimento, não gravada), o valor devido e o valor já pago — confirmado visualmente pelo operador
+  4. ✓ O contrato é marcado como ativo ou inativo direto no card do board, sem abrir o modal de edição; contrato inativo para de ganhar parcelas novas, e as parcelas que ele já tinha continuam listadas e acessíveis no Financeiro — pill sempre visível no card, escrita de uma única coluna (D-10) confirmada por leitura de código, comportamento confirmado pelo operador em produção
+  5. ✓ Nenhuma parcela aparece em competência fora do período do contrato (antes do início ou depois do fim), e mudar o valor do aluguel de um card não altera o valor de uma parcela já gerada — só a próxima nasce com o valor novo — confirmado por 6 verificações SQL contra produção (0 fora do período, 0 divergência de valor) e observado no uso real (usuário editou valor de um contrato após a parcela já existir; parcela manteve o valor antigo, como esperado)
 
 **Pilares cruzados**: a geração grava com a sessão do usuário via Server Action, nunca `service_role`, então o RLS da Phase 4 continua sendo a rede de proteção; se a geração falhar, o usuário vê uma mensagem tratada e não o erro cru do Postgres
-**Plans**: 3 plans
+**Plans**: 3/3 plans executed
 **UI hint**: yes
 
 Plans:
 
-- [ ] 05-01-PLAN.md — Fatia vertical: nav → rota `/financeiro` → geração preguiçosa das duas competências → lista do mês atual
-- [ ] 05-02-PLAN.md — Duas visões (Mês atual/Próximo mês), badge de situação de 5 estados e os três estados vazios distintos
-- [ ] 05-03-PLAN.md — Toggle ativo/inativo direto no card do Board, otimista e reversível
+- [x] 05-01-PLAN.md — Fatia vertical: nav → rota `/financeiro` → geração preguiçosa das duas competências → lista do mês atual
+- [x] 05-02-PLAN.md — Duas visões (Mês atual/Próximo mês), badge de situação de 5 estados e os três estados vazios distintos
+- [x] 05-03-PLAN.md — Toggle ativo/inativo direto no card do Board, otimista e reversível
 
 ### Phase 6: Baixa e ajustes de parcela
 
@@ -149,7 +149,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 4. Fundação financeira | 4/4 | Complete | 2026-08-17 |
-| 5. Aba Financeiro com parcelas automáticas | 0/TBD | Not started | - |
+| 5. Aba Financeiro com parcelas automáticas | 3/3 | Complete | 2026-08-17 |
 | 6. Baixa e ajustes de parcela | 0/TBD | Not started | - |
 | 7. Conciliação e destrava rastreada | 0/TBD | Not started | - |
 | 8. Relatórios financeiros | 0/TBD | Not started | - |

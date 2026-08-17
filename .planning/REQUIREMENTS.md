@@ -10,15 +10,15 @@
 
 ### CONTRATO — controle de contrato ativo/inativo
 
-- [ ] **CONTRATO-01**: Usuário pode marcar um contrato como ativo ou inativo direto no card do board, sem precisar abrir o modal de edição
-- [ ] **CONTRATO-02**: Contrato marcado como inativo para de gerar novas parcelas, mas suas parcelas já existentes continuam visíveis e gerenciáveis até serem resolvidas
+- [x] **CONTRATO-01**: Usuário pode marcar um contrato como ativo ou inativo direto no card do board, sem precisar abrir o modal de edição
+- [x] **CONTRATO-02**: Contrato marcado como inativo para de gerar novas parcelas, mas suas parcelas já existentes continuam visíveis e gerenciáveis até serem resolvidas
 
 ### PARCELA — geração automática
 
-- [ ] **PARCELA-01**: Ao abrir a aba Financeiro, o sistema cria automaticamente as parcelas faltantes do mês atual e do próximo mês para cada contrato ativo
-- [ ] **PARCELA-02**: Abrir a aba Financeiro repetidamente não duplica parcelas — a geração é idempotente
-- [ ] **PARCELA-03**: A parcela guarda o valor do aluguel vigente no momento em que foi gerada, de modo que um reajuste futuro não altera parcelas já criadas
-- [ ] **PARCELA-04**: O sistema não gera parcela para competência fora do período do contrato (antes do início ou depois do fim)
+- [x] **PARCELA-01**: Ao abrir a aba Financeiro, o sistema cria automaticamente as parcelas faltantes do mês atual e do próximo mês para cada contrato ativo
+- [x] **PARCELA-02**: Abrir a aba Financeiro repetidamente não duplica parcelas — a geração é idempotente
+- [x] **PARCELA-03**: A parcela guarda o valor do aluguel vigente no momento em que foi gerada, de modo que um reajuste futuro não altera parcelas já criadas
+- [x] **PARCELA-04**: O sistema não gera parcela para competência fora do período do contrato (antes do início ou depois do fim)
 
 ### BAIXA — registro de pagamentos e ajustes
 
@@ -37,9 +37,9 @@
 
 ### FINUI — aba Financeiro
 
-- [ ] **FINUI-01**: Existe uma aba "Financeiro" na navegação, separada do board e dos relatórios de contrato
-- [ ] **FINUI-02**: A aba Financeiro apresenta as parcelas do mês atual e do próximo mês em visões separadas
-- [ ] **FINUI-03**: Cada parcela na lista mostra sua situação (a vencer, vencida, paga, parcial, conciliada), o valor devido e o valor já pago
+- [x] **FINUI-01**: Existe uma aba "Financeiro" na navegação, separada do board e dos relatórios de contrato
+- [x] **FINUI-02**: A aba Financeiro apresenta as parcelas do mês atual e do próximo mês em visões separadas
+- [x] **FINUI-03**: Cada parcela na lista mostra sua situação (a vencer, vencida, paga, parcial, conciliada), o valor devido e o valor já pago
 - [ ] **FINUI-04**: Dar baixa em uma parcela leva no máximo dois cliques a partir da lista, sem etapa burocrática intermediária
 
 ### FINREL — relatórios financeiros
@@ -111,15 +111,15 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | FINSEG-01 | Phase 4 | Pendente |
 | FINSEG-02 | Phase 4 | Pendente |
 | FINDOC-01 | Phase 4 | Pendente |
-| CONTRATO-01 | Phase 5 | Pendente |
-| CONTRATO-02 | Phase 5 | Pendente |
-| PARCELA-01 | Phase 5 | Pendente |
-| PARCELA-02 | Phase 5 | Pendente |
-| PARCELA-03 | Phase 5 | Pendente |
-| PARCELA-04 | Phase 5 | Pendente |
-| FINUI-01 | Phase 5 | Pendente |
-| FINUI-02 | Phase 5 | Pendente |
-| FINUI-03 | Phase 5 | Pendente |
+| CONTRATO-01 | Phase 5 | Concluído |
+| CONTRATO-02 | Phase 5 | Concluído |
+| PARCELA-01 | Phase 5 | Concluído |
+| PARCELA-02 | Phase 5 | Concluído |
+| PARCELA-03 | Phase 5 | Concluído |
+| PARCELA-04 | Phase 5 | Concluído |
+| FINUI-01 | Phase 5 | Concluído |
+| FINUI-02 | Phase 5 | Concluído |
+| FINUI-03 | Phase 5 | Concluído |
 | BAIXA-01 | Phase 6 | Pendente |
 | BAIXA-02 | Phase 6 | Pendente |
 | BAIXA-03 | Phase 6 | Pendente |
