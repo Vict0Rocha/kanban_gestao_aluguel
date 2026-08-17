@@ -43,8 +43,6 @@ key-decisions:
   - "Rule 3 (blocking): tornar `vazio` uma prop obrigatória em ParcelasTable na Task 1 quebrava o build, já que o único chamador (page.tsx) ainda não passava essa prop até a Task 2. Corrigido com um valor temporário `vazio=\"sem-parcela-no-periodo\"` no commit da Task 1, substituído pela chamada real via FinanceiroView no commit da Task 2 — nenhuma mudança de comportamento visível ao usuário final entre os dois commits, só uma janela de build verde task-a-task"
   - "temContratoAtivo é calculado com uma contagem enxuta (`count: \"exact\", head: true` sobre cards.ativo=true), não trazendo linhas — se a contagem falhar, o valor cai para true por padrão (D-conforme especificado no plano: mostrar o texto de período é menos enganoso que dizer 'nenhum contrato ativo' por causa de uma falha de rede)"
 
-requirements-completed: []
-
 coverage:
   - id: D1
     description: "Badge de situação com ícone + rótulo em português, cobrindo os 5 estados (a_vencer/vencida/paga/parcial/conciliada), nunca cor sozinha"
@@ -54,10 +52,10 @@ coverage:
         ref: "npm run lint && npm run build — greps dos 5 estados, 5 ícones, 3 tokens de status, ausência de font-medium/bg-primary em parcela-situacao-badge.tsx"
         status: pass
       - kind: manual_procedural
-        ref: "Task 3 (checkpoint:human-verify) — item 3 do how-to-verify: confirmar Vencida em vermelho e A vencer em cinza neutro no navegador"
-        status: unknown
+        ref: "Task 3 (checkpoint:human-verify) — operador testou em produção e confirmou de forma geral (\"Entrei, testei e tudo certo\"), não item a item do how-to-verify"
+        status: pass
     human_judgment: true
-    rationale: "Cor correta em ambiente real (light/dark) e leitura visual do ícone+rótulo só são confirmáveis por um humano olhando a tela — Task 3 ainda não foi executada (plano pausado no checkpoint)"
+    rationale: "Cor correta em ambiente real (light/dark) e leitura visual do ícone+rótulo só são confirmáveis por um humano olhando a tela. Confirmação obtida foi holística, não uma checklist ponto a ponto — registrado aqui para não superestimar o nível de evidência."
   - id: D2
     description: "Seletor Mês atual / Próximo mês como segmented control de seleção única, trocando as linhas sem navegar nem recarregar, com o segmento ativo como superfície elevada (não a cor de destaque da marca)"
     requirement: "FINUI-02"
@@ -66,26 +64,28 @@ coverage:
         ref: "npm run lint && npm run build — greps de aria-pressed, bg-muted/bg-card, ausência de bg-primary/text-primary/border-primary em mes-switcher.tsx"
         status: pass
       - kind: manual_procedural
-        ref: "Task 3 (checkpoint:human-verify) — itens 1, 2, 4 e 8 do how-to-verify: troca sem reload/navegação, contagens batendo com 05-01-SUMMARY, hierarquia visual, acesso por teclado"
-        status: unknown
+        ref: "Task 3 (checkpoint:human-verify) — operador testou em produção e confirmou de forma geral (\"Entrei, testei e tudo certo\"), não item a item do how-to-verify"
+        status: pass
     human_judgment: true
-    rationale: "Comportamento sem reload/navegação, hierarquia visual e navegação por teclado exigem um humano interagindo com a página real — Task 3 ainda não foi executada (plano pausado no checkpoint)"
+    rationale: "Comportamento sem reload/navegação, hierarquia visual e navegação por teclado exigem um humano interagindo com a página real. Confirmação obtida foi holística, não uma checklist ponto a ponto — registrado aqui para não superestimar o nível de evidência."
 
 # Metrics
-duration: "~35min (Task 1 + Task 2)"
+requirements-completed: [FINUI-02, FINUI-03]
+
+duration: "~35min (Task 1 + Task 2); Task 3 aprovada em sessão de continuação"
 completed: 2026-08-17
-status: halted
+status: complete
 ---
 
 # Phase 5 Plan 2: Mês atual / Próximo mês + badge de situação Summary
 
-**MesSwitcher (segmented control de seleção única) e ParcelaSituacaoBadge (5 estados com ícone) implementados e commitados; plano pausado na Task 3 (checkpoint:human-verify) aguardando conferência visual do operador.**
+**MesSwitcher (segmented control de seleção única) e ParcelaSituacaoBadge (5 estados com ícone) implementados, publicados e aprovados pelo operador em produção.**
 
 ## Performance
 
 - **Duration:** ~35 min (Task 1 + Task 2)
-- **Completed:** 2026-08-17 (Tasks 1-2)
-- **Tasks:** 2 de 3 (Task 3 é checkpoint:human-verify — aguardando o operador)
+- **Completed:** 2026-08-17 (todas as 3 tasks)
+- **Tasks:** 3 de 3
 - **Files modified:** 5 (3 criados, 2 modificados)
 
 ## Accomplishments
@@ -100,9 +100,9 @@ status: halted
 
 1. **Task 1: Badge de situação com os 5 estados e estados vazios da tabela** - `b0de276` (feat)
 2. **Task 2: Seletor Mês atual / Próximo mês e a view cliente** - `af20cc8` (feat)
-3. **Task 3: Conferir as duas visões e os estados de tela no navegador** - checkpoint:human-verify, **não executado nesta sessão** — plano pausado aguardando o operador
+3. **Task 3: Conferir as duas visões e os estados de tela no navegador** - checkpoint:human-verify, **aprovada pelo operador em produção** ("Entrei, testei e tudo certo")
 
-**Plan metadata:** pendente — será commitado quando o plano fechar (após a Task 3 ser aprovada)
+**Plan metadata:** este commit (docs: complete plan)
 
 ## Files Created/Modified
 - `web/src/components/financeiro/parcela-situacao-badge.tsx` - badge de situação com os 5 estados
@@ -139,10 +139,10 @@ None - nenhuma configuração de serviço externo é necessária.
 
 ## Next Phase Readiness
 
-**Plano pausado na Task 3 (checkpoint:human-verify).** Tasks 1 e 2 estão commitadas e passam lint/build; a interface está pronta para a conferência visual descrita no `<how-to-verify>` da Task 3 (troca de segmento sem reload, badges com ícone+cor corretos, hierarquia visual, estados vazios, teclado). Requer o operador abrindo `/financeiro` em produção (ou no ambiente onde este worktree for mesclado/publicado) e respondendo "aprovado" ou descrevendo divergências item a item.
+**Plano completo.** As três tasks estão commitadas; lint/build passam; o operador confirmou em produção que o seletor Mês atual/Próximo mês troca sem reload e que os badges de situação aparecem corretos. A confirmação foi geral ("tudo certo"), não uma checklist item a item do `<how-to-verify>` da Task 3 — registrado em `coverage` acima para transparência sobre o nível de evidência.
 
-Não bloqueia a Phase 5 além da própria Task 3: o plano 05-03 (toggle ativo/inativo) roda em paralelo em outro worktree e não depende deste checkpoint.
+FINUI-02 e FINUI-03 completos. Plano 05-03 (toggle ativo/inativo) também aprovado em paralelo — ver `05-03-SUMMARY.md`.
 
 ---
 *Phase: 05-aba-financeiro-com-parcelas-autom-ticas*
-*Status: halted — aguardando Task 3 (checkpoint:human-verify)*
+*Status: complete*

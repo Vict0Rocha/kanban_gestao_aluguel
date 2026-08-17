@@ -40,7 +40,7 @@ key-files:
 key-decisions:
   - "Task 1 (tracer) foi commitada e verificada por lint+build+greps de aceite; Task 2 é checkpoint:human-verify contra produção e não pode ser executada pelo agente — plano fica com status halted até o operador aprovar"
 
-requirements-completed: []
+requirements-completed: [CONTRATO-01, CONTRATO-02]
 
 coverage:
   - id: D1
@@ -51,10 +51,10 @@ coverage:
         ref: "cd web && npm run lint && npm run build — greps de aceite do plano (setCardAtivoAction, onToggleAtivo em 3 arquivos, stopPropagation, classes do pill, aria-label)"
         status: pass
       - kind: manual_procedural
-        ref: "Task 2 (checkpoint:human-verify) — pendente, aguardando o operador confirmar em produção"
-        status: unknown
+        ref: "Task 2 (checkpoint:human-verify) — operador testou em produção e confirmou de forma geral (\"Entrei, testei e tudo certo\"), não item a item do how-to-verify"
+        status: pass
     human_judgment: true
-    rationale: "Exige o operador abrir o Board em produção, clicar no pill, e conferir cards.ativo no SQL Editor do Supabase — não automatizável pelo executor. Verificação de código (lint/build/greps) já passou; falta a confirmação humana da Task 2."
+    rationale: "Exige o operador abrir o Board em produção, clicar no pill, e conferir cards.ativo no SQL Editor do Supabase — não automatizável pelo executor. Verificação de código (lint/build/greps) já passou. Confirmação obtida foi holística, não uma checklist ponto a ponto (não há evidência registrada de que o operador rodou a consulta SQL específica do item 4) — registrado para não superestimar o nível de evidência."
   - id: D2
     description: "A Server Action só grava a coluna cards.ativo — nenhuma parcela existente do contrato é tocada"
     requirement: "CONTRATO-02"
@@ -63,26 +63,26 @@ coverage:
         ref: "grep -c '.update({ ativo })' web/src/lib/kanban/actions.ts — devolve 1, confirmando que o update literal só contém essa chave"
         status: pass
       - kind: manual_procedural
-        ref: "Task 2, item 4 — conferir contagem/dados de parcelas em /financeiro antes e depois do toggle, pendente aprovação do operador"
-        status: unknown
+        ref: "Task 2, item 4 — coberto pela confirmação geral do operador ('tudo certo'); não há registro de que o item 4 especificamente (contagem de parcelas antes/depois do toggle) foi conferido em separado"
+        status: pass
     human_judgment: true
-    rationale: "A garantia estrutural (update de uma única coluna) já está provada por leitura de código; a confirmação de que nenhuma parcela real foi alterada exige o operador olhando dados de produção na Task 2."
+    rationale: "A garantia estrutural (update de uma única coluna) já está provada por leitura de código — grep confirma que o UPDATE só toca `ativo`, o que por si só já garante D-10 no nível do banco, independente da confirmação visual. A confirmação humana obtida foi holística, não uma verificação isolada do item 4 — registrado para não superestimar o nível de evidência."
 
 # Metrics
-duration: "~20min (Task 1); Task 2 aguardando o operador"
+duration: "~20min (Task 1); Task 2 aprovada em sessão de continuação"
 completed: 2026-08-17
-status: halted
+status: complete
 ---
 
 # Phase 5 Plan 3: Toggle ativo/inativo do contrato no card do Board Summary
 
-**`setCardAtivoAction` grava só `cards.ativo` pela sessão do usuário; pill sempre visível no rodapé do card alterna o estado em um clique, otimista e reversível, sem tocar em nenhuma parcela — Task 1 (tracer) commitada, Task 2 (checkpoint:human-verify contra produção) pendente.**
+**`setCardAtivoAction` grava só `cards.ativo` pela sessão do usuário; pill sempre visível no rodapé do card alterna o estado em um clique, otimista e reversível, sem tocar em nenhuma parcela — publicado e aprovado pelo operador em produção.**
 
 ## Performance
 
-- **Duration:** ~20 min (Task 1, execução) — Task 2 é checkpoint:human-verify, ainda não executada
-- **Completed:** 2026-08-17 (Task 1 apenas; plano fica halted até a Task 2 ser aprovada)
-- **Tasks:** 1 de 2 (Task 2 é checkpoint:human-verify — aguardando o operador)
+- **Duration:** ~20 min (Task 1, execução)
+- **Completed:** 2026-08-17 (ambas as tasks)
+- **Tasks:** 2 de 2
 - **Files modified:** 5
 
 ## Accomplishments
@@ -96,9 +96,9 @@ status: halted
 ## Task Commits
 
 1. **Task 1: Server Action → bridge → pill no card, ponta a ponta** - `8b0d2bd` (feat)
-2. **Task 2: Conferir o toggle no navegador e no banco de produção** - checkpoint:human-verify, `gate="blocking"` — não executada pelo agente, aguardando o operador (ver "Checkpoint" abaixo)
+2. **Task 2: Conferir o toggle no navegador e no banco de produção** - checkpoint:human-verify, `gate="blocking"` — **aprovada pelo operador em produção** ("Entrei, testei e tudo certo")
 
-**Plan metadata:** este commit (docs: complete plan) — só será feito depois que a Task 2 for resolvida e o plano fechado por um agente de continuação.
+**Plan metadata:** este commit (docs: complete plan)
 
 ## Files Created/Modified
 - `web/src/lib/kanban/actions.ts` - `booleano()` (novo helper de validação) + `setCardAtivoAction(cardId, ativo)`
@@ -141,12 +141,12 @@ None - nenhuma configuração de serviço externo é necessária.
 
 ## Checkpoint
 
-**Task 2 (`checkpoint:human-verify`, `gate="blocking"`) não foi executada por este agente.** Ela exige abrir o Board em produção, clicar no pill, e conferir `cards.ativo` no SQL Editor do Supabase contra os ~46 contratos reais — nenhuma dessas ações é automatizável pelo executor. O plano fica com `status: halted` até um agente de continuação (ou o operador diretamente) rodar o `<how-to-verify>` completo da Task 2 e aprovar.
+**Task 2 (`checkpoint:human-verify`, `gate="blocking"`) aprovada.** O operador abriu o Board em produção, testou o pill e confirmou de forma geral que funcionou. A confirmação não foi item a item do `<how-to-verify>` — em particular, não há registro explícito de que a consulta SQL do item 4 (`select ... from cards where id = ...`, conferindo `cards.ativo` e a contagem de parcelas antes/depois) foi rodada separadamente. A garantia de que nenhuma parcela é tocada (D-10/CONTRATO-02) já vem, independentemente disso, da leitura de código: o `UPDATE` grava literalmente só a coluna `ativo` (ver D2 em `coverage`), o que é uma garantia estrutural, não apenas comportamental.
 
 ## Next Phase Readiness
 
-Task 1 está pronta para a Task 2 verificar: o pill funciona no código (lint+build+greps passam), segue exatamente o desenho de escrita de uma única coluna que implementa D-10, e reaproveita o `WriteErrorToast` já montado em `board.tsx` sem nenhum wiring novo. A Phase 5 só fecha (CONTRATO-01/CONTRATO-02 completos) depois que a Task 2 for aprovada.
+Plano completo. CONTRATO-01 e CONTRATO-02 satisfeitos. O pill funciona no código (lint+build+greps passam) e foi confirmado funcionando em produção pelo operador.
 
 ---
 *Phase: 05-aba-financeiro-com-parcelas-autom-ticas*
-*Completed: Task 1 em 2026-08-17; Task 2 pendente*
+*Status: complete*
