@@ -1,5 +1,6 @@
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
 import type { LinhaParcela } from "@/lib/kanban/parcelas"
+import { ParcelaSituacaoBadge } from "@/components/financeiro/parcela-situacao-badge"
 import {
   Table,
   TableBody,
@@ -9,24 +10,23 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-// O badge com ícone e cor de status entra no plano 05-02 — aqui só o rótulo
-// em português, sem cor nenhuma.
-const SITUACAO_LABEL: Record<LinhaParcela["situacao"], string> = {
-  a_vencer: "A vencer",
-  vencida: "Vencida",
-  paga: "Paga",
-  parcial: "Parcial",
-  conciliada: "Conciliada",
-}
+const VAZIO_LABEL = {
+  "sem-contrato-ativo":
+    "Nenhum contrato ativo no momento. Marque um contrato como ativo no board para ele começar a gerar parcelas automaticamente.",
+  "sem-parcela-no-periodo":
+    "Nenhuma parcela para este período. Contratos ativos sem parcela aqui já passaram do período contratado.",
+} as const
 
 export function ParcelasTable({
   titulo,
   linhas,
   erro,
+  vazio,
 }: {
   titulo: string
   linhas: LinhaParcela[]
   erro?: boolean
+  vazio: "sem-contrato-ativo" | "sem-parcela-no-periodo"
 }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
@@ -40,7 +40,7 @@ export function ParcelasTable({
         </p>
       ) : linhas.length === 0 ? (
         <p className="mt-1 text-sm text-muted-foreground">
-          Nenhuma parcela para este período.
+          {VAZIO_LABEL[vazio]}
         </p>
       ) : (
         <div className="mt-4">
@@ -73,8 +73,8 @@ export function ParcelasTable({
                   <TableCell className="text-right tabular-nums">
                     {formatCurrency(linha.valorPago)}
                   </TableCell>
-                  <TableCell className="text-xs font-semibold">
-                    {SITUACAO_LABEL[linha.situacao]}
+                  <TableCell>
+                    <ParcelaSituacaoBadge situacao={linha.situacao} />
                   </TableCell>
                 </TableRow>
               ))}

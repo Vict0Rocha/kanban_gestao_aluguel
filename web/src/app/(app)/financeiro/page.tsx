@@ -72,7 +72,12 @@ export default async function FinanceiroPage() {
       </div>
 
       {board ? (
-        <ParcelasTable titulo="Parcelas — mês atual" linhas={linhas} erro={erro} />
+        <ParcelasTable
+          titulo="Parcelas — mês atual"
+          linhas={linhas}
+          erro={erro}
+          vazio="sem-parcela-no-periodo"
+        />
       ) : (
         <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
           Nenhum board encontrado.
