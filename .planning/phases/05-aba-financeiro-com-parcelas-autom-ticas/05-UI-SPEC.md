@@ -1,7 +1,8 @@
 ---
 phase: 5
 slug: aba-financeiro-com-parcelas-autom-ticas
-status: draft
+status: approved
+reviewed_at: 2026-08-17
 shadcn_initialized: true
 preset: base-nova (neutral base, cssVariables, prefix none — see web/components.json)
 created: 2026-08-17
@@ -77,7 +78,7 @@ introduced — every value below already exists in production (`ReportsView`, `C
 |------|------|--------|-------------|------|
 | Micro-label | 12px (`text-xs`) | 600 `font-semibold` | default (~1.4) | Parcela situação badge, "Mês atual"/"Próximo mês" switcher labels, ativo/inativo pill |
 | Body | 14px (`text-sm`) | 400 regular | 1.5 | Parcela table rows (valor devido, valor pago, competência), page subheading |
-| Body emphasis | 14px (`text-sm`) | 600 `font-semibold` | 1.5 | The imóvel/endereço cell (the row's identity column), matching `ContractsTable`'s `font-medium text-foreground` slot |
+| Body emphasis | 14px (`text-sm`) | 600 `font-semibold` | 1.5 | The imóvel/endereço cell (the row's identity column), occupying the same structural slot as `ContractsTable`'s `font-medium text-foreground` cell — the **weight differs deliberately** (600, not 500), per the exclusion note below |
 
 **`font-medium` (500) is not part of this contract.** Existing production components use it
 (`ContractStatusBadge`, `FilterChip`), and those files are not being restyled — but every *new*
@@ -242,7 +243,7 @@ Applicable state considerations resolved: 8 covered, 0 backstop, 0 unresolved.
 | empty | Parcelas list (mês atual / próximo mês) | ✅ covered | No active contracts → copy defined in Copywriting Contract ("Nenhum contrato ativo..."). Active contracts exist but none has a row for this competência (period boundary) → separate copy defined ("Nenhuma parcela para este período..."). No board at all → reuses `BoardPage`'s exact existing empty copy. |
 | loading | Parcelas list, Financeiro nav route | ✅ covered | Inherits the route group's existing `app/(app)/loading.tsx`, same as Board and Relatórios already do — no new loading UI is introduced or needed. |
 | error | Parcelas list (generation/fetch failure) | ✅ covered | Sanitized message defined in Copywriting Contract, rendered inline in the table container, following the project's `erroDoBanco()` no-raw-Postgres rule. |
-| error | Ativo/Inativo toggle (write failure) | ✅ covered | Reuses the existing `WriteErrorToast` component and copy verbatim — same optimistic-update-then-revert pattern already implemented in `board.tsx`. |
+| error | Ativo/Inativo toggle (write failure) | ✅ covered | Reuses the existing `WriteErrorToast` **component** with a **new per-action message string** — see Copywriting Contract for the exact copy. Same optimistic-update-then-revert pattern already implemented in `board.tsx`. |
 | populated | Parcelas list at typical volume (~46 contracts × up to 2 competências) | ✅ covered | Standard table rendering, same container/row pattern as `ContractsTable`, which already handles this volume for Relatórios. |
 | partial | Parcela row (some field missing) | ✅ covered | Dismissed as inapplicable: a generated parcela row is always fully populated — `valor pago = R$ 0,00` in this phase (no baixa capability exists yet) is a valid complete state, not missing data. |
 | overflow | Parcelas list, long list of rows | ✅ covered | Inherits page-level scroll from `AppShell`'s `<main className="overflow-auto">`, identical to how the Board and the Relatórios table already scroll — no new scroll container is introduced. |
