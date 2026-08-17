@@ -27,7 +27,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - Integer phases (4, 5, 6…): Planned milestone work
 - Decimal phases (5.1, 5.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 4: Fundação financeira** - Banco aceita parcelas e lançamentos só de quem está na allowlist, recusa dado inválido por conta própria, e o modelo está documentado
+- [x] **Phase 4: Fundação financeira** - Banco aceita parcelas e lançamentos só de quem está na allowlist, recusa dado inválido por conta própria, e o modelo está documentado
 - [ ] **Phase 5: Aba Financeiro com parcelas automáticas** - Abrir a aba mostra as parcelas do mês atual e do próximo mês de cada contrato ativo, sem clicar em "gerar"
 - [ ] **Phase 6: Baixa e ajustes de parcela** - Registrar recebimento total ou parcial, multa e desconto, com histórico que nunca é sobrescrito
 - [ ] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
@@ -45,17 +45,17 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
   1. ✓ A migração aplica limpo sobre o banco de produção com os ~46 imóveis: nenhum card é apagado ou alterado, todos passam a ter `ativo = true` (nenhum nulo) e o board continua carregando exatamente como antes — aplicada via SQL Editor em 2026-08-17 (CLI não instalado; ver 04-03-SUMMARY.md), `cards_total`/`updated_at_max` idênticos ao pré-push
   2. ✓ Um usuário autenticado **fora** da allowlist não lê nem grava nada em `parcelas` e `parcela_lancamentos` — a consulta volta vazia e a escrita é recusada; com um e-mail da allowlist, a mesma operação funciona (RLS via `is_team_member()`, a função que já cobre `cards` e `alerts`) — confirmado contra o schema real, não só ensaiado
   3. ✓ O banco recusa sozinho, mesmo com o SQL escrito na mão: valor negativo, status fora de `aberta|parcial|paga|conciliada`, tipo de lançamento fora de `pagamento|acrescimo|desconto|destrava`, destrava sem motivo, e uma segunda parcela para o mesmo `(card_id, competencia)` — 10 constraints confirmadas por inventário (`pg_constraint`) + comportamento provado no ensaio (04-02); re-teste ativo pós-push não repetido, ver desvio #2 em 04-03-SUMMARY.md
-  4. `docs/data-model.md` mostra `parcelas` e `parcela_lancamentos` no diagrama de entidades e explica, no mesmo estilo "decisão + porquê" da seção existente, por que o financeiro é livro-razão append-only, por que a geração é preguiçosa em vez de cron, e por que `ativo` é flag manual em vez de derivada de `periodo_fim`
+  4. ✓ `docs/data-model.md` mostra `parcelas` e `parcela_lancamentos` no diagrama de entidades e explica, no mesmo estilo "decisão + porquê" da seção existente, por que o financeiro é livro-razão append-only, por que a geração é preguiçosa em vez de cron, e por que `ativo` é flag manual em vez de derivada de `periodo_fim`
 
 **Pilares cruzados**: esta fase é onde os pilares de segurança do módulo (FINSEG-01, FINSEG-02) passam a existir e a ser testáveis diretamente no banco; as fases seguintes não os re-implementam, mas cada uma confirma que continuam valendo quando a operação vem pela UI
-**Plans**: 3/4 plans executed
+**Plans**: 4/4 plans executed
 
 Plans:
 
 - [x] 04-01-PLAN.md — Escrever a migração aditiva (`cards.ativo`, `parcelas`, `parcela_lancamentos`, 10 CHECK constraints, índice único, RLS via `is_team_member()`) e o runbook `supabase/verificacao_financeiro.sql`
 - [x] 04-02-PLAN.md — Ensaiar a migração no SQL Editor de produção dentro de uma transação desfeita no fim, provando RLS e CHECKs sem gravar nada
 - [x] 04-03-PLAN.md — Aplicar em produção via SQL Editor (checkpoint de decisão: `conferir-backup-antes`) e conferir que nada quebrou
-- [ ] 04-04-PLAN.md — Documentar as entidades e as três decisões não-óbvias em `docs/data-model.md`
+- [x] 04-04-PLAN.md — Documentar as entidades e as três decisões não-óbvias em `docs/data-model.md`
 
 ### Phase 5: Aba Financeiro com parcelas automáticas
 
@@ -146,7 +146,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 4. Fundação financeira | 3/4 | In Progress — banco em produção, falta doc |  |
+| 4. Fundação financeira | 4/4 | Complete | 2026-08-17 |
 | 5. Aba Financeiro com parcelas automáticas | 0/TBD | Not started | - |
 | 6. Baixa e ajustes de parcela | 0/TBD | Not started | - |
 | 7. Conciliação e destrava rastreada | 0/TBD | Not started | - |
