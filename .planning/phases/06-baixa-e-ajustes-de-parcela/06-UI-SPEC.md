@@ -1,7 +1,8 @@
 ---
 phase: 6
 slug: baixa-e-ajustes-de-parcela
-status: draft
+status: approved
+reviewed_at: 2026-08-17
 shadcn_initialized: true
 preset: base-nova (neutral base, cssVariables, prefix none — see web/components.json, unchanged since Phase 5)
 created: 2026-08-17
