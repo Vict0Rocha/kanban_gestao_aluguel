@@ -71,12 +71,14 @@ Plans:
   5. Nenhuma parcela aparece em competência fora do período do contrato (antes do início ou depois do fim), e mudar o valor do aluguel de um card não altera o valor de uma parcela já gerada — só a próxima nasce com o valor novo
 
 **Pilares cruzados**: a geração grava com a sessão do usuário via Server Action, nunca `service_role`, então o RLS da Phase 4 continua sendo a rede de proteção; se a geração falhar, o usuário vê uma mensagem tratada e não o erro cru do Postgres
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
 
 Plans:
 
-- [ ] 05-01: TBD
+- [ ] 05-01-PLAN.md — Fatia vertical: nav → rota `/financeiro` → geração preguiçosa das duas competências → lista do mês atual
+- [ ] 05-02-PLAN.md — Duas visões (Mês atual/Próximo mês), badge de situação de 5 estados e os três estados vazios distintos
+- [ ] 05-03-PLAN.md — Toggle ativo/inativo direto no card do Board, otimista e reversível
 
 ### Phase 6: Baixa e ajustes de parcela
 
