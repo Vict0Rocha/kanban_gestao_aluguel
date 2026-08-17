@@ -36,6 +36,7 @@ import {
   deleteColumn,
   moveCard,
   renameColumn,
+  setCardAtivo,
   updateCard,
   updateColumnPosition,
 } from "@/lib/kanban/queries"
@@ -294,6 +295,18 @@ export function Board({
     )
   }
 
+  function handleToggleAtivo(id: string, ativo: boolean) {
+    persistOrRevert(
+      columns.map((c) => ({
+        ...c,
+        cards: c.cards.map((card) => (card.id === id ? { ...card, ativo } : card)),
+      })),
+      columns,
+      () => setCardAtivo(id, ativo),
+      "Não foi possível salvar a alteração do imóvel."
+    )
+  }
+
   return (
     <DndContext
       // dnd-kit derives the drag handles' aria-describedby from a
@@ -348,6 +361,7 @@ export function Board({
               onDeleteColumn={handleDeleteColumn}
               onDeleteCard={handleDeleteCard}
               onUpdateCard={handleUpdateCard}
+              onToggleAtivo={handleToggleAtivo}
               onCreateCard={handleCreateCard}
             />
           ))}
@@ -370,7 +384,12 @@ export function Board({
 
       <DragOverlay>
         {activeCard && (
-          <CardItem card={activeCard} onDelete={() => {}} onUpdate={async () => {}} />
+          <CardItem
+            card={activeCard}
+            onDelete={() => {}}
+            onUpdate={async () => {}}
+            onToggleAtivo={() => {}}
+          />
         )}
         {activeColumn && (
           <div className="w-72 rounded-2xl border border-border bg-muted/60 p-3 font-heading text-sm font-bold shadow-lg">
