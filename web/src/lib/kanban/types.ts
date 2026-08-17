@@ -10,6 +10,7 @@ export type Card = {
   periodo_inicio: string | null
   periodo_fim: string | null
   observacoes: string | null
+  ativo: boolean
   created_at: string
   updated_at: string
 }

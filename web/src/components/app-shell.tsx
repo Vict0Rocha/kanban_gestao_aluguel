@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { BarChart3, LayoutDashboard, LogOut, Menu } from "lucide-react"
+import { BarChart3, LayoutDashboard, LogOut, Menu, Wallet } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
@@ -21,6 +21,7 @@ import {
 
 const NAV_ITEMS = [
   { href: "/", label: "Board", icon: LayoutDashboard },
+  { href: "/financeiro", label: "Financeiro", icon: Wallet },
   { href: "/relatorios", label: "Relatórios", icon: BarChart3 },
 ]
 
