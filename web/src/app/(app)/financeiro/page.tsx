@@ -6,7 +6,7 @@ import {
   type LinhaParcela,
   type ParcelaComCard,
 } from "@/lib/kanban/parcelas"
-import { ParcelasTable } from "@/components/financeiro/parcelas-table"
+import { FinanceiroView } from "@/components/financeiro/financeiro-view"
 
 export default async function FinanceiroPage() {
   const supabase = await createClient()
@@ -23,11 +23,25 @@ export default async function FinanceiroPage() {
   const now = new Date()
   const hojeISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
 
-  let linhas: LinhaParcela[] = []
+  let linhasAtual: LinhaParcela[] = []
+  let linhasProximo: LinhaParcela[] = []
   let erro = false
+  // Se a contagem falhar, tratamos como true: mostrar o texto de período é
+  // menos enganoso do que dizer "nenhum contrato ativo" por causa de uma
+  // falha de rede.
+  let temContratoAtivo = true
 
   if (board) {
     const competencias = competenciasAlvo(hojeISO)
+
+    const { count, error: erroContagem } = await supabase
+      .from("cards")
+      .select("id", { count: "exact", head: true })
+      .eq("ativo", true)
+
+    if (!erroContagem) {
+      temContratoAtivo = (count ?? 0) > 0
+    }
 
     try {
       await garantirParcelas(supabase, competencias)
@@ -50,8 +64,12 @@ export default async function FinanceiroPage() {
       const parcelasDoMesAtual = parcelas.filter(
         (parcela) => parcela.competencia === competencias[0]
       )
+      const parcelasDoProximoMes = parcelas.filter(
+        (parcela) => parcela.competencia === competencias[1]
+      )
 
-      linhas = montarLinhas(parcelasDoMesAtual, hojeISO)
+      linhasAtual = montarLinhas(parcelasDoMesAtual, hojeISO)
+      linhasProximo = montarLinhas(parcelasDoProximoMes, hojeISO)
     } catch (erroCapturado) {
       // O objeto de erro do Supabase nunca chega ao navegador — só o log
       // do servidor. A página renderiza uma constante (ver ParcelasTable).
@@ -72,11 +90,11 @@ export default async function FinanceiroPage() {
       </div>
 
       {board ? (
-        <ParcelasTable
-          titulo="Parcelas — mês atual"
-          linhas={linhas}
+        <FinanceiroView
+          linhasAtual={linhasAtual}
+          linhasProximo={linhasProximo}
+          temContratoAtivo={temContratoAtivo}
           erro={erro}
-          vazio="sem-parcela-no-periodo"
         />
       ) : (
         <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
