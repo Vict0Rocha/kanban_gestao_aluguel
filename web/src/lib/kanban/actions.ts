@@ -80,6 +80,11 @@ function numeroFinito(valor: unknown, campo: string) {
   return null
 }
 
+function booleano(valor: unknown, campo: string) {
+  if (typeof valor !== "boolean") return `${campo} inválido.`
+  return null
+}
+
 function validarValor(valor: unknown) {
   if (typeof valor !== "number" || !Number.isFinite(valor)) {
     return "Informe um valor de aluguel válido."
@@ -382,6 +387,32 @@ export async function deleteCardAction(cardId: string): Promise<ActionResult> {
   }
   if (!data || data.length === 0) {
     return { ok: false, error: semLinhas("excluir o imóvel") }
+  }
+  return { ok: true, data: undefined }
+}
+
+export async function setCardAtivoAction(
+  cardId: string,
+  ativo: boolean
+): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(cardId, "Imóvel") ?? booleano(ativo, "Situação do contrato")
+  if (invalido) return { ok: false, error: invalido }
+
+  const { data, error } = await sessao.supabase
+    .from("cards")
+    .update({ ativo })
+    .eq("id", cardId)
+    .select("id")
+
+  if (error) {
+    console.error("setCardAtivo", error)
+    return { ok: false, error: erroDoBanco(error.code, "atualizar o imóvel") }
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: semLinhas("atualizar o imóvel") }
   }
   return { ok: true, data: undefined }
 }

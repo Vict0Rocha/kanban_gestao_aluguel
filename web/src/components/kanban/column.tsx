@@ -33,6 +33,7 @@ export function Column({
   onDeleteColumn,
   onDeleteCard,
   onUpdateCard,
+  onToggleAtivo,
   onCreateCard,
 }: {
   column: ColumnType
@@ -43,6 +44,7 @@ export function Column({
   onDeleteColumn: (id: string) => void
   onDeleteCard: (id: string) => void
   onUpdateCard: (id: string, input: CardDetailsInput) => Promise<void>
+  onToggleAtivo: (id: string, ativo: boolean) => void
   onCreateCard: (
     columnId: string,
     input: { proprietario: string; valor: number; endereco: string }
@@ -180,6 +182,7 @@ export function Column({
               matched={searching ? matchedIds.has(card.id) : undefined}
               onDelete={onDeleteCard}
               onUpdate={onUpdateCard}
+              onToggleAtivo={onToggleAtivo}
             />
           ))}
         </SortableContext>

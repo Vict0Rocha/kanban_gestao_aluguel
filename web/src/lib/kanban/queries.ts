@@ -9,6 +9,7 @@ import {
   moveColumnAction,
   renameColumnAction,
   resolveAlertAction,
+  setCardAtivoAction,
   updateCardAction,
 } from "./actions"
 
@@ -64,6 +65,10 @@ export async function moveCard(id: string, columnId: string, position: number) {
 
 export async function deleteCard(id: string) {
   return unwrap(deleteCardAction(id))
+}
+
+export async function setCardAtivo(id: string, ativo: boolean) {
+  return unwrap(setCardAtivoAction(id, ativo))
 }
 
 export async function resolveAlert(input: {
