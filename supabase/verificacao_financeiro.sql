@@ -24,6 +24,63 @@
 
 
 -- ============================================================
+-- RESULTADO DO ENSAIO — 2026-08-17
+--
+-- Ensaio (Parte A, BLOCOs 2-7) rodado no SQL Editor de produção
+-- pelo operador, à mão, colando o texto dos BLOCOs em duas etapas
+-- (BLOCO 1 sozinho, depois BLOCOs 2-7 juntos). Nenhum texto
+-- vermelho de erro apareceu em nenhuma etapa.
+--
+-- BLOCO 1 (antes): cards_total = 46, updated_at_max =
+--   2026-08-14 14:26:41.465278+00
+-- BLOCOs 2-7: sem erro. A última consulta visível na tela (o
+--   SQL Editor só exibe o resultado da última query de um lote)
+--   devolveu count = 2 em parcela_lancamentos — bate com os 2
+--   lançamentos válidos que o BLOCO 4 insere (1 pagamento +
+--   1 destrava) antes das provas de recusa.
+-- BLOCO 5 (privilégios de `authenticated`): resultado não visto
+--   diretamente (mesma limitação de só-a-última-query), mas
+--   confirmado indiretamente: o INSERT final do BLOCO 7 (papel
+--   authenticated, e-mail da allowlist) completou sem erro — se o
+--   grant estivesse ausente, esse INSERT teria falhado com
+--   "permission denied for table" (mesma família de erro do
+--   RLS, mas antes de sequer avaliar a policy). Confirmado de novo
+--   depois do push (ver abaixo) pelo mesmo raciocínio.
+-- BLOCOs 3/4 (10 recusas de CHECK/índice único): sem nenhuma linha
+--   "FALHOU:" — nenhum erro vermelho apareceu em nenhum momento.
+-- BLOCO 6/7 (RLS negativa/positiva): sem erro vermelho.
+--
+-- Veredito: ensaio aprovado. Nenhuma correção na migração foi
+-- necessária — grants de `authenticated` já cobertos pelo default
+-- privileges do Supabase, como esperado (mesmo padrão de `cards`).
+--
+-- PUSH EM PRODUÇÃO — 2026-08-17
+--
+-- Aplicado via SQL Editor (Supabase CLI não instalado na máquina do
+-- operador; DDL da migração colada diretamente, sem o wrapper
+-- begin/rollback do ensaio). Resultado: "Success. No rows returned".
+--
+-- Verificação pós-push (equivalente ao BLOCO 9): cards_total = 46,
+-- sem_ativo = 0, updated_at_max = 2026-08-14 14:26:41.465278+00 —
+-- idênticos ao BLOCO 1. Nenhum dado existente foi alterado.
+--
+-- Verificação pós-push (equivalente ao BLOCO 8): as duas policies
+-- (`team full access parcelas`, `team full access parcela_lancamentos`)
+-- existem, ambas com `is_team_member()` em `qual` e `with_check` —
+-- nenhum predicado adicional.
+--
+-- Verificação pós-push (RLS contra o schema real, dentro de um
+-- begin/rollback próprio): papel authenticated com e-mail fora da
+-- allowlist devolveu count = 0 em parcelas, e o INSERT foi recusado
+-- por insufficient_privilege. O mesmo e-mail trocado pelo da
+-- allowlist completou o INSERT sem erro. Sem vermelho em nenhuma
+-- etapa. Fecha, junto, a pendência ROBUST-02 herdada da v1.0 no
+-- que depende de RLS (a confirmação via login real na aplicação,
+-- se ainda desejada, continua em aberto separadamente).
+-- ============================================================
+
+
+-- ============================================================
 -- PARTE A — ENSAIO (roda antes do push)
 -- ============================================================
 
