@@ -29,7 +29,8 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 
 - [x] **Phase 4: Fundação financeira** - Banco aceita parcelas e lançamentos só de quem está na allowlist, recusa dado inválido por conta própria, e o modelo está documentado
 - [x] **Phase 5: Aba Financeiro com parcelas automáticas** - Abrir a aba mostra as parcelas do mês atual e do próximo mês de cada contrato ativo, sem clicar em "gerar"
-- [ ] **Phase 6: Baixa e ajustes de parcela** - Registrar recebimento total ou parcial, multa e desconto, com histórico que nunca é sobrescrito
+- [x] **Phase 6: Baixa e ajustes de parcela** - Registrar recebimento total ou parcial, multa e desconto, com histórico que nunca é sobrescrito
+- [ ] **Phase 6.1: Consulta financeira e geração por período** (INSERTED) - Vencendo hoje como padrão, filtros por proprietário/inquilino/período/ID, geração pelo período completo do contrato com backfill
 - [ ] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
 - [ ] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
 
@@ -87,20 +88,42 @@ Plans:
 **Requirements**: BAIXA-01, BAIXA-02, BAIXA-03, BAIXA-04, BAIXA-05, FINUI-04, FINSEG-03
 **Success Criteria** (what must be TRUE):
 
-  1. Dar baixa total sai em no máximo dois cliques a partir da lista (abrir a ação → confirmar), informando a data do pagamento, e a linha passa a mostrar "paga"
-  2. Baixa parcial deixa a parcela como "parcial", com o valor já pago e o que ainda falta visíveis na própria linha; lançar depois o restante vira "paga" sozinho, sem ninguém editar a parcela na mão
-  3. Lançar acréscimo (ex.: multa por atraso) ou desconto muda o valor devido mostrado na lista, e uma parcela que estava "paga" volta a "parcial" se o acréscimo passar a descobrir o valor
-  4. Cada lançamento fica registrado com quem fez, quando e a observação digitada, e o histórico da parcela mostra todos eles; corrigir um erro é lançar algo novo por cima — nenhum lançamento antigo some, é editado ou é apagado
-  5. Uma operação recusada pelo banco (ex.: valor negativo escapando da validação do formulário) chega ao usuário como frase em português comum, sem trecho de mensagem do Postgres, código de constraint ou nome de tabela
+  1. ✓ Dar baixa total sai em no máximo dois cliques a partir da lista (abrir a ação → confirmar), informando a data do pagamento, e a linha passa a mostrar "paga" — confirmado em produção
+  2. ✓ Baixa parcial deixa a parcela como "parcial", com o valor já pago e o que ainda falta visíveis na própria linha; lançar depois o restante vira "paga" sozinho, sem ninguém editar a parcela na mão — confirmado em produção
+  3. ✓ Lançar acréscimo (ex.: multa por atraso) ou desconto muda o valor devido mostrado na lista, e uma parcela que estava "paga" volta a "parcial" se o acréscimo passar a descobrir o valor — a sequência mais arriscada da fase, testada explicitamente e confirmada
+  4. ✓ Cada lançamento fica registrado com quem fez, quando e a observação digitada, e o histórico da parcela mostra todos eles; corrigir um erro é lançar algo novo por cima — nenhum lançamento antigo some, é editado ou é apagado — histórico em Sheet lateral (06-02), confirmado
+  5. ✓ Uma operação recusada pelo banco (ex.: valor negativo escapando da validação do formulário) chega ao usuário como frase em português comum, sem trecho de mensagem do Postgres, código de constraint ou nome de tabela — `erroDoBanco()` reaproveitado, confirmado por leitura de código
 
 **Pilares cruzados**: critério 5 é onde FINSEG-03 (`erroDoBanco()`) fica de fato verificável, porque é a primeira operação em que o usuário consegue provocar uma recusa do banco; a mesma sanitização vale para as ações da Phase 7. A validação server-side espelha as CHECK constraints da Phase 4 — nenhuma regra financeira decidida só no cliente. Parcelas de contrato já inativo (CONTRATO-02) continuam aceitando baixa e ajuste normalmente
-**Plans**: 2 plans
+**Plans**: 2/2 plans executed
 **UI hint**: yes
 
 Plans:
 
-- [ ] 06-01-PLAN.md — Registrar pagamento (baixa total/parcial) e ajustar valor (acréscimo/desconto), com recálculo de status no servidor
-- [ ] 06-02-PLAN.md — Histórico de lançamentos da parcela (Sheet lateral) e verificação final contra produção
+- [x] 06-01-PLAN.md — Registrar pagamento (baixa total/parcial) e ajustar valor (acréscimo/desconto), com recálculo de status no servidor
+- [x] 06-02-PLAN.md — Histórico de lançamentos da parcela (Sheet lateral) e verificação final contra produção
+
+### Phase 06.1: Consulta financeira e geração por período (INSERTED)
+
+**Goal:** O gestor abre o Financeiro e já vê as parcelas vencendo hoje, sem aplicar nada; quando precisa achar outra coisa, filtra por proprietário, inquilino, período ou ID do contrato. Contratos com prazo definido (início e fim) têm todas as parcelas do período geradas de uma vez, incluindo as já vencidas no passado.
+**Requirements**: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02
+**Depends on:** Phase 6
+**Why inserted**: Feedback do usuário ao testar a Phase 6 em produção (2026-08-18) — pediu uma tela de consulta inspirada em ERPs profissionais (referência: Sienge) em vez do "mostra tudo de cara" herdado da Phase 5, mais duas regras de negócio novas sobre como as parcelas são geradas. Validado com sketch navegável (`.planning/sketches/001-consulta-financeiro/`, variante B escolhida) antes de formalizar.
+**Success Criteria** (what must be TRUE):
+
+  1. Abrir a aba Financeiro sem nenhum filtro mostra só as parcelas vencendo **hoje** — o seletor Mês atual/Próximo mês da Phase 5 (FINUI-02) é removido, não apenas escondido
+  2. Usuário filtra por proprietário, inquilino, período e/ou ID do contrato — cada campo é opcional e só entra na busca se preenchido; aplicar um filtro troca a visão padrão pelo resultado, sem misturar os dois
+  3. Cada contrato tem um ID sequencial (#1, #2, #3…) visível no card do Board e na consulta do Financeiro
+  4. O vencimento de uma parcela nova segue o dia do mês de `periodo_inicio` do contrato; contratos sem `periodo_inicio` usam o dia 20
+  5. Contrato com `periodo_inicio` **e** `periodo_fim` gera parcelas para todos os meses do período inteiro, incluindo os já passados (retroativo); contrato com só uma das duas datas, ou nenhuma, continua restrito a mês atual + próximo
+
+**Pilares cruzados**: a geração retroativa (critério 5) reabre uma decisão que a spec original tinha fechado como "sem backfill" — o volume real de parcelas que isso cria em produção precisa ser medido (consulta SQL de pré-voo, mesmo espírito da Phase 4) antes do plano de execução assumir que é seguro rodar sem um portão de confirmação. FINSEG-01/02/03 continuam valendo sem re-implementação — esta fase só muda o que é gerado e como é consultado, não quem pode escrever
+**Plans**: TBD
+**UI hint**: yes
+
+Plans:
+
+- [ ] 06.1-01: TBD (run `/gsd-plan-phase 06.1` para quebrar em planos)
 
 ### Phase 7: Conciliação e destrava rastreada
 
@@ -145,14 +168,15 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 4. Fundação financeira | 4/4 | Complete | 2026-08-17 |
 | 5. Aba Financeiro com parcelas automáticas | 3/3 | Complete | 2026-08-17 |
-| 6. Baixa e ajustes de parcela | 0/TBD | Not started | - |
+| 6. Baixa e ajustes de parcela | 2/2 | Complete | 2026-08-18 |
+| 6.1. Consulta financeira e geração por período (INSERTED) | 0/TBD | Not started | - |
 | 7. Conciliação e destrava rastreada | 0/TBD | Not started | - |
 | 8. Relatórios financeiros | 0/TBD | Not started | - |
 
-**Cobertura de requisitos:** 28 de 28 requisitos da v2.0 mapeados, cada um para exatamente uma fase. `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código.
+**Cobertura de requisitos:** 33 de 33 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 1 = 33; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código.

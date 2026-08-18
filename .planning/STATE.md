@@ -3,18 +3,18 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 6
-current_phase_name: Baixa e ajustes de parcela
-status: executing
+status: completed
 stopped_at: "Roadmap da v2.0 escrito — Phases 4-8, 28 de 28 requisitos mapeados, traceability preenchida em REQUIREMENTS.md. Próximo passo: `/gsd-plan-phase 4`. Pendências herdadas da v1.0 continuam abertas: confirmar ROBUST-02 com login real e decidir sobre SEC-02 quando o usuário quiser retomar segurança."
-last_updated: "2026-08-18T00:18:18.162Z"
-last_activity: 2026-08-17
-last_activity_desc: Phase 4 marked complete
+last_updated: "2026-08-18T13:25:37.112Z"
+last_activity: 2026-08-18
+last_activity_desc: Phase 6 marked complete
 progress:
-  total_phases: 5
-  completed_phases: 2
+  total_phases: 6
+  completed_phases: 3
   total_plans: 9
-  completed_plans: 7
-  percent: 40
+  completed_plans: 9
+  percent: 50
+current_phase_name: Baixa e ajustes de parcela
 ---
 
 # Project State
@@ -28,10 +28,10 @@ See: .planning/PROJECT.md (updated 2026-08-16)
 
 ## Current Position
 
-Phase: 6 (Baixa e ajustes de parcela) — EXECUTING
+Phase: 6 — COMPLETE
 Plan: 1 of 2
-Status: Executing Phase 6
-Last activity: 2026-08-17 — Phase 6 execution started
+Status: Phase 6 complete
+Last activity: 2026-08-18 — Phase 6 marked complete
 
 **Ordem de execução:** 4 → 5 → 6 → 7 → 8. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -93,6 +93,10 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - **SEC-02 depende do usuário.** Leaked Password Protection é toggle no painel do Supabase; usuário optou por adiar. Fora do escopo de fases da v2.0.
 - **Sem suíte automatizada.** Toda verificação da v2.0 é lint + build + teste manual no navegador (e SQL Editor do Supabase na Phase 4). Os critérios de sucesso do roadmap foram escritos para serem conferíveis à mão por causa disso.
 - **Produção com dados reais.** ~46 imóveis em uso; a migração da Phase 4 precisa ser aditiva e retrocompatível — nada de coluna apagada, nada de `ativo` nulo.
+
+### Roadmap Evolution
+
+- Phase 06.1 inserted after Phase 6: Consulta financeira e geração por período — feedback do usuário após testar Phase 6 em produção (URGENT)
 
 ## Deferred Items
 

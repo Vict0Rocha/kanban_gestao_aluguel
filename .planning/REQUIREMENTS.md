@@ -12,21 +12,24 @@
 
 - [x] **CONTRATO-01**: Usuário pode marcar um contrato como ativo ou inativo direto no card do board, sem precisar abrir o modal de edição
 - [x] **CONTRATO-02**: Contrato marcado como inativo para de gerar novas parcelas, mas suas parcelas já existentes continuam visíveis e gerenciáveis até serem resolvidas
+- [ ] **CONTRATO-03**: Cada contrato tem um identificador sequencial numérico (#1, #2, #3…), atribuído automaticamente, exibido no card do Board e na consulta do Financeiro
 
 ### PARCELA — geração automática
 
-- [x] **PARCELA-01**: Ao abrir a aba Financeiro, o sistema cria automaticamente as parcelas faltantes do mês atual e do próximo mês para cada contrato ativo
+- [x] **PARCELA-01**: Ao abrir a aba Financeiro, o sistema cria automaticamente as parcelas faltantes do mês atual e do próximo mês para cada contrato ativo (regra padrão — contratos com período completo seguem PARCELA-06)
 - [x] **PARCELA-02**: Abrir a aba Financeiro repetidamente não duplica parcelas — a geração é idempotente
 - [x] **PARCELA-03**: A parcela guarda o valor do aluguel vigente no momento em que foi gerada, de modo que um reajuste futuro não altera parcelas já criadas
 - [x] **PARCELA-04**: O sistema não gera parcela para competência fora do período do contrato (antes do início ou depois do fim)
+- [ ] **PARCELA-05**: O dia de vencimento de uma parcela é o dia do mês de `periodo_inicio` do contrato; contratos sem `periodo_inicio` usam o dia 20 como padrão
+- [ ] **PARCELA-06**: Quando o contrato tem `periodo_inicio` **e** `periodo_fim` preenchidos, a geração cria parcelas para todos os meses do período inteiro, incluindo meses já passados em relação a hoje (geração retroativa). Contratos com apenas uma das duas datas, ou nenhuma, continuam restritos a mês atual + próximo (PARCELA-01)
 
 ### BAIXA — registro de pagamentos e ajustes
 
-- [ ] **BAIXA-01**: Usuário pode dar baixa total em uma parcela, informando a data do pagamento
-- [ ] **BAIXA-02**: Usuário pode dar baixa parcial, e a parcela fica marcada como parcialmente paga até que o valor devido seja completado
-- [ ] **BAIXA-03**: Usuário pode lançar um acréscimo sobre uma parcela (ex.: multa por atraso), alterando o valor devido
-- [ ] **BAIXA-04**: Usuário pode lançar um desconto sobre uma parcela, alterando o valor devido
-- [ ] **BAIXA-05**: Todo lançamento registra quem fez, quando e uma observação opcional, e nenhum lançamento anterior é sobrescrito ou apagado
+- [x] **BAIXA-01**: Usuário pode dar baixa total em uma parcela, informando a data do pagamento
+- [x] **BAIXA-02**: Usuário pode dar baixa parcial, e a parcela fica marcada como parcialmente paga até que o valor devido seja completado
+- [x] **BAIXA-03**: Usuário pode lançar um acréscimo sobre uma parcela (ex.: multa por atraso), alterando o valor devido
+- [x] **BAIXA-04**: Usuário pode lançar um desconto sobre uma parcela, alterando o valor devido
+- [x] **BAIXA-05**: Todo lançamento registra quem fez, quando e uma observação opcional, e nenhum lançamento anterior é sobrescrito ou apagado
 
 ### CONCIL — conciliação e correção
 
@@ -38,9 +41,14 @@
 ### FINUI — aba Financeiro
 
 - [x] **FINUI-01**: Existe uma aba "Financeiro" na navegação, separada do board e dos relatórios de contrato
-- [x] **FINUI-02**: A aba Financeiro apresenta as parcelas do mês atual e do próximo mês em visões separadas
+- [x] ~~**FINUI-02**: A aba Financeiro apresenta as parcelas do mês atual e do próximo mês em visões separadas~~ — **substituído por CONSULTA-02**: o seletor Mês atual/Próximo mês foi removido em favor de uma visão padrão "vencendo hoje" + filtro de período. Decisão do usuário após ver a aba em produção (sketch 001, 2026-08-18). Mantido aqui riscado, não apagado, porque foi de fato entregue e usado na Phase 5 antes da mudança
 - [x] **FINUI-03**: Cada parcela na lista mostra sua situação (a vencer, vencida, paga, parcial, conciliada), o valor devido e o valor já pago
-- [ ] **FINUI-04**: Dar baixa em uma parcela leva no máximo dois cliques a partir da lista, sem etapa burocrática intermediária
+- [x] **FINUI-04**: Dar baixa em uma parcela leva no máximo dois cliques a partir da lista, sem etapa burocrática intermediária
+
+### CONSULTA — busca e filtros na aba Financeiro
+
+- [ ] **CONSULTA-01**: Usuário pode filtrar as parcelas da aba Financeiro por proprietário, inquilino, período e ID do contrato; cada filtro é opcional e só é aplicado se preenchido, combinando entre si
+- [ ] **CONSULTA-02**: Sem nenhum filtro aplicado, a aba Financeiro mostra por padrão as parcelas vencendo no dia de hoje
 
 ### FINREL — relatórios financeiros
 
@@ -54,7 +62,7 @@
 
 - [ ] **FINSEG-01**: Parcelas e lançamentos só são legíveis e graváveis por quem está na allowlist — RLS via `is_team_member()`, a mesma função já usada em `cards` e `alerts`
 - [ ] **FINSEG-02**: As regras financeiras (valor não-negativo, status válido, motivo obrigatório na destrava) são garantidas por constraints no banco, não apenas pela validação do formulário
-- [ ] **FINSEG-03**: Uma operação financeira rejeitada pelo banco não expõe a mensagem crua do Postgres ao usuário — passa por `erroDoBanco()`, como o resto do app
+- [x] **FINSEG-03**: Uma operação financeira rejeitada pelo banco não expõe a mensagem crua do Postgres ao usuário — passa por `erroDoBanco()`, como o resto do app
 
 ### FINDOC — documentação do módulo
 
@@ -85,7 +93,7 @@ Reconhecidos, mas fora do roadmap desta milestone.
 
 - **FIN-FUT-01**: Forma de pagamento (Pix/dinheiro/transferência/outro) no momento da baixa — cabe como coluna opcional em `parcela_lancamentos`, sem quebrar o schema da v2.0
 - **FIN-FUT-02**: Exportação dos relatórios financeiros em PDF/planilha — se conecta ao relatório de IR, que é visão de longo prazo
-- **FIN-FUT-03**: Backfill histórico das parcelas dos meses já passados dos ~46 imóveis
+- ~~**FIN-FUT-03**: Backfill histórico das parcelas dos meses já passados dos ~46 imóveis~~ — **promovido a escopo ativo**: ver PARCELA-06. Decisão do usuário revertida em 2026-08-18 (a spec original tinha decidido "sem backfill"; ver `.planning/financeiro-modulo-prompt.md`) — agora condicional a o contrato ter `periodo_inicio` e `periodo_fim` preenchidos
 
 ## Out of Scope
 
@@ -118,15 +126,20 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | PARCELA-03 | Phase 5 | Concluído |
 | PARCELA-04 | Phase 5 | Concluído |
 | FINUI-01 | Phase 5 | Concluído |
-| FINUI-02 | Phase 5 | Concluído |
+| FINUI-02 | Phase 5 | Substituído (ver CONSULTA-02) |
 | FINUI-03 | Phase 5 | Concluído |
-| BAIXA-01 | Phase 6 | Pendente |
-| BAIXA-02 | Phase 6 | Pendente |
-| BAIXA-03 | Phase 6 | Pendente |
-| BAIXA-04 | Phase 6 | Pendente |
-| BAIXA-05 | Phase 6 | Pendente |
-| FINUI-04 | Phase 6 | Pendente |
-| FINSEG-03 | Phase 6 | Pendente |
+| CONTRATO-03 | Phase 6.1 | Pendente |
+| PARCELA-05 | Phase 6.1 | Pendente |
+| PARCELA-06 | Phase 6.1 | Pendente |
+| CONSULTA-01 | Phase 6.1 | Pendente |
+| CONSULTA-02 | Phase 6.1 | Pendente |
+| BAIXA-01 | Phase 6 | Concluído |
+| BAIXA-02 | Phase 6 | Concluído |
+| BAIXA-03 | Phase 6 | Concluído |
+| BAIXA-04 | Phase 6 | Concluído |
+| BAIXA-05 | Phase 6 | Concluído |
+| FINUI-04 | Phase 6 | Concluído |
+| FINSEG-03 | Phase 6 | Concluído |
 | CONCIL-01 | Phase 7 | Pendente |
 | CONCIL-02 | Phase 7 | Pendente |
 | CONCIL-03 | Phase 7 | Pendente |
@@ -138,9 +151,10 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | FINREL-05 | Phase 8 | Pendente |
 
 **Coverage:**
-- v2.0 requirements: 28 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, Phase 7: 4, Phase 8: 5
-- Mapped to phases: 28
+- v2.0 requirements: 33 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, Phase 7: 4, Phase 8: 5
+- Mapped to phases: 33
 - Unmapped: 0
+- FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 
 > **Correção de contagem:** este documento dizia "26 total". A soma real das categorias da v2.0 (CONTRATO 2 + PARCELA 4 + BAIXA 5 + CONCIL 4 + FINUI 4 + FINREL 5 + FINSEG 3 + FINDOC 1) é **28**. Nenhum requisito foi adicionado ou removido — só a contagem estava errada.
 
