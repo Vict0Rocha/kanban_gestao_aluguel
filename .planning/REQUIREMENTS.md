@@ -94,6 +94,7 @@ Reconhecidos, mas fora do roadmap desta milestone.
 - **FIN-FUT-01**: Forma de pagamento (Pix/dinheiro/transferência/outro) no momento da baixa — cabe como coluna opcional em `parcela_lancamentos`, sem quebrar o schema da v2.0
 - **FIN-FUT-02**: Exportação dos relatórios financeiros em PDF/planilha — se conecta ao relatório de IR, que é visão de longo prazo
 - ~~**FIN-FUT-03**: Backfill histórico das parcelas dos meses já passados dos ~46 imóveis~~ — **promovido a escopo ativo**: ver PARCELA-06. Decisão do usuário revertida em 2026-08-18 (a spec original tinha decidido "sem backfill"; ver `.planning/financeiro-modulo-prompt.md`) — agora condicional a o contrato ter `periodo_inicio` e `periodo_fim` preenchidos
+- **FIN-FUT-04**: Opção para editar manualmente o vencimento de uma parcela já existente — surgiu no checkpoint de verificação da Phase 6.1 (2026-08-18): o usuário percebeu que mudar `periodo_inicio` num contrato não retroage sobre parcelas já geradas (comportamento intencional, D-14 da Phase 6.1 — nunca reescrever `vencimento` de uma linha existente) e pediu uma forma explícita de corrigir isso quando necessário. Provavelmente cabe como uma ação adicional na coluna Ações do Financeiro, no mesmo padrão de Ajustar (ledger), não como um `UPDATE` direto
 
 ## Out of Scope
 
