@@ -8,8 +8,48 @@ import {
 } from "@/lib/kanban/parcelas"
 import { FinanceiroView } from "@/components/financeiro/financeiro-view"
 
-export default async function FinanceiroPage() {
+const SELECT_PARCELA_PADRAO =
+  "id, card_id, competencia, vencimento, valor_original, status, cards(endereco, proprietario, numero), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
+
+// `!inner` é obrigatório para poder filtrar por coluna do embed — sem ela o
+// PostgREST não aceita `.ilike()`/`.eq()` em `cards.*`.
+const SELECT_PARCELA_FILTRADA =
+  "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, inquilino), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
+
+/** Dia 1 do mês seguinte a "YYYY-MM", sem passar por Date — mesmo padrão de `competenciasAlvo`. */
+function inicioMesSeguinte(periodoYYYYMM: string): string {
+  const [anoStr, mesStr] = periodoYYYYMM.split("-")
+  const ano = Number(anoStr)
+  const mes = Number(mesStr)
+
+  const proximoMes = mes === 12 ? 1 : mes + 1
+  const proximoAno = mes === 12 ? ano + 1 : ano
+
+  return `${proximoAno}-${String(proximoMes).padStart(2, "0")}-01`
+}
+
+export default async function FinanceiroPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    proprietario?: string
+    inquilino?: string
+    periodo?: string
+    id?: string
+  }>
+}) {
   const supabase = await createClient()
+  const params = await searchParams
+
+  const proprietario = params.proprietario?.trim() ?? ""
+  const inquilino = params.inquilino?.trim() ?? ""
+  const periodo = params.periodo?.trim() ?? ""
+  const idBusca = params.id?.trim() ?? ""
+
+  // D-03/D-04: qualquer um dos quatro presente substitui a visão padrão.
+  const filtrosAtivos = Boolean(
+    proprietario || inquilino || periodo || idBusca
+  )
 
   const { data: board } = await supabase
     .from("boards")
@@ -43,14 +83,38 @@ export default async function FinanceiroPage() {
     }
 
     try {
+      // D-16: geração preguiçosa continua rodando em toda carga da rota,
+      // com filtro aplicado ou não — só a query de LEITURA abaixo muda.
       await garantirParcelas(supabase, competencias)
 
-      const { data, error } = await supabase
+      let query = supabase
         .from("parcelas")
-        .select(
-          "id, card_id, competencia, vencimento, valor_original, status, cards(endereco, proprietario, numero), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
-        )
-        .eq("vencimento", hojeISO)
+        .select(filtrosAtivos ? SELECT_PARCELA_FILTRADA : SELECT_PARCELA_PADRAO)
+
+      if (filtrosAtivos) {
+        if (proprietario) {
+          query = query.ilike("cards.proprietario", `%${proprietario}%`)
+        }
+        if (inquilino) {
+          query = query.ilike("cards.inquilino", `%${inquilino}%`)
+        }
+        // T-06.1-17: período fora do formato "YYYY-MM" é ignorado
+        // silenciosamente, não derruba a página.
+        if (/^\d{4}-\d{2}$/.test(periodo)) {
+          query = query
+            .gte("vencimento", `${periodo}-01`)
+            .lt("vencimento", inicioMesSeguinte(periodo))
+        }
+        // T-06.1-17: id não numérico é ignorado, não derruba a página.
+        if (idBusca && Number.isInteger(Number(idBusca))) {
+          query = query.eq("cards.numero", Number(idBusca))
+        }
+      } else {
+        // Visão padrão (D-02): só as parcelas vencendo hoje.
+        query = query.eq("vencimento", hojeISO)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
 
@@ -59,11 +123,6 @@ export default async function FinanceiroPage() {
       // como array — mas `parcelas.card_id -> cards.id` é muitos-para-um:
       // o PostgREST sempre devolve um objeto único ou null aqui, nunca
       // array.
-      //
-      // `vencimentoDaCompetencia` sempre devolve uma data dentro do mesmo mês
-      // da `competencia` (só o dia muda) — logo uma parcela com
-      // `vencimento = hojeISO` é sempre da competência do mês corrente, que
-      // `garantirParcelas` já garante gerada acima.
       const parcelas = (data ?? []) as unknown as ParcelaComCard[]
 
       linhas = montarLinhas(parcelas, hojeISO)
@@ -93,6 +152,13 @@ export default async function FinanceiroPage() {
           temContratoAtivo={temContratoAtivo}
           erro={erro}
           todayISO={hojeISO}
+          filtrosAtivos={filtrosAtivos}
+          filtroInicial={{
+            proprietario,
+            inquilino,
+            periodo,
+            id: idBusca,
+          }}
         />
       ) : (
         <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
