@@ -94,12 +94,13 @@ Plans:
   5. Uma operação recusada pelo banco (ex.: valor negativo escapando da validação do formulário) chega ao usuário como frase em português comum, sem trecho de mensagem do Postgres, código de constraint ou nome de tabela
 
 **Pilares cruzados**: critério 5 é onde FINSEG-03 (`erroDoBanco()`) fica de fato verificável, porque é a primeira operação em que o usuário consegue provocar uma recusa do banco; a mesma sanitização vale para as ações da Phase 7. A validação server-side espelha as CHECK constraints da Phase 4 — nenhuma regra financeira decidida só no cliente. Parcelas de contrato já inativo (CONTRATO-02) continuam aceitando baixa e ajuste normalmente
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
 
 Plans:
 
-- [ ] 06-01: TBD
+- [ ] 06-01-PLAN.md — Registrar pagamento (baixa total/parcial) e ajustar valor (acréscimo/desconto), com recálculo de status no servidor
+- [ ] 06-02-PLAN.md — Histórico de lançamentos da parcela (Sheet lateral) e verificação final contra produção
 
 ### Phase 7: Conciliação e destrava rastreada
 
