@@ -44,7 +44,7 @@ export type ParcelaComCard = {
   vencimento: string
   valor_original: number
   status: StatusParcela
-  cards: { endereco: string; proprietario: string } | null
+  cards: { endereco: string; proprietario: string; numero: number } | null
   parcela_lancamentos: LancamentoDetalhado[] | null
 }
 
@@ -53,6 +53,7 @@ export type LinhaParcela = {
   competencia: string
   endereco: string
   proprietario: string
+  numero: number
   vencimento: string
   valorDevido: number
   valorPago: number
@@ -278,6 +279,7 @@ export function montarLinhas(
       competencia: parcela.competencia,
       endereco: parcela.cards?.endereco ?? "",
       proprietario: parcela.cards?.proprietario ?? "",
+      numero: parcela.cards?.numero ?? 0,
       vencimento: parcela.vencimento,
       valorDevido,
       valorPago,

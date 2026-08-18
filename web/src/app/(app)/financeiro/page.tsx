@@ -48,7 +48,7 @@ export default async function FinanceiroPage() {
       const { data, error } = await supabase
         .from("parcelas")
         .select(
-          "id, card_id, competencia, vencimento, valor_original, status, cards(endereco, proprietario), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
+          "id, card_id, competencia, vencimento, valor_original, status, cards(endereco, proprietario, numero), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
         )
         .eq("vencimento", hojeISO)
 

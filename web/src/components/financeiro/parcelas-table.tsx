@@ -6,6 +6,7 @@ import { Banknote, History } from "lucide-react"
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
 import type { LinhaParcela } from "@/lib/kanban/parcelas"
 import { AjustarParcelaDialog } from "@/components/financeiro/ajustar-parcela-dialog"
+import { IdPill } from "@/components/financeiro/id-pill"
 import { ParcelaHistoricoSheet } from "@/components/financeiro/parcela-historico-sheet"
 import { ParcelaSituacaoBadge } from "@/components/financeiro/parcela-situacao-badge"
 import { RegistrarPagamentoDialog } from "@/components/financeiro/registrar-pagamento-dialog"
@@ -131,6 +132,7 @@ export function ParcelasTable({
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>ID</TableHead>
                 <TableHead>Imóvel</TableHead>
                 <TableHead>Proprietário</TableHead>
                 <TableHead>Vencimento</TableHead>
@@ -143,6 +145,9 @@ export function ParcelasTable({
             <TableBody>
               {linhas.map((linha) => (
                 <TableRow key={linha.id}>
+                  <TableCell>
+                    <IdPill numero={linha.numero} />
+                  </TableCell>
                   <TableCell className="text-sm font-semibold text-foreground">
                     {linha.endereco}
                   </TableCell>

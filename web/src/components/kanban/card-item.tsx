@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/kanban/format"
 import type { Card } from "@/lib/kanban/types"
 import type { CardDetailsInput } from "@/lib/kanban/types"
+import { IdPill } from "@/components/financeiro/id-pill"
 import { Button } from "@/components/ui/button"
 import { CardDetailDialog } from "@/components/kanban/card-detail-dialog"
 import {
@@ -108,28 +109,31 @@ export function CardItem({
           <p className="text-sm font-semibold text-primary">
             {formatCurrency(card.valor)}
           </p>
-          <button
-            type="button"
-            onPointerDown={(event) => event.stopPropagation()}
-            onMouseDown={(event) => event.stopPropagation()}
-            onClick={(event) => {
-              event.stopPropagation()
-              onToggleAtivo(card.id, !card.ativo)
-            }}
-            aria-label={
-              card.ativo
-                ? `Marcar ${card.endereco} como inativo`
-                : `Marcar ${card.endereco} como ativo`
-            }
-            className={cn(
-              "rounded-full border px-2 py-1 text-xs font-semibold transition-colors",
-              card.ativo
-                ? "border-primary/40 bg-primary/10 text-primary"
-                : "border-border bg-muted text-muted-foreground"
-            )}
-          >
-            {card.ativo ? "Ativo" : "Inativo"}
-          </button>
+          <div className="flex items-center gap-1.5">
+            <IdPill numero={card.numero} />
+            <button
+              type="button"
+              onPointerDown={(event) => event.stopPropagation()}
+              onMouseDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.stopPropagation()
+                onToggleAtivo(card.id, !card.ativo)
+              }}
+              aria-label={
+                card.ativo
+                  ? `Marcar ${card.endereco} como inativo`
+                  : `Marcar ${card.endereco} como ativo`
+              }
+              className={cn(
+                "rounded-full border px-2 py-1 text-xs font-semibold transition-colors",
+                card.ativo
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-border bg-muted text-muted-foreground"
+              )}
+            >
+              {card.ativo ? "Ativo" : "Inativo"}
+            </button>
+          </div>
         </div>
       </div>
 

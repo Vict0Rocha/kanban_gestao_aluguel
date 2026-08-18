@@ -2,6 +2,7 @@ export type Card = {
   id: string
   column_id: string
   position: number
+  numero: number
   proprietario: string
   valor: number
   endereco: string
