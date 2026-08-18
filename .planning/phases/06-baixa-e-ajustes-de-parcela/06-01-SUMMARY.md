@@ -53,20 +53,29 @@ coverage:
       - kind: automated_ui
         ref: "cd web && npm run lint && npm run build"
         status: pass
+      - kind: manual_procedural
+        ref: "Task 3 (checkpoint:human-verify) — operador testou os 7 passos em produção e confirmou de forma geral (\"Testei tudo aqui, está funcionando como o esperado\"), não item a item"
+        status: pass
     human_judgment: true
-    rationale: "Requer confirmar contra parcelas reais de produção (Task 3, checkpoint:human-verify) — 2 cliques efetivos, pré-preenchimento correto e status virando Paga só podem ser confirmados com dados reais no navegador"
+    rationale: "Confirmação obtida foi holística, não uma checklist ponto a ponto dos 7 passos do how-to-verify — registrado para não superestimar o nível de evidência."
   - id: D2
     description: "Baixa parcial deixa a parcela Parcial; completar o restante depois vira Paga sozinha, sem edição manual"
     requirement: "BAIXA-02"
-    verification: []
+    verification:
+      - kind: manual_procedural
+        ref: "Task 3, passo 2 — coberto pela confirmação geral do operador"
+        status: pass
     human_judgment: true
-    rationale: "Sequência de duas ações consecutivas contra a mesma parcela real — só verificável em produção (Task 3, passo 2)"
+    rationale: "Sequência de duas ações consecutivas contra a mesma parcela real — confirmada em produção, sem registro item a item separado do passo 2."
   - id: D3
     description: "Ajustar (acréscimo/desconto, mesmo diálogo com alternador) muda o valor devido; acréscimo pode devolver uma parcela Paga para Parcial"
     requirement: "BAIXA-03, BAIXA-04"
-    verification: []
+    verification:
+      - kind: manual_procedural
+        ref: "Task 3, passo 3 (a sequência mais importante do checkpoint) — coberto pela confirmação geral do operador"
+        status: pass
     human_judgment: true
-    rationale: "O comportamento 'paga volta a parcial' (SC3 do ROADMAP) é a sequência mais importante da verificação humana — Task 3, passo 3"
+    rationale: "O comportamento 'paga volta a parcial' (SC3 do ROADMAP) foi incluído explicitamente no roteiro que o operador confirmou ter testado."
   - id: D4
     description: "Toda ação insere uma linha nova em parcela_lancamentos (nunca UPDATE/DELETE), com criado_por da sessão e observação"
     requirement: "BAIXA-05"
@@ -91,12 +100,15 @@ coverage:
       - kind: unit
         ref: "grep -i ativo dentro do corpo de registrarPagamentoAction e ajustarParcelaAction — nenhuma ocorrência fora de comentário"
         status: pass
+      - kind: manual_procedural
+        ref: "Task 3, passo 5 — coberto pela confirmação geral do operador"
+        status: pass
     human_judgment: true
-    rationale: "Confirmação end-to-end (marcar contrato inativo no board, registrar pagamento na parcela) é o passo 5 da Task 3"
+    rationale: "Confirmação end-to-end (marcar contrato inativo no board, registrar pagamento na parcela) foi incluída no roteiro confirmado pelo operador."
 
 duration: 45min
 completed: 2026-08-18
-status: halted
+status: complete
 ---
 
 # Phase 6 Plan 1: Registrar pagamento e ajustar valor Summary
@@ -108,7 +120,7 @@ status: halted
 - **Duration:** 45 min
 - **Started:** 2026-08-17T23:49:00Z (aprox.)
 - **Completed:** 2026-08-18T00:34:00Z
-- **Tasks:** 2 de 3 (Task 3 é `checkpoint:human-verify` — aguardando verificação do operador)
+- **Tasks:** 3 de 3
 - **Files modified:** 9 (7 modificados, 2 novos)
 
 ## Accomplishments
@@ -124,9 +136,9 @@ Cada task foi commitada atomicamente:
 
 1. **Task 1: Fatia vertical — registrar pagamento ponta a ponta** - `f14c2e0` (feat)
 2. **Task 2: Ajustar valor — acréscimo e desconto reaproveitando o mesmo recálculo de status** - `a8a586c` (feat)
-3. **Task 3: Conferir pagamento e ajuste contra parcelas reais de produção** - PENDENTE (checkpoint:human-verify, não executável pelo agente)
+3. **Task 3: Conferir pagamento e ajuste contra parcelas reais de produção** - checkpoint:human-verify, **aprovada pelo operador em produção** ("Testei tudo aqui, está funcionando como o esperado")
 
-_Nenhuma commit de plano/metadados ainda — este plano roda em worktree isolado; STATE.md/ROADMAP.md são atualizados pelo orquestrador após o merge._
+**Plan metadata:** este commit (docs: complete plan)
 
 ## Files Created/Modified
 - `web/src/lib/kanban/parcelas.ts` - `statusDeParcela()`, tipo `LancamentoDetalhado`, `ParcelaComCard.parcela_lancamentos`/`LinhaParcela.lancamentos` estendidos, `montarLinhas` populando `lancamentos` (ordem decrescente, A-01)
@@ -160,18 +172,12 @@ None - nenhuma configuração de serviço externo necessária.
 
 ## Next Phase Readiness
 
-Tasks 1 e 2 completas, lint e build passando (`cd web && npm run lint && npm run build`, código 0 nas duas). O plano está **halted** na Task 3 — `checkpoint:human-verify`, `gate="blocking"` — que exige testar em produção (`/financeiro`, logado com e-mail da allowlist):
+**Plano completo.** As três tasks estão commitadas; lint/build passam; o operador confirmou em produção que registrar pagamento (total e parcial), ajustar (acréscimo/desconto, incluindo a reversão paga→parcial) e a permissão de ação em contrato inativo funcionam. A confirmação foi geral ("tudo funcionando como esperado"), não uma checklist item a item dos 7 passos do `<how-to-verify>` — registrado em `coverage` acima para transparência sobre o nível de evidência.
 
-1. Baixa total em 2 cliques
-2. Baixa parcial → completar o restante → vira Paga sozinha
-3. Acréscimo devolve uma parcela Paga para Parcial (a sequência mais importante)
-4. Desconto reduz o valor devido sem mudar a situação de uma parcela sem pagamento
-5. Parcela de contrato inativo continua aceitando as duas ações
-6. Conferência no SQL Editor: uma linha nova por ação, nunca alterada, com `criado_por`/`criado_em` reais
-7. Nenhuma tela mostrou erro cru do Postgres
+BAIXA-01 a 05, FINUI-04 e FINSEG-03 completos. O plano 06-02 (histórico de lançamentos) depende dos artefatos deste plano (`LancamentoDetalhado`, `lancamentos` em `LinhaParcela`) — já disponíveis.
 
-O plano 06-02 (histórico de lançamentos) depende dos artefatos deste plano (`LancamentoDetalhado`, `lancamentos` em `LinhaParcela`) — já disponíveis para consumo, independente do resultado da Task 3.
+**Feedback de produto recebido junto com a aprovação:** o operador pediu uma revisão de UX da aba Financeiro (busca/filtros antes de listar, em vez de mostrar tudo de cara) — fora do escopo funcional desta fase, tratado como próximo item de planejamento, não como correção deste plano.
 
 ---
 *Phase: 06-baixa-e-ajustes-de-parcela*
-*Completed: 2026-08-18 (Tasks 1-2; Task 3 pendente de verificação humana)*
+*Status: complete*
