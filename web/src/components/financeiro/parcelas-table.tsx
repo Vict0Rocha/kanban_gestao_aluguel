@@ -22,8 +22,10 @@ import {
 const VAZIO_LABEL = {
   "sem-contrato-ativo":
     "Nenhum contrato ativo no momento. Marque um contrato como ativo no board para ele começar a gerar parcelas automaticamente.",
-  "sem-parcela-no-periodo":
-    "Nenhuma parcela para este período. Contratos ativos sem parcela aqui já passaram do período contratado.",
+  "sem-parcela-hoje":
+    "Nenhuma parcela vence hoje. Use os filtros para consultar outro período.",
+  "sem-resultado-filtro":
+    "Nenhuma parcela encontrada para os filtros aplicados.",
 } as const
 
 function AcoesCell({
@@ -94,15 +96,17 @@ function AcoesCell({
 
 export function ParcelasTable({
   titulo,
+  subtitulo,
   linhas,
   erro,
   vazio,
   todayISO,
 }: {
   titulo: string
+  subtitulo?: string
   linhas: LinhaParcela[]
   erro?: boolean
-  vazio: "sem-contrato-ativo" | "sem-parcela-no-periodo"
+  vazio: "sem-contrato-ativo" | "sem-parcela-hoje" | "sem-resultado-filtro"
   todayISO: string
 }) {
   return (
@@ -110,10 +114,13 @@ export function ParcelasTable({
       <h2 className="font-heading text-base font-bold text-foreground">
         {titulo}
       </h2>
+      {subtitulo && (
+        <p className="text-sm text-muted-foreground">{subtitulo}</p>
+      )}
 
       {erro ? (
         <p className="mt-1 text-sm text-muted-foreground">
-          Não foi possível carregar as parcelas deste mês. Tente novamente.
+          Não foi possível carregar as parcelas. Tente novamente.
         </p>
       ) : linhas.length === 0 ? (
         <p className="mt-1 text-sm text-muted-foreground">
