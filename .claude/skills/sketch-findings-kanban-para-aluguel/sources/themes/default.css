@@ -1,0 +1,86 @@
+/* Tema do sketch — espelha 1:1 os tokens reais de web/src/app/globals.css,
+   não é um tema novo. Objetivo: o rascunho tem que parecer o app de
+   verdade, não uma proposta visual concorrente. */
+
+:root {
+  --background: #f4fcf4;
+  --foreground: #18341c;
+  --card: #ffffff;
+  --card-foreground: #18341c;
+  --popover: #ffffff;
+  --popover-foreground: #18341c;
+  --primary: #74ac1c;
+  --primary-foreground: #18341c;
+  --secondary: #e3f2c8;
+  --secondary-foreground: #18341c;
+  --muted: #eaf6e6;
+  --muted-foreground: #5c7060;
+  --accent: #e3f2c8;
+  --accent-foreground: #18341c;
+  --destructive: #dc4a30;
+  --border: #dbeed4;
+  --input: #dbeed4;
+  --ring: #74ac1c;
+  --status-good: #15803d;
+  --status-warning: #a16207;
+  --status-critical: #b91c1c;
+  --radius: 0.85rem;
+  --sidebar: #18341c;
+  --sidebar-foreground: #f4fcf4;
+  --sidebar-primary: #74ac1c;
+  --sidebar-primary-foreground: #18341c;
+  --sidebar-accent: #234a2b;
+  --sidebar-accent-foreground: #f4fcf4;
+  --sidebar-border: rgba(244, 252, 244, 0.12);
+
+  --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-heading: "Sora", system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+[data-theme="dark"] {
+  --background: #0e1a10;
+  --foreground: #f4fcf4;
+  --card: #16281a;
+  --card-foreground: #f4fcf4;
+  --popover: #16281a;
+  --popover-foreground: #f4fcf4;
+  --primary: #8bc93a;
+  --primary-foreground: #14230d;
+  --secondary: #234a2b;
+  --secondary-foreground: #f4fcf4;
+  --muted: #1c3020;
+  --muted-foreground: #9db89f;
+  --accent: #234a2b;
+  --accent-foreground: #f4fcf4;
+  --destructive: #f87171;
+  --border: rgba(244, 252, 244, 0.12);
+  --input: rgba(244, 252, 244, 0.16);
+  --ring: #8bc93a;
+  --status-good: #4ade80;
+  --status-warning: #fbbf24;
+  --status-critical: #f87171;
+  --sidebar: #14261a;
+  --sidebar-foreground: #f4fcf4;
+  --sidebar-primary: #8bc93a;
+  --sidebar-primary-foreground: #14230d;
+  --sidebar-accent: #234a2b;
+  --sidebar-accent-foreground: #f4fcf4;
+  --sidebar-border: rgba(244, 252, 244, 0.12);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  margin: 0;
+}
+
+h1, h2, h3 { font-family: var(--font-heading); }

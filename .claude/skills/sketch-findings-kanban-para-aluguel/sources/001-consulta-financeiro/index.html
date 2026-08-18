@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sketch 001 — Consulta Financeiro</title>
+<link rel="stylesheet" href="../themes/default.css">
+<style>
+  /* ---- layout compartilhado (imita o AppShell real, simplificado) ---- */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 220px; flex-shrink: 0; background: var(--sidebar); color: var(--sidebar-foreground);
+    display: flex; flex-direction: column; padding: 12px 0;
+  }
+  .sidebar .logo { display:flex; align-items:center; gap:8px; padding: 4px 16px 16px; font-family: var(--font-heading); font-weight: 800; font-size: 14px; }
+  .sidebar .logo .mark { width:28px; height:28px; border-radius: var(--radius-sm); background: var(--sidebar-primary); color: var(--sidebar-primary-foreground); display:flex; align-items:center; justify-content:center; font-weight:800; }
+  .sidebar nav { display:flex; flex-direction:column; gap:4px; padding: 0 8px; }
+  .sidebar nav a { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius: var(--radius-sm); font-size:14px; font-weight:600; color: rgba(244,252,244,0.7); text-decoration:none; }
+  .sidebar nav a.active { background: var(--sidebar-primary); color: var(--sidebar-primary-foreground); }
+  .main { flex:1; padding: 24px; min-width:0; }
+  .page-head h1 { font-family: var(--font-heading); font-size: 24px; font-weight: 800; margin: 0; }
+  .page-head p { font-size: 14px; color: var(--muted-foreground); margin: 4px 0 20px; }
+
+  /* ---- painel ---- */
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-2xl); }
+
+  /* ---- filtros ---- */
+  .filter-field label { display:block; font-size: 12px; font-weight: 600; color: var(--muted-foreground); margin-bottom: 4px; }
+  .filter-field input, .filter-field select {
+    width: 100%; font-family: var(--font-body); font-size: 14px; padding: 8px 10px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--background); color: var(--foreground);
+    transition: all 0.15s ease;
+  }
+  .filter-field input:focus, .filter-field select:focus { outline: none; border-color: var(--ring); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 20%, transparent); }
+
+  .btn { font-family: var(--font-body); font-weight: 600; font-size: 14px; border-radius: var(--radius-sm); padding: 8px 16px; cursor: pointer; border: 1px solid transparent; transition: all 0.15s ease; display:inline-flex; align-items:center; gap:6px; }
+  .btn:hover { filter: brightness(0.96); }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--primary); color: var(--primary-foreground); }
+  .btn-outline { background: var(--card); border-color: var(--border); color: var(--foreground); }
+  .btn-ghost { background: transparent; color: var(--foreground); }
+  .btn-ghost:hover { background: var(--muted); }
+  .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+  /* ---- seletor mes atual/proximo ---- */
+  .switcher { display:inline-flex; align-items:center; gap:4px; background: var(--muted); padding: 4px; border-radius: 999px; }
+  .switcher button { border:none; background:transparent; font-family: var(--font-body); font-size:12px; font-weight:600; padding:6px 14px; border-radius:999px; cursor:pointer; color: var(--muted-foreground); transition: all 0.15s ease; }
+  .switcher button.active { background: var(--card); color: var(--foreground); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+  /* ---- id pill ---- */
+  .id-pill { display:inline-flex; align-items:center; justify-content:center; min-width: 30px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--secondary); color: var(--secondary-foreground); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* ---- tabela ---- */
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted-foreground); padding: 10px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  tbody td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.15s ease; }
+  tbody tr:hover { background: var(--muted); }
+  .cell-strong { font-weight: 600; }
+  .cell-muted { color: var(--muted-foreground); }
+  .cell-right { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .badge { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; }
+  .badge svg { width:14px; height:14px; flex-shrink:0; }
+  .badge.vencer { color: var(--muted-foreground); }
+  .badge.vencida { color: var(--status-critical); }
+  .badge.paga { color: var(--status-good); }
+  .badge.parcial { color: var(--status-warning); }
+
+  .acoes { display:flex; gap:8px; }
+
+  .empty-state { text-align:center; padding: 48px 24px; color: var(--muted-foreground); font-size: 14px; }
+  .empty-state svg { width: 40px; height:40px; color: var(--border); margin-bottom: 12px; }
+
+  /* ---- variant B: painel de filtro colapsavel ---- */
+  .filter-drawer { overflow: hidden; max-height: 0; transition: max-height 0.25s ease, opacity 0.2s ease, margin 0.25s ease; opacity: 0; }
+  .filter-drawer.open { max-height: 240px; opacity: 1; margin-bottom: 16px; }
+
+  /* ---- variant tabs / toolbar (sketch chrome, nao faz parte do design) ---- */
+  #variant-nav { position:fixed; top:0; left:0; right:0; z-index:9998; background:#1a1a1a; border-bottom:1px solid #333; padding:10px 16px; display:flex; gap:8px; font-family:system-ui,sans-serif; align-items:center; }
+  #variant-nav .label { color:#888; font-size:12px; margin-right:8px; }
+  .variant-tab { background:#2a2a2a; color:#ccc; border:1px solid #3a3a3a; border-radius:6px; padding:6px 14px; font-size:13px; cursor:pointer; font-family:system-ui,sans-serif; }
+  .variant-tab.active { background:#74ac1c; color:#0e1a10; border-color:#74ac1c; font-weight:600; }
+  body { padding-top: 48px; }
+  .variant { display:none; }
+  .variant.active-variant { display:block; }
+
+  #sketch-tools { position:fixed; bottom:12px; right:12px; z-index:9999; font-family:system-ui; font-size:12px; background:rgba(0,0,0,0.75); color:white; padding:8px 12px; border-radius:8px; opacity:0.45; transition:opacity 0.2s; }
+  #sketch-tools:hover { opacity:1; }
+  #sketch-tools select { margin-left:6px; }
+</style>
+</head>
+<body>
+
+<div id="variant-nav">
+  <span class="label">SKETCH 001 — Consulta Financeiro</span>
+  <button class="variant-tab" onclick="showVariant('a', event)">A: Filtros sempre visíveis</button>
+  <button class="variant-tab active" onclick="showVariant('b', event)">B: Filtros atrás de um botão — "Vencendo hoje" ★ Escolhida</button>
+</div>
+
+<div id="sketch-tools">
+  Tema:
+  <select onchange="document.documentElement.setAttribute('data-theme', this.value)">
+    <option value="light">Claro</option>
+    <option value="dark">Escuro</option>
+  </select>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT A — barra de filtros sempre visível, acima do seletor -->
+<!-- ============================================================ -->
+<div id="variant-a" class="variant">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo"><span class="mark">K</span> Kanban Aluguel</div>
+      <nav>
+        <a href="#">📋 Board</a>
+        <a href="#" class="active">💰 Financeiro</a>
+        <a href="#">📊 Relatórios</a>
+      </nav>
+    </aside>
+    <main class="main">
+      <div class="page-head">
+        <h1>Financeiro</h1>
+        <p>Parcelas do mês atual e do próximo mês de cada contrato ativo.</p>
+      </div>
+
+      <div class="panel" style="padding: 16px 20px; margin-bottom: 16px;">
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr) auto; gap: 12px; align-items:end;" id="filters-a">
+          <div class="filter-field">
+            <label>Proprietário</label>
+            <input type="text" id="f-a-prop" placeholder="Nome do proprietário">
+          </div>
+          <div class="filter-field">
+            <label>Inquilino</label>
+            <input type="text" id="f-a-inq" placeholder="Nome do inquilino">
+          </div>
+          <div class="filter-field">
+            <label>Período (vencimento)</label>
+            <input type="month" id="f-a-periodo">
+          </div>
+          <div class="filter-field">
+            <label>ID do contrato</label>
+            <input type="text" id="f-a-id" placeholder="Ex: 12">
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-primary" onclick="applyFilter('a')">Consultar</button>
+            <button class="btn btn-ghost" onclick="clearFilter('a')">Limpar</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; justify-content: space-between; margin-bottom: 12px;">
+        <div class="switcher" id="switcher-a">
+          <button class="active" onclick="setMes('a','atual', event)">Mês atual</button>
+          <button onclick="setMes('a','proximo', event)">Próximo mês</button>
+        </div>
+        <span id="result-count-a" style="font-size:12px; color:var(--muted-foreground); font-weight:600;"></span>
+      </div>
+
+      <div class="panel" style="padding: 20px;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Imóvel</th>
+              <th>Proprietário</th>
+              <th>Vencimento</th>
+              <th class="cell-right">Valor devido</th>
+              <th class="cell-right">Valor pago</th>
+              <th>Situação</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="table-body-a"></tbody>
+        </table>
+        <div class="empty-state" id="empty-a" style="display:none;">
+          Nenhuma parcela encontrada para os filtros aplicados.
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIANT B — filtros atrás de um botão, seletor continua dominante -->
+<!-- ============================================================ -->
+<div id="variant-b" class="variant active-variant">
+  <div class="app">
+    <aside class="sidebar">
+      <div class="logo"><span class="mark">K</span> Kanban Aluguel</div>
+      <nav>
+        <a href="#">📋 Board</a>
+        <a href="#" class="active">💰 Financeiro</a>
+        <a href="#">📊 Relatórios</a>
+      </nav>
+    </aside>
+    <main class="main">
+      <div class="page-head">
+        <h1>Financeiro</h1>
+        <p>Parcelas do mês atual e do próximo mês de cada contrato ativo.</p>
+      </div>
+
+      <div style="display:flex; align-items:center; justify-content: space-between; margin-bottom: 12px;">
+        <div>
+          <span style="font-family: var(--font-heading); font-weight: 700; font-size: 15px;" id="heading-b">Vencendo hoje</span>
+          <span style="font-size:12px; color:var(--muted-foreground); margin-left:8px;" id="subheading-b">18/08/2026</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span id="result-count-b" style="font-size:12px; color:var(--muted-foreground); font-weight:600;"></span>
+          <button class="btn btn-outline btn-sm" onclick="toggleDrawer()" id="filter-toggle-btn">🔍 Filtrar</button>
+        </div>
+      </div>
+
+      <div class="filter-drawer panel" id="filter-drawer" style="padding: 0 20px;">
+        <div style="padding: 16px 0; display:grid; grid-template-columns: repeat(4, 1fr) auto; gap: 12px; align-items:end;">
+          <div class="filter-field">
+            <label>Proprietário</label>
+            <input type="text" id="f-b-prop" placeholder="Nome do proprietário">
+          </div>
+          <div class="filter-field">
+            <label>Inquilino</label>
+            <input type="text" id="f-b-inq" placeholder="Nome do inquilino">
+          </div>
+          <div class="filter-field">
+            <label>Período (vencimento)</label>
+            <input type="month" id="f-b-periodo">
+          </div>
+          <div class="filter-field">
+            <label>ID do contrato</label>
+            <input type="text" id="f-b-id" placeholder="Ex: 12">
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-primary" onclick="applyFilter('b')">Consultar</button>
+            <button class="btn btn-ghost" onclick="clearFilter('b')">Limpar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="padding: 20px;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Imóvel</th>
+              <th>Proprietário</th>
+              <th>Vencimento</th>
+              <th class="cell-right">Valor devido</th>
+              <th class="cell-right">Valor pago</th>
+              <th>Situação</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="table-body-b"></tbody>
+        </table>
+        <div class="empty-state" id="empty-b" style="display:none;">
+          <span id="empty-b-text">Nenhuma parcela vence hoje. Use os filtros para consultar outro período.</span>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------
+// Dados fictícios realistas (mesmo shape do app: proprietario,
+// inquilino, endereco, id sequencial novo, competencia, vencimento,
+// valorDevido, valorPago, situacao)
+// ---------------------------------------------------------------
+const DADOS = [
+  { id: 1,  endereco: "Rua das Palmeiras, 120 — Centro",        proprietario: "Marcos Vinícius Ferreira", inquilino: "Ana Paula Souza",     mes: "atual",   vencimento: "2026-08-05", valorDevido: 1500.00, valorPago: 0,       situacao: "vencida" },
+  { id: 2,  endereco: "Av. Getúlio Vargas, 845 — Jardim Sul",    proprietario: "Marcos Vinícius Ferreira", inquilino: "Carlos Eduardo Lima", mes: "atual",   vencimento: "2026-08-10", valorDevido: 2200.00, valorPago: 2200.00, situacao: "paga" },
+  { id: 3,  endereco: "Rua XV de Novembro, 302",                 proprietario: "Juliana Ribeiro Alves",    inquilino: "Fernanda Costa",      mes: "atual",   vencimento: "2026-08-15", valorDevido: 1800.00, valorPago: 900.00,  situacao: "parcial" },
+  { id: 4,  endereco: "Rua Bahia, 77 — Vila Nova",               proprietario: "Roberto Carlos Nunes",     inquilino: "Patrícia Gomes",      mes: "atual",   vencimento: "2026-08-22", valorDevido: 1350.00, valorPago: 0,       situacao: "vencer" },
+  { id: 5,  endereco: "Av. Brasil, 1450 — Ap 302",               proprietario: "Juliana Ribeiro Alves",    inquilino: "Diego Martins",       mes: "atual",   vencimento: "2026-08-28", valorDevido: 1600.00, valorPago: 0,       situacao: "vencer" },
+  { id: 6,  endereco: "Rua Sete de Setembro, 88",                proprietario: "Marcos Vinícius Ferreira", inquilino: "Beatriz Almeida",     mes: "atual",   vencimento: "2026-08-30", valorDevido: 1900.00, valorPago: 0,       situacao: "vencer" },
+  { id: 7,  endereco: "Rua das Palmeiras, 120 — Centro",        proprietario: "Marcos Vinícius Ferreira", inquilino: "Ana Paula Souza",     mes: "proximo", vencimento: "2026-09-05", valorDevido: 1500.00, valorPago: 0,       situacao: "vencer" },
+  { id: 8,  endereco: "Av. Getúlio Vargas, 845 — Jardim Sul",    proprietario: "Marcos Vinícius Ferreira", inquilino: "Carlos Eduardo Lima", mes: "proximo", vencimento: "2026-09-10", valorDevido: 2200.00, valorPago: 0,       situacao: "vencer" },
+  { id: 9,  endereco: "Rua XV de Novembro, 302",                 proprietario: "Juliana Ribeiro Alves",    inquilino: "Fernanda Costa",      mes: "proximo", vencimento: "2026-09-15", valorDevido: 1800.00, valorPago: 0,       situacao: "vencer" },
+  { id: 10, endereco: "Rua Minas Gerais, 210",                   proprietario: "Roberto Carlos Nunes",     inquilino: "Lucas Pereira",       mes: "atual",   vencimento: "2026-08-12", valorDevido: 1750.00, valorPago: 1750.00, situacao: "paga" },
+  { id: 11, endereco: "Rua Paraná, 55 — Bairro Alto",            proprietario: "Fernanda Torres Machado",  inquilino: "Rafael Souza",        mes: "atual",   vencimento: "2026-08-18", valorDevido: 1420.00, valorPago: 0,       situacao: "vencer" },
+  { id: 12, endereco: "Alameda Santos, 990 — Ap 12",             proprietario: "Fernanda Torres Machado",  inquilino: "Camila Duarte",       mes: "atual",   vencimento: "2026-08-18", valorDevido: 1980.00, valorPago: 0,       situacao: "vencer" },
+];
+
+const HOJE_ISO = "2026-08-18";
+
+const ICONS = {
+  vencer:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
+  vencida: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>',
+  paga:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>',
+  parcial: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg>',
+};
+const LABELS = { vencer: "A vencer", vencida: "Vencida", paga: "Paga", parcial: "Parcial" };
+
+function fmtMoney(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+function fmtDate(iso) { const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; }
+
+const state = { a: { mes: 'atual', filtered: null }, b: { filtered: null } };
+
+function renderTable(variant) {
+  const s = state[variant];
+  let rows;
+  if (variant === 'b') {
+    // B não tem seletor de mês — o padrão é "vencendo hoje"; um filtro
+    // aplicado substitui esse padrão pelo resultado da busca.
+    rows = s.filtered !== null ? s.filtered : DADOS.filter(d => d.vencimento === HOJE_ISO);
+    const heading = document.getElementById('heading-b');
+    const sub = document.getElementById('subheading-b');
+    if (s.filtered !== null) {
+      heading.textContent = 'Resultado da busca';
+      sub.textContent = '';
+    } else {
+      heading.textContent = 'Vencendo hoje';
+      sub.textContent = fmtDate(HOJE_ISO);
+    }
+  } else {
+    rows = s.filtered !== null ? s.filtered : DADOS.filter(d => d.mes === s.mes);
+  }
+  const tbody = document.getElementById('table-body-' + variant);
+  const empty = document.getElementById('empty-' + variant);
+  const count = document.getElementById('result-count-' + variant);
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td><span class="id-pill">#${r.id}</span></td>
+      <td class="cell-strong">${r.endereco}</td>
+      <td class="cell-muted">${r.proprietario}</td>
+      <td class="cell-muted" style="font-variant-numeric:tabular-nums;">${fmtDate(r.vencimento)}</td>
+      <td class="cell-right cell-strong">${fmtMoney(r.valorDevido)}</td>
+      <td class="cell-right cell-muted">${fmtMoney(r.valorPago)}</td>
+      <td><span class="badge ${r.situacao}">${ICONS[r.situacao]}${LABELS[r.situacao]}</span></td>
+      <td>
+        <div class="acoes">
+          <button class="btn btn-outline btn-sm" onclick="fakeAction('Pagamento', ${r.id})">Pagamento</button>
+          <button class="btn btn-ghost btn-sm" onclick="fakeAction('Ajustar', ${r.id})">Ajustar</button>
+          <button class="btn btn-ghost btn-sm" onclick="fakeAction('Histórico', ${r.id})" title="Histórico" aria-label="Histórico">🕘</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  if (rows.length === 0) {
+    tbody.parentElement.style.display = 'none';
+    empty.style.display = 'block';
+    if (variant === 'b') {
+      document.getElementById('empty-b-text').textContent = s.filtered !== null
+        ? 'Nenhuma parcela encontrada para os filtros aplicados.'
+        : 'Nenhuma parcela vence hoje. Use os filtros para consultar outro período.';
+    }
+  } else {
+    tbody.parentElement.style.display = '';
+    empty.style.display = 'none';
+  }
+
+  count.textContent = s.filtered !== null
+    ? `${rows.length} resultado${rows.length === 1 ? '' : 's'} para a busca`
+    : '';
+}
+
+function setMes(variant, mes, ev) {
+  state[variant].mes = mes;
+  state[variant].filtered = null;
+  document.querySelectorAll('#switcher-' + variant + ' button').forEach(b => b.classList.remove('active'));
+  ev.target.classList.add('active');
+  renderTable(variant);
+}
+
+function applyFilter(variant) {
+  const prop = document.getElementById('f-' + variant + '-prop').value.trim().toLowerCase();
+  const inq = document.getElementById('f-' + variant + '-inq').value.trim().toLowerCase();
+  const periodo = document.getElementById('f-' + variant + '-periodo').value; // YYYY-MM
+  const id = document.getElementById('f-' + variant + '-id').value.trim();
+
+  if (!prop && !inq && !periodo && !id) {
+    state[variant].filtered = null;
+    renderTable(variant);
+    return;
+  }
+
+  state[variant].filtered = DADOS.filter(d => {
+    if (prop && !d.proprietario.toLowerCase().includes(prop)) return false;
+    if (inq && !d.inquilino.toLowerCase().includes(inq)) return false;
+    if (periodo && !d.vencimento.startsWith(periodo)) return false;
+    if (id && String(d.id) !== id) return false;
+    return true;
+  });
+  renderTable(variant);
+}
+
+function clearFilter(variant) {
+  document.getElementById('f-' + variant + '-prop').value = '';
+  document.getElementById('f-' + variant + '-inq').value = '';
+  document.getElementById('f-' + variant + '-periodo').value = '';
+  document.getElementById('f-' + variant + '-id').value = '';
+  state[variant].filtered = null;
+  renderTable(variant);
+}
+
+let drawerOpen = false;
+function toggleDrawer() {
+  drawerOpen = !drawerOpen;
+  document.getElementById('filter-drawer').classList.toggle('open', drawerOpen);
+  document.getElementById('filter-toggle-btn').textContent = drawerOpen ? '✕ Fechar filtros' : '🔍 Filtrar';
+}
+
+function fakeAction(nome, id) {
+  alert(`[sketch] Abriria o diálogo de "${nome}" para a parcela #${id} — já implementado e aprovado no app real (Phase 6). Aqui é só ilustrativo.`);
+}
+
+function showVariant(id, ev) {
+  document.querySelectorAll('.variant').forEach(v => v.classList.remove('active-variant'));
+  document.getElementById('variant-' + id).classList.add('active-variant');
+  document.querySelectorAll('.variant-tab').forEach(t => t.classList.remove('active'));
+  ev.target.classList.add('active');
+}
+
+renderTable('a');
+renderTable('b');
+</script>
+
+</body>
+</html>
