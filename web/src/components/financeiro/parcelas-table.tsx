@@ -96,15 +96,11 @@ function AcoesCell({
 }
 
 export function ParcelasTable({
-  titulo,
-  subtitulo,
   linhas,
   erro,
   vazio,
   todayISO,
 }: {
-  titulo: string
-  subtitulo?: string
   linhas: LinhaParcela[]
   erro?: boolean
   vazio: "sem-contrato-ativo" | "sem-parcela-hoje" | "sem-resultado-filtro"
@@ -112,23 +108,14 @@ export function ParcelasTable({
 }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
-      <h2 className="font-heading text-base font-bold text-foreground">
-        {titulo}
-      </h2>
-      {subtitulo && (
-        <p className="text-sm text-muted-foreground">{subtitulo}</p>
-      )}
-
       {erro ? (
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Não foi possível carregar as parcelas. Tente novamente.
         </p>
       ) : linhas.length === 0 ? (
-        <p className="mt-1 text-sm text-muted-foreground">
-          {VAZIO_LABEL[vazio]}
-        </p>
+        <p className="text-sm text-muted-foreground">{VAZIO_LABEL[vazio]}</p>
       ) : (
-        <div className="mt-4">
+        <div>
           <Table>
             <TableHeader>
               <TableRow>
