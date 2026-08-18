@@ -1,44 +1,33 @@
 "use client"
 
-import * as React from "react"
-
 import type { LinhaParcela } from "@/lib/kanban/parcelas"
-import { MesSwitcher } from "@/components/financeiro/mes-switcher"
+import { formatDate } from "@/lib/kanban/format"
 import { ParcelasTable } from "@/components/financeiro/parcelas-table"
 
 /**
- * Um único componente de lista alimentado por dois conjuntos de linhas — as
- * duas visões são filtro de competência sobre o mesmo dado, não dois modelos
- * diferentes (D-12). Trocar de segmento não navega, não recarrega e não vai
- * ao banco: as duas competências já vieram montadas do servidor.
+ * D-01/D-02 (Phase 6.1): não há mais seletor de competência — o servidor já
+ * resolveu a única lista relevante (padrão "vencendo hoje" ou, a partir do
+ * plano 06.1-05, o resultado de um filtro). Este componente só decide o
+ * estado vazio e repassa para `ParcelasTable`.
  */
 export function FinanceiroView({
-  linhasAtual,
-  linhasProximo,
+  linhas,
   temContratoAtivo,
   erro,
   todayISO,
 }: {
-  linhasAtual: LinhaParcela[]
-  linhasProximo: LinhaParcela[]
+  linhas: LinhaParcela[]
   temContratoAtivo: boolean
   erro?: boolean
   todayISO: string
 }) {
-  const [competencia, setCompetencia] = React.useState<"atual" | "proximo">(
-    "atual"
-  )
-
-  const linhas = competencia === "atual" ? linhasAtual : linhasProximo
-  const titulo =
-    competencia === "atual" ? "Parcelas — mês atual" : "Parcelas — próximo mês"
-  const vazio = temContratoAtivo ? "sem-parcela-no-periodo" : "sem-contrato-ativo"
+  const vazio = temContratoAtivo ? "sem-parcela-hoje" : "sem-contrato-ativo"
 
   return (
     <div className="flex flex-col gap-4">
-      <MesSwitcher value={competencia} onChange={setCompetencia} />
       <ParcelasTable
-        titulo={titulo}
+        titulo="Vencendo hoje"
+        subtitulo={formatDate(todayISO)}
         linhas={linhas}
         erro={erro}
         vazio={vazio}

@@ -44,7 +44,7 @@ export type ParcelaComCard = {
   vencimento: string
   valor_original: number
   status: StatusParcela
-  cards: { endereco: string; proprietario: string } | null
+  cards: { endereco: string; proprietario: string; numero: number } | null
   parcela_lancamentos: LancamentoDetalhado[] | null
 }
 
@@ -53,6 +53,7 @@ export type LinhaParcela = {
   competencia: string
   endereco: string
   proprietario: string
+  numero: number
   vencimento: string
   valorDevido: number
   valorPago: number
@@ -95,9 +96,21 @@ export function ultimoDiaDoMes(ano: number, mes: number): number {
 }
 
 /**
- * Implementa A-02: dia do vencimento é o dia do mês de `periodoInicio`
- * aplicado ao mês da competência, limitado ao último dia daquele mês. Sem
- * `periodoInicio`, o vencimento é o último dia do mês da competência.
+ * Implementa D-10/D-11 (Phase 6.1) — SUBSTITUI a escolha original da Phase 5
+ * (A-02: sem `periodoInicio`, vencimento caía no último dia do mês, para não
+ * fazer um contrato sem data cadastrada nascer "vencido" no dia seguinte).
+ * O usuário pediu explicitamente um fallback fixo em vez disso: sem
+ * `periodoInicio`, o dia é sempre **20** — dia que existe em todo mês, então
+ * não precisa de `Math.min`/capping nesse ramo. Com `periodoInicio`, a regra
+ * não muda: dia do mês de `periodoInicio` aplicado à competência, limitado ao
+ * último dia daquele mês (D-11).
+ *
+ * Esta função só é chamada dentro de `parcelasFaltantes`, ao montar uma
+ * parcela NOVA para `insert` — nunca contra um `UPDATE` de `parcelas.vencimento`
+ * de uma linha já existente. Parcelas geradas antes desta mudança para
+ * contratos sem `periodo_inicio` mantêm o vencimento antigo (último dia do
+ * mês) intocado; esta troca é uma decisão do usuário daqui para frente, não
+ * uma reversão silenciosa do histórico.
  */
 export function vencimentoDaCompetencia(
   competencia: string,
@@ -106,11 +119,10 @@ export function vencimentoDaCompetencia(
   const [anoStr, mesStr] = competencia.split("-")
   const ano = Number(anoStr)
   const mes = Number(mesStr)
-  const ultimoDia = ultimoDiaDoMes(ano, mes)
 
   const dia = periodoInicio
-    ? Math.min(Number(periodoInicio.split("-")[2]), ultimoDia)
-    : ultimoDia
+    ? Math.min(Number(periodoInicio.split("-")[2]), ultimoDiaDoMes(ano, mes))
+    : 20
 
   return `${ano}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}`
 }
@@ -267,6 +279,7 @@ export function montarLinhas(
       competencia: parcela.competencia,
       endereco: parcela.cards?.endereco ?? "",
       proprietario: parcela.cards?.proprietario ?? "",
+      numero: parcela.cards?.numero ?? 0,
       vencimento: parcela.vencimento,
       valorDevido,
       valorPago,

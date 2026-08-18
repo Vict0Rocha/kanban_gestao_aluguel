@@ -23,8 +23,7 @@ export default async function FinanceiroPage() {
   const now = new Date()
   const hojeISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
 
-  let linhasAtual: LinhaParcela[] = []
-  let linhasProximo: LinhaParcela[] = []
+  let linhas: LinhaParcela[] = []
   let erro = false
   // Se a contagem falhar, tratamos como true: mostrar o texto de período é
   // menos enganoso do que dizer "nenhum contrato ativo" por causa de uma
@@ -49,9 +48,9 @@ export default async function FinanceiroPage() {
       const { data, error } = await supabase
         .from("parcelas")
         .select(
-          "id, card_id, competencia, vencimento, valor_original, status, cards(endereco, proprietario), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
+          "id, card_id, competencia, vencimento, valor_original, status, cards(endereco, proprietario, numero), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
         )
-        .in("competencia", competencias)
+        .eq("vencimento", hojeISO)
 
       if (error) throw error
 
@@ -60,16 +59,14 @@ export default async function FinanceiroPage() {
       // como array — mas `parcelas.card_id -> cards.id` é muitos-para-um:
       // o PostgREST sempre devolve um objeto único ou null aqui, nunca
       // array.
+      //
+      // `vencimentoDaCompetencia` sempre devolve uma data dentro do mesmo mês
+      // da `competencia` (só o dia muda) — logo uma parcela com
+      // `vencimento = hojeISO` é sempre da competência do mês corrente, que
+      // `garantirParcelas` já garante gerada acima.
       const parcelas = (data ?? []) as unknown as ParcelaComCard[]
-      const parcelasDoMesAtual = parcelas.filter(
-        (parcela) => parcela.competencia === competencias[0]
-      )
-      const parcelasDoProximoMes = parcelas.filter(
-        (parcela) => parcela.competencia === competencias[1]
-      )
 
-      linhasAtual = montarLinhas(parcelasDoMesAtual, hojeISO)
-      linhasProximo = montarLinhas(parcelasDoProximoMes, hojeISO)
+      linhas = montarLinhas(parcelas, hojeISO)
     } catch (erroCapturado) {
       // O objeto de erro do Supabase nunca chega ao navegador — só o log
       // do servidor. A página renderiza uma constante (ver ParcelasTable).
@@ -85,14 +82,14 @@ export default async function FinanceiroPage() {
           Financeiro
         </h1>
         <p className="text-sm text-muted-foreground">
-          Parcelas do mês atual e do próximo mês de cada contrato ativo.
+          Parcelas vencendo hoje, por padrão. Use os filtros para consultar
+          outro período, proprietário, inquilino ou contrato.
         </p>
       </div>
 
       {board ? (
         <FinanceiroView
-          linhasAtual={linhasAtual}
-          linhasProximo={linhasProximo}
+          linhas={linhas}
           temContratoAtivo={temContratoAtivo}
           erro={erro}
           todayISO={hojeISO}
