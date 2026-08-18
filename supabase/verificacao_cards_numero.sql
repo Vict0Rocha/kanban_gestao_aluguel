@@ -18,6 +18,94 @@
 -- RODE UM BLOCO DE CADA VEZ, na ordem, na MESMA aba do SQL Editor
 -- (sem abrir "New query" no meio) — o BEGIN do BLOCO 2 e o ROLLBACK
 -- que fecha a Parte A precisam estar na mesma sessão.
+--
+-- *** LIÇÃO DO ENSAIO REAL DE 2026-08-18 (ver RESULTADO DO ENSAIO
+-- logo abaixo) — LEIA ANTES DE RODAR ESTE RUNBOOK DE NOVO: ***
+-- "mesma aba" NÃO garante "mesma conexão/sessão de banco" no
+-- Supabase Studio SQL Editor — ele usa um pool de conexões, e um
+-- `begin;` colado num clique de "Run" pode não estar mais amarrado
+-- às instruções coladas num clique seguinte. Isso já aconteceu aqui:
+-- os blocos que deveriam estar dentro da transação do BLOCO 2 na
+-- prática commitaram sozinhos, e o `rollback;` final rodou sem
+-- efeito nenhum. Para um ensaio que dependa de transação contínua
+-- entre múltiplos comandos, prefira `psql` ou `supabase db
+-- diff`/`supabase sql` via CLI, onde a sessão é garantida por
+-- construção — ou cole TUDO (todos os blocos da Parte A) num único
+-- clique de "Run", nunca em cliques separados.
+-- ============================================================
+
+
+-- ============================================================
+-- RESULTADO DO ENSAIO — 2026-08-18
+--
+-- Contexto primeiro: este ensaio NÃO saiu como o desenho original
+-- da PARTE A previa. O operador seguiu literalmente a instrução
+-- "rode um bloco de cada vez, na mesma aba" — só que essa instrução
+-- estava errada para o Supabase Studio SQL Editor. Ver o aviso
+-- "LIÇÃO DO ENSAIO REAL" logo acima do cabeçalho: o SQL Editor não
+-- garante a mesma conexão de banco entre cliques separados de "Run"
+-- (pool de conexões). O `begin;` do BLOCO 2 só amarrou as instruções
+-- coladas *junto* com ele naquele clique; os blocos seguintes
+-- (rodados em cliques separados) pegaram conexões novas do pool,
+-- fora de qualquer transação — cada `alter table`/`update` real do
+-- BLOCO 2 (incluindo a segunda passagem, pensada só para provar
+-- idempotência) commitou sozinho, na hora. O `rollback;` do fim
+-- rodou "no vazio": Postgres não erra rollback sem transação aberta,
+-- só ignora — por isso nada pareceu errado até comparar
+-- `updated_at_max` antes/depois.
+--
+-- Também foi achado, durante o ensaio, um bug real no BLOCO 1
+-- original: ele referenciava a coluna `numero`
+-- (`count(*) filter (where numero is not null) as com_numero`)
+-- antes dela existir, quebrando com `column "numero" does not
+-- exist` numa leitura pré-migração — já corrigido no próprio BLOCO
+-- 1 abaixo (a versão corrigida foi passada ao operador na hora, na
+-- forma `select count(*) as cards_total, max(updated_at) as
+-- updated_at_max from public.cards;`).
+--
+-- Resultado, então: a migração NÃO ficou confinada a uma transação
+-- revertida — ela foi aplicada e commitada de verdade em produção
+-- durante este "ensaio". Verificado passo a passo pelo operador,
+-- com as mesmas queries de integridade/ordem/constraint/RLS que a
+-- PARTE A prescreve:
+--
+--   - cards_total = numeros_distintos = numero_max = 47,
+--     numero_min = 1, sem_numero = 0 — numeração completa, sem
+--     duplicata, sem buraco
+--   - segunda passagem da DDL (prova de idempotência pretendida):
+--     `setval` retornou 48 nas duas rodadas — nenhuma renumeração
+--   - fora_de_ordem = 0
+--   - teste da constraint única (BLOCO 3): "Success. No rows
+--     returned" no bloco `do $$ ... $$` — só é possível se
+--     `unique_violation` foi capturado pelo `exception when
+--     unique_violation` (o caminho de sucesso do `do $$` levanta
+--     `raise exception 'FALHOU: ...'` sem handler se a constraint
+--     NÃO tivesse recusado a duplicata)
+--   - RLS (BLOCO 4): count = 0 sob e-mail intruso (`.invalid`),
+--     count = 47 sob o e-mail real da allowlist
+--   - pós-fato: `numero integer not null default
+--     nextval('cards_numero_seq'::regclass)` confirmado via
+--     information_schema.columns; constraint `cards_numero_unico
+--     UNIQUE (numero)` presente; `select numero from public.cards
+--     limit 1;` devolveu `numero: 4` — a coluna existe de verdade
+--   - `updated_at_max` mudou entre a primeira e a última leitura
+--     (~5h30 de diferença); investigado e não é sobra do teste — é
+--     edição real, não relacionada, feita no board nesse intervalo
+--
+-- Decisão explícita do usuário (via pergunta direta do orquestrador,
+-- respondida por ele): "Aceitar como aplicada" — não reverter. A
+-- migração já é a versão final revisada, os dados batem 100%
+-- limpos, e nada no app ainda lê `cards.numero` (só entra na
+-- Wave 4 da fase), então não havia custo real em reverter e
+-- reaplicar minutos depois. O plano 06.1-03 original ("aplicar a
+-- migração via `supabase db push`") deixa de ser necessário — o
+-- push já aconteceu de fato aqui; 06.1-03 é replanejado pelo
+-- orquestrador para verificação pós-push + documentação.
+--
+-- Nenhuma correção na migração foi necessária: a DDL em si (dentro
+-- da transação pretendida) estava e continua correta — só a leitura
+-- do BLOCO 1, ANTES/FORA de qualquer transação, estava quebrada, e
+-- já foi corrigida abaixo.
 -- ============================================================
 
 
@@ -29,16 +117,22 @@
 -- ============================================================
 -- BLOCO 1 — PRÉ-VOO (rode sozinho, só leitura, não altera nada)
 --
--- Anote os três números abaixo. `com_numero` deve ser 0 antes desta
--- migração existir — nenhum card tem numero preenchido ainda. O
--- BLOCO 6 (Parte B) confere que cards_total e updated_at_max não
--- mudaram depois do push.
+-- Anote os dois números abaixo. O BLOCO 6 (Parte B) confere que
+-- cards_total e updated_at_max não mudaram depois do push.
+--
+-- CORRIGIDO em 2026-08-18 (ver RESULTADO DO ENSAIO no topo deste
+-- arquivo): a versão original desta consulta trazia
+-- `count(*) filter (where numero is not null) as com_numero`, que
+-- quebra com `column "numero" does not exist` quando rodada antes
+-- da coluna existir — a coluna só nasce dentro da transação do
+-- BLOCO 2, e este BLOCO 1 roda ANTES disso (ou, na releitura do
+-- passo 5, numa sessão separada que não viu a transação em
+-- andamento). Por isso não pode referenciar `numero`.
 -- ============================================================
 
 select
-  count(*)                                     as cards_total,
-  max(updated_at)                              as updated_at_max,
-  count(*) filter (where numero is not null)   as com_numero
+  count(*)          as cards_total,
+  max(updated_at)   as updated_at_max
 from public.cards;
 
 
