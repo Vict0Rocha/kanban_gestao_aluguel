@@ -1,11 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { Banknote } from "lucide-react"
+import { Banknote, History } from "lucide-react"
 
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
 import type { LinhaParcela } from "@/lib/kanban/parcelas"
 import { AjustarParcelaDialog } from "@/components/financeiro/ajustar-parcela-dialog"
+import { ParcelaHistoricoSheet } from "@/components/financeiro/parcela-historico-sheet"
 import { ParcelaSituacaoBadge } from "@/components/financeiro/parcela-situacao-badge"
 import { RegistrarPagamentoDialog } from "@/components/financeiro/registrar-pagamento-dialog"
 import { Button } from "@/components/ui/button"
@@ -33,7 +34,7 @@ function AcoesCell({
   todayISO: string
 }) {
   const [dialogoAberto, setDialogoAberto] = React.useState<
-    "pagamento" | "ajustar" | null
+    "pagamento" | "ajustar" | "historico" | null
   >(null)
 
   return (
@@ -53,6 +54,14 @@ function AcoesCell({
       >
         Ajustar
       </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={`Ver histórico de lançamentos — ${linha.endereco}`}
+        onClick={() => setDialogoAberto("historico")}
+      >
+        <History className="size-4" />
+      </Button>
       <RegistrarPagamentoDialog
         parcelaId={linha.id}
         endereco={linha.endereco}
@@ -70,6 +79,14 @@ function AcoesCell({
         valorDevido={linha.valorDevido}
         open={dialogoAberto === "ajustar"}
         onOpenChange={(open) => setDialogoAberto(open ? "ajustar" : null)}
+      />
+      <ParcelaHistoricoSheet
+        endereco={linha.endereco}
+        competencia={linha.competencia}
+        vencimento={linha.vencimento}
+        lancamentos={linha.lancamentos}
+        open={dialogoAberto === "historico"}
+        onOpenChange={(open) => setDialogoAberto(open ? "historico" : null)}
       />
     </TableCell>
   )
