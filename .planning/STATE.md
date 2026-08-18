@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 5
-status: completed
+current_phase: 6
+current_phase_name: Baixa e ajustes de parcela
+status: executing
 stopped_at: "Roadmap da v2.0 escrito — Phases 4-8, 28 de 28 requisitos mapeados, traceability preenchida em REQUIREMENTS.md. Próximo passo: `/gsd-plan-phase 4`. Pendências herdadas da v1.0 continuam abertas: confirmar ROBUST-02 com login real e decidir sobre SEC-02 quando o usuário quiser retomar segurança."
-last_updated: "2026-08-17T23:40:32.320Z"
+last_updated: "2026-08-18T00:18:18.162Z"
 last_activity: 2026-08-17
 last_activity_desc: Phase 4 marked complete
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 7
+  total_plans: 9
   completed_plans: 7
   percent: 40
-current_phase_name: Aba Financeiro com parcelas automáticas
 ---
 
 # Project State
@@ -24,14 +24,14 @@ current_phase_name: Aba Financeiro com parcelas automáticas
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 5 — Aba Financeiro com parcelas automáticas
+**Current focus:** Phase 6 — Baixa e ajustes de parcela
 
 ## Current Position
 
-Phase: 5 — COMPLETE
-Plan: 1 of 3
-Status: Phase 5 complete
-Last activity: 2026-08-17 — Phase 5 marked complete
+Phase: 6 (Baixa e ajustes de parcela) — EXECUTING
+Plan: 1 of 2
+Status: Executing Phase 6
+Last activity: 2026-08-17 — Phase 6 execution started
 
 **Ordem de execução:** 4 → 5 → 6 → 7 → 8. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
