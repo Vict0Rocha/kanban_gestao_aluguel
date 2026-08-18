@@ -597,3 +597,51 @@ export async function registrarPagamentoAction(
 
   return { ok: true, data: undefined }
 }
+
+const TIPOS_AJUSTE: Array<"acrescimo" | "desconto"> = ["acrescimo", "desconto"]
+
+export async function ajustarParcelaAction(
+  parcelaId: string,
+  tipo: "acrescimo" | "desconto",
+  valor: number,
+  observacao: string | null
+): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido =
+    id(parcelaId, "Parcela") ??
+    (TIPOS_AJUSTE.includes(tipo) ? null : "Tipo de ajuste inválido.") ??
+    valorLancamento(valor, "Informe um valor de ajuste válido.") ??
+    textoOpcional(observacao, "Observação", 2000)
+  if (invalido) return { ok: false, error: invalido }
+
+  // Sem campo `data` (A-04, fica no default current_date do banco).
+  const { data: inserido, error } = await sessao.supabase
+    .from("parcela_lancamentos")
+    .insert({
+      parcela_id: parcelaId,
+      tipo,
+      valor,
+      observacao: observacao?.trim() || null,
+      criado_por: sessao.user.id,
+    })
+    .select("id")
+
+  if (error) {
+    console.error("ajustarParcela", error)
+    return { ok: false, error: erroDoBanco(error.code, "registrar o ajuste") }
+  }
+  if (!inserido || inserido.length === 0) {
+    return { ok: false, error: semLinhas("registrar o ajuste") }
+  }
+
+  // Mesmo helper da Task 1 — nenhuma lógica de status nova é escrita aqui,
+  // D-04 é reusado, não reimplementado. Esta ação nunca consulta ou
+  // condiciona a escrita à flag manual de contrato ativo/inativo do card
+  // (D-07) — só setCardAtivoAction e garantirParcelas tocam nessa flag.
+  const erroStatus = await recalcularEGravarStatus(sessao.supabase, parcelaId)
+  if (erroStatus) return { ok: false, error: erroStatus }
+
+  return { ok: true, data: undefined }
+}

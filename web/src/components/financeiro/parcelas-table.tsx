@@ -5,6 +5,7 @@ import { Banknote } from "lucide-react"
 
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
 import type { LinhaParcela } from "@/lib/kanban/parcelas"
+import { AjustarParcelaDialog } from "@/components/financeiro/ajustar-parcela-dialog"
 import { ParcelaSituacaoBadge } from "@/components/financeiro/parcela-situacao-badge"
 import { RegistrarPagamentoDialog } from "@/components/financeiro/registrar-pagamento-dialog"
 import { Button } from "@/components/ui/button"
@@ -31,9 +32,9 @@ function AcoesCell({
   linha: LinhaParcela
   todayISO: string
 }) {
-  const [dialogoAberto, setDialogoAberto] = React.useState<"pagamento" | null>(
-    null
-  )
+  const [dialogoAberto, setDialogoAberto] = React.useState<
+    "pagamento" | "ajustar" | null
+  >(null)
 
   return (
     <TableCell className="flex items-center gap-2">
@@ -45,6 +46,13 @@ function AcoesCell({
         <Banknote className="size-4" />
         Pagamento
       </Button>
+      <Button
+        variant="ghost"
+        aria-label={`Ajustar valor — ${linha.endereco}`}
+        onClick={() => setDialogoAberto("ajustar")}
+      >
+        Ajustar
+      </Button>
       <RegistrarPagamentoDialog
         parcelaId={linha.id}
         endereco={linha.endereco}
@@ -54,6 +62,14 @@ function AcoesCell({
         todayISO={todayISO}
         open={dialogoAberto === "pagamento"}
         onOpenChange={(open) => setDialogoAberto(open ? "pagamento" : null)}
+      />
+      <AjustarParcelaDialog
+        parcelaId={linha.id}
+        endereco={linha.endereco}
+        competencia={linha.competencia}
+        valorDevido={linha.valorDevido}
+        open={dialogoAberto === "ajustar"}
+        onOpenChange={(open) => setDialogoAberto(open ? "ajustar" : null)}
       />
     </TableCell>
   )

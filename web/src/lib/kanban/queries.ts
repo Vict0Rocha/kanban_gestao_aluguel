@@ -1,6 +1,7 @@
 import type { ActionResult, Card, CardDetailsInput } from "./types"
 import type { AlertStatus, AlertType } from "./alerts"
 import {
+  ajustarParcelaAction,
   createCardAction,
   createColumnAction,
   deleteCardAction,
@@ -88,4 +89,13 @@ export async function registrarPagamento(
   observacao: string | null
 ) {
   return unwrap(registrarPagamentoAction(parcelaId, valor, data, observacao))
+}
+
+export async function ajustarParcela(
+  parcelaId: string,
+  tipo: "acrescimo" | "desconto",
+  valor: number,
+  observacao: string | null
+) {
+  return unwrap(ajustarParcelaAction(parcelaId, tipo, valor, observacao))
 }
