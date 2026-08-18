@@ -17,11 +17,13 @@ export function FinanceiroView({
   linhasProximo,
   temContratoAtivo,
   erro,
+  todayISO,
 }: {
   linhasAtual: LinhaParcela[]
   linhasProximo: LinhaParcela[]
   temContratoAtivo: boolean
   erro?: boolean
+  todayISO: string
 }) {
   const [competencia, setCompetencia] = React.useState<"atual" | "proximo">(
     "atual"
@@ -35,7 +37,13 @@ export function FinanceiroView({
   return (
     <div className="flex flex-col gap-4">
       <MesSwitcher value={competencia} onChange={setCompetencia} />
-      <ParcelasTable titulo={titulo} linhas={linhas} erro={erro} vazio={vazio} />
+      <ParcelasTable
+        titulo={titulo}
+        linhas={linhas}
+        erro={erro}
+        vazio={vazio}
+        todayISO={todayISO}
+      />
     </div>
   )
 }

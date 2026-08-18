@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import type { ActionResult, Card, CardDetailsInput } from "./types"
 import type { AlertStatus, AlertType } from "./alerts"
+import { somarLancamentos, statusDeParcela, type LancamentoResumo } from "./parcelas"
 
 /**
  * Camada de escrita do sistema. Tudo que grava passa por aqui.
@@ -76,6 +77,25 @@ function id(valor: unknown, campo: string) {
 function numeroFinito(valor: unknown, campo: string) {
   if (typeof valor !== "number" || !Number.isFinite(valor)) {
     return `${campo} inválido.`
+  }
+  return null
+}
+
+/**
+ * Espelha `parcela_lancamentos_valor_nao_negativo` +
+ * `parcela_lancamentos_valor_exigido`. O chamador passa a frase certa para
+ * cada diálogo (A-02) — esta função não tem texto fixo.
+ */
+function valorLancamento(valor: unknown, mensagem: string): string | null {
+  if (typeof valor !== "number" || !Number.isFinite(valor)) return mensagem
+  if (valor <= 0 || valor >= 10_000_000) return mensagem
+  return null
+}
+
+/** Só é usada por `registrarPagamentoAction` — o diálogo de ajuste não tem campo de data (A-04). */
+function dataObrigatoria(valor: unknown): string | null {
+  if (typeof valor !== "string" || valor.length === 0 || !DATA_ISO.test(valor)) {
+    return "Informe a data do pagamento."
   }
   return null
 }
@@ -475,5 +495,105 @@ export async function resolveAlertAction(input: {
   if (!data || data.length === 0) {
     return { ok: false, error: semLinhas("registrar o alerta") }
   }
+  return { ok: true, data: undefined }
+}
+
+// ------------------------------------------------------------------
+// Parcelas
+// ------------------------------------------------------------------
+
+/**
+ * Única função que `registrarPagamentoAction`/`ajustarParcelaAction` usam
+ * para decidir o novo status — nenhum dos dois recalcula por conta própria
+ * (evita duplicar a regra de D-04 entre pagamento e ajuste). Sempre relê a
+ * soma de TODOS os lançamentos direto do banco, nunca aplica um delta.
+ */
+async function recalcularEGravarStatus(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  parcelaId: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("parcelas")
+    .select("valor_original, parcela_lancamentos(tipo, valor)")
+    .eq("id", parcelaId)
+    .single()
+
+  if (error || !data) {
+    console.error("recalcularEGravarStatus (leitura)", error)
+    return erroDoBanco(error?.code, "atualizar a situação da parcela")
+  }
+
+  // Mesmo motivo já documentado em page.tsx: este cliente não tem Database
+  // generics, então o embed `parcela_lancamentos` é inferido de um jeito que
+  // não bate exatamente com o shape real devolvido pelo PostgREST.
+  const parcela = data as unknown as {
+    valor_original: number
+    parcela_lancamentos: LancamentoResumo[] | null
+  }
+
+  const { valorDevido, valorPago } = somarLancamentos(
+    parcela.valor_original,
+    parcela.parcela_lancamentos
+  )
+  const status = statusDeParcela(valorDevido, valorPago)
+
+  const { data: atualizado, error: erroUpdate } = await supabase
+    .from("parcelas")
+    .update({ status })
+    .eq("id", parcelaId)
+    .select("id")
+
+  if (erroUpdate) {
+    console.error("recalcularEGravarStatus (update)", erroUpdate)
+    return erroDoBanco(erroUpdate.code, "atualizar a situação da parcela")
+  }
+  if (!atualizado || atualizado.length === 0) {
+    return semLinhas("atualizar a situação da parcela")
+  }
+  return null
+}
+
+export async function registrarPagamentoAction(
+  parcelaId: string,
+  valor: number,
+  data: string,
+  observacao: string | null
+): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido =
+    id(parcelaId, "Parcela") ??
+    valorLancamento(valor, "Informe um valor de pagamento válido.") ??
+    dataObrigatoria(data) ??
+    textoOpcional(observacao, "Observação", 2000)
+  if (invalido) return { ok: false, error: invalido }
+
+  const { data: inserido, error } = await sessao.supabase
+    .from("parcela_lancamentos")
+    .insert({
+      parcela_id: parcelaId,
+      tipo: "pagamento",
+      valor,
+      data,
+      observacao: observacao?.trim() || null,
+      // D-02: vem da sessão do servidor, nunca do que o cliente mandou —
+      // mesmo raciocínio de createCardAction. criado_em fica no default
+      // now() do banco.
+      criado_por: sessao.user.id,
+    })
+    .select("id")
+
+  if (error) {
+    console.error("registrarPagamento", error)
+    return { ok: false, error: erroDoBanco(error.code, "registrar o pagamento") }
+  }
+  if (!inserido || inserido.length === 0) {
+    return { ok: false, error: semLinhas("registrar o pagamento") }
+  }
+
+  const erroStatus = await recalcularEGravarStatus(sessao.supabase, parcelaId)
+  if (erroStatus) return { ok: false, error: erroStatus }
+
   return { ok: true, data: undefined }
 }

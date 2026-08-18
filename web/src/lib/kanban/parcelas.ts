@@ -17,6 +17,18 @@ export type LancamentoResumo = {
   valor: number
 }
 
+/** Lançamento com todos os campos que o histórico (plano 06-02) precisa. */
+export type LancamentoDetalhado = {
+  id: string
+  tipo: "pagamento" | "acrescimo" | "desconto" | "destrava"
+  valor: number
+  data: string
+  observacao: string | null
+  motivo: string | null
+  criado_em: string
+  profiles: { full_name: string | null; email: string | null } | null
+}
+
 export type CardParaGeracao = {
   id: string
   valor: number
@@ -33,7 +45,7 @@ export type ParcelaComCard = {
   valor_original: number
   status: StatusParcela
   cards: { endereco: string; proprietario: string } | null
-  parcela_lancamentos: LancamentoResumo[] | null
+  parcela_lancamentos: LancamentoDetalhado[] | null
 }
 
 export type LinhaParcela = {
@@ -45,6 +57,7 @@ export type LinhaParcela = {
   valorDevido: number
   valorPago: number
   situacao: Situacao
+  lancamentos: LancamentoDetalhado[]
 }
 
 /** Dia 1 do mês da string "YYYY-MM-DD" recebida, sem passar por Date. */
@@ -210,6 +223,24 @@ export function somarLancamentos(
 }
 
 /**
+ * Implementa D-04 ao pé da letra, com a fronteira resolvida por A-03: um
+ * desconto grande o bastante pode deixar `valorDevido <= 0` numa parcela que
+ * já tem pagamento registrado. A cláusula "e `valorDevido > 0`" de D-04
+ * bloqueia literalmente o resultado "paga" nesse caso, e como há pagamento
+ * (`valorPago > 0`) o resultado não pode ser "aberta" — "parcial" é a única
+ * leitura que sobra dentro da própria régua de D-04, não uma invenção de
+ * estado novo.
+ */
+export function statusDeParcela(
+  valorDevido: number,
+  valorPago: number
+): StatusParcela {
+  if (valorPago <= 0) return "aberta"
+  if (valorDevido > 0 && valorPago >= valorDevido) return "paga"
+  return "parcial"
+}
+
+/**
  * Aplica `somarLancamentos` e `situacaoDaParcela` em cada parcela e ordena
  * por vencimento crescente e, em empate, por endereço. Quando o embed
  * `cards` vier nulo, usa string vazia — a linha ainda renderiza em vez de
@@ -225,6 +256,12 @@ export function montarLinhas(
       parcela.parcela_lancamentos
     )
 
+    // A-01: mais recente primeiro — ordenação local a este campo, não
+    // interfere na ordenação por vencimento/endereço das próprias linhas.
+    const lancamentos = [...(parcela.parcela_lancamentos ?? [])].sort(
+      (a, b) => (a.criado_em < b.criado_em ? 1 : a.criado_em > b.criado_em ? -1 : 0)
+    )
+
     return {
       id: parcela.id,
       competencia: parcela.competencia,
@@ -234,6 +271,7 @@ export function montarLinhas(
       valorDevido,
       valorPago,
       situacao: situacaoDaParcela(parcela.status, parcela.vencimento, hojeISO),
+      lancamentos,
     }
   })
 

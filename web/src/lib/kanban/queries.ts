@@ -7,6 +7,7 @@ import {
   deleteColumnAction,
   moveCardAction,
   moveColumnAction,
+  registrarPagamentoAction,
   renameColumnAction,
   resolveAlertAction,
   setCardAtivoAction,
@@ -78,4 +79,13 @@ export async function resolveAlert(input: {
   status: Exclude<AlertStatus, "pendente">
 }) {
   return unwrap(resolveAlertAction(input))
+}
+
+export async function registrarPagamento(
+  parcelaId: string,
+  valor: number,
+  data: string,
+  observacao: string | null
+) {
+  return unwrap(registrarPagamentoAction(parcelaId, valor, data, observacao))
 }
