@@ -118,12 +118,17 @@ Plans:
   5. Contrato com `periodo_inicio` **e** `periodo_fim` gera parcelas para todos os meses do período inteiro, incluindo os já passados (retroativo); contrato com só uma das duas datas, ou nenhuma, continua restrito a mês atual + próximo
 
 **Pilares cruzados**: a geração retroativa (critério 5) reabre uma decisão que a spec original tinha fechado como "sem backfill" — o volume real de parcelas que isso cria em produção precisa ser medido (consulta SQL de pré-voo, mesmo espírito da Phase 4) antes do plano de execução assumir que é seguro rodar sem um portão de confirmação. FINSEG-01/02/03 continuam valendo sem re-implementação — esta fase só muda o que é gerado e como é consultado, não quem pode escrever
-**Plans**: TBD
+**Plans**: 6 plans
 **UI hint**: yes
 
 Plans:
 
-- [ ] 06.1-01: TBD (run `/gsd-plan-phase 06.1` para quebrar em planos)
+- [ ] 06.1-01-PLAN.md — Migração `cards.numero` (sequence, coluna, backfill, constraint única) + runbook de ensaio
+- [ ] 06.1-02-PLAN.md — Ensaiar a migração no SQL Editor de produção dentro de uma transação desfeita no fim
+- [ ] 06.1-03-PLAN.md — Aplicar em produção (checkpoint de decisão), conferir e documentar em `docs/data-model.md`
+- [ ] 06.1-04-PLAN.md — Fatia vertical: "Vencendo hoje" por padrão, vencimento com fallback no dia 20, pílula de ID no Board e no Financeiro
+- [ ] 06.1-05-PLAN.md — Filtro completo (proprietário/inquilino/período/ID) atrás do botão "Filtrar", consulta real no servidor
+- [ ] 06.1-06-PLAN.md — Geração retroativa por período completo, com checkpoint de pré-voo de impacto em produção (D-17)
 
 ### Phase 7: Conciliação e destrava rastreada
 
