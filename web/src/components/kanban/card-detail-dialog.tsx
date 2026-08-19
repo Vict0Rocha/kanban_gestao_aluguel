@@ -101,33 +101,33 @@ export function CardDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <div className="flex items-center justify-between gap-2 pr-6">
-            <DialogTitle>Detalhes do imóvel</DialogTitle>
-            <IdPill numero={card.numero} variant="subtle" />
-          </div>
+          <DialogTitle>Detalhes do imóvel</DialogTitle>
         </DialogHeader>
 
         {/* Fora do form: escrita otimista imediata via onToggleAtivo, sem
             esperar o botão "Salvar" do formulário abaixo. */}
         <div className="flex items-center justify-between gap-2 border-b border-border pb-4">
           <span className="text-sm font-medium text-foreground">Situação</span>
-          <button
-            type="button"
-            onClick={() => onToggleAtivo(card.id, !card.ativo)}
-            aria-label={
-              card.ativo
-                ? `Marcar ${card.endereco} como inativo`
-                : `Marcar ${card.endereco} como ativo`
-            }
-            className={cn(
-              "rounded-full border px-2 py-1 text-xs font-semibold transition-colors",
-              card.ativo
-                ? "border-primary/40 bg-primary/10 text-primary"
-                : "border-border bg-muted text-muted-foreground"
-            )}
-          >
-            {card.ativo ? "Ativo" : "Inativo"}
-          </button>
+          <div className="flex items-center gap-2">
+            <IdPill numero={card.numero} variant="subtle" />
+            <button
+              type="button"
+              onClick={() => onToggleAtivo(card.id, !card.ativo)}
+              aria-label={
+                card.ativo
+                  ? `Marcar ${card.endereco} como inativo`
+                  : `Marcar ${card.endereco} como ativo`
+              }
+              className={cn(
+                "rounded-full border px-2 py-1 text-xs font-semibold transition-colors",
+                card.ativo
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-border bg-muted text-muted-foreground"
+              )}
+            >
+              {card.ativo ? "Ativo" : "Inativo"}
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
