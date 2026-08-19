@@ -152,17 +152,92 @@ export type ParcelaFaltante = {
 }
 
 /**
- * Para cada combinação card × competência que passe em `competenciaNoPeriodo`
- * e não esteja em `existentes`, monta o objeto pronto para INSERT.
- * `valor_original` é a fotografia do `valor` do card neste instante (D-05,
- * PARCELA-03) — depois de gravado ninguém relê `cards.valor` para essa
- * parcela. Cards com `valor` não finito ou <= 0 são descartados: o CHECK
+ * Implementa o discriminador de D-12/D-14/D-15 (Phase 6.1): um contrato só
+ * entra no ramo de geração de período completo (retroativo incluído) quando
+ * as DUAS datas estão preenchidas. Só `periodo_inicio` (contrato em prazo
+ * indeterminado, comum após o término do prazo fixo) ou nenhuma das duas
+ * caem no fallback de `competenciasAlvo` (mês atual + próximo), sem mudança
+ * de comportamento em relação à Phase 5.
+ */
+export function temPeriodoCompleto(card: CardParaGeracao): boolean {
+  return Boolean(card.periodo_inicio) && Boolean(card.periodo_fim)
+}
+
+/**
+ * Implementa D-12/D-13 ao pé da letra: devolve o dia 1 de cada mês de
+ * `periodoInicio` até `periodoFim`, inclusive, iterando mês a mês (mesmo
+ * padrão de `competenciasAlvo` para virar o ano ao passar de dezembro).
+ * Nenhum teto de quantidade de meses é aplicado aqui — um contrato Jan–Dez
+ * gera 12 competências, um contrato de vários anos gera todas, sem cap
+ * silencioso (ver Task 1 do plano 06.1-06 para a decisão de pré-voo sobre
+ * avisos extras). Defensivo: se o mês de `periodoFim` for anterior ao de
+ * `periodoInicio`, devolve `[]` — `validarPeriodo` em actions.ts já impede
+ * essa entrada na origem, mas esta função não deve confiar cegamente nisso.
+ */
+export function competenciasDoPeriodo(
+  periodoInicio: string,
+  periodoFim: string
+): string[] {
+  const inicio = inicioDoMes(periodoInicio)
+  const fim = inicioDoMes(periodoFim)
+
+  if (fim < inicio) return []
+
+  const competencias: string[] = []
+
+  let [ano, mes] = inicio.split("-").map(Number)
+  const [anoFim, mesFim] = fim.split("-").map(Number)
+
+  while (ano < anoFim || (ano === anoFim && mes <= mesFim)) {
+    competencias.push(`${ano}-${String(mes).padStart(2, "0")}-01`)
+
+    if (mes === 12) {
+      mes = 1
+      ano += 1
+    } else {
+      mes += 1
+    }
+  }
+
+  return competencias
+}
+
+/**
+ * Decide, por card, qual conjunto de competências alvo usar: período
+ * completo (D-12/D-13, incluindo retroativo) quando `temPeriodoCompleto`,
+ * senão o fallback de `competenciasAlvo` (D-14/D-15, comportamento da Phase
+ * 5 inalterado).
+ */
+export function competenciasAlvoParaCard(
+  card: CardParaGeracao,
+  hojeISO: string
+): string[] {
+  if (temPeriodoCompleto(card)) {
+    return competenciasDoPeriodo(card.periodo_inicio!, card.periodo_fim!)
+  }
+
+  return competenciasAlvo(hojeISO)
+}
+
+/**
+ * Para cada card, calcula seu próprio conjunto de competências alvo via
+ * `competenciasAlvoParaCard` (período completo incluindo retroativo, ou o
+ * fallback de mês atual + próximo) e, para cada combinação card ×
+ * competência que passe em `competenciaNoPeriodo` e não esteja em
+ * `existentes`, monta o objeto pronto para INSERT. `competenciaNoPeriodo`
+ * continua rodando dentro do laço como defesa em profundidade: para o caso
+ * de período completo ela é redundante por construção, mas para o caso de
+ * fallback continua filtrando exatamente como antes.
+ * `valor_original` é a fotografia do `valor` ATUAL do card neste instante
+ * (D-05/PARCELA-03; D-18 para a competência retroativa) — depois de gravado
+ * ninguém relê `cards.valor` para essa parcela, mesmo que a competência seja
+ * passada. Cards com `valor` não finito ou <= 0 são descartados: o CHECK
  * `parcelas_valor_original_positivo` recusaria a linha, e como o INSERT é um
  * único comando, um card ruim derrubaria o lote inteiro.
  */
 export function parcelasFaltantes(
   cards: CardParaGeracao[],
-  competencias: string[],
+  hojeISO: string,
   existentes: { card_id: string; competencia: string }[]
 ): ParcelaFaltante[] {
   const chavesExistentes = new Set(
@@ -173,6 +248,8 @@ export function parcelasFaltantes(
 
   for (const card of cards) {
     if (!Number.isFinite(card.valor) || card.valor <= 0) continue
+
+    const competencias = competenciasAlvoParaCard(card, hojeISO)
 
     for (const competencia of competencias) {
       if (!competenciaNoPeriodo(competencia, card.periodo_inicio, card.periodo_fim)) {
@@ -300,14 +377,25 @@ export function montarLinhas(
 }
 
 /**
- * Implementa D-01/D-03/D-06. O único cliente Supabase permitido aqui é o de
- * sessão do usuário — recebido por parâmetro, nunca construído neste
- * módulo. O SELECT de cards já é filtrado pelo RLS: quem está fora de
- * `allowed_members` recebe lista vazia e, por construção, não gera nada.
+ * Implementa D-01/D-03/D-06 e, a partir da Phase 6.1 (PARCELA-06), D-12/D-16.
+ * O único cliente Supabase permitido aqui é o de sessão do usuário —
+ * recebido por parâmetro, nunca construído neste módulo. O SELECT de cards
+ * já é filtrado pelo RLS: quem está fora de `allowed_members` recebe lista
+ * vazia e, por construção, não gera nada.
+ *
+ * A busca de `existentes` não filtra mais por uma janela fixa de
+ * competências: agora que cada card pode ter seu próprio conjunto de
+ * competências alvo (período completo vs. fallback de dois meses), a
+ * checagem de duplicata precisa conhecer TODAS as parcelas já existentes
+ * desses cards, não só as de uma janela fixa — senão uma parcela retroativa
+ * já gerada poderia ser recriada indevidamente. O `upsert(...,
+ * ignoreDuplicates: true)` sobre o índice único `parcelas_unica_por_competencia`
+ * continua sendo o cinto e suspensório contra corrida entre abas, agora
+ * sobre um conjunto de candidatos maior.
  */
 export async function garantirParcelas(
   supabase: SupabaseClient,
-  competencias: [string, string]
+  hojeISO: string
 ): Promise<void> {
   const { data: cards, error: erroCards } = await supabase
     .from("cards")
@@ -316,18 +404,19 @@ export async function garantirParcelas(
 
   if (erroCards) throw erroCards
 
+  const cardsAtivos = (cards ?? []) as CardParaGeracao[]
+  const cardIds = cardsAtivos.map((card) => card.id)
+
+  if (cardIds.length === 0) return
+
   const { data: existentes, error: erroExistentes } = await supabase
     .from("parcelas")
     .select("card_id, competencia")
-    .in("competencia", competencias)
+    .in("card_id", cardIds)
 
   if (erroExistentes) throw erroExistentes
 
-  const faltantes = parcelasFaltantes(
-    (cards ?? []) as CardParaGeracao[],
-    competencias,
-    existentes ?? []
-  )
+  const faltantes = parcelasFaltantes(cardsAtivos, hojeISO, existentes ?? [])
 
   if (faltantes.length === 0) return
 

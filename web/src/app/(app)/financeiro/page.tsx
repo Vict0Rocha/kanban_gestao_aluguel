@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
 import {
-  competenciasAlvo,
   garantirParcelas,
   montarLinhas,
   type LinhaParcela,
@@ -16,7 +15,7 @@ const SELECT_PARCELA_PADRAO =
 const SELECT_PARCELA_FILTRADA =
   "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, inquilino), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
 
-/** Dia 1 do mês seguinte a "YYYY-MM", sem passar por Date — mesmo padrão de `competenciasAlvo`. */
+/** Dia 1 do mês seguinte a "YYYY-MM", sem passar por Date — mesmo padrão usado em parcelas.ts. */
 function inicioMesSeguinte(periodoYYYYMM: string): string {
   const [anoStr, mesStr] = periodoYYYYMM.split("-")
   const ano = Number(anoStr)
@@ -71,8 +70,6 @@ export default async function FinanceiroPage({
   let temContratoAtivo = true
 
   if (board) {
-    const competencias = competenciasAlvo(hojeISO)
-
     const { count, error: erroContagem } = await supabase
       .from("cards")
       .select("id", { count: "exact", head: true })
@@ -85,7 +82,11 @@ export default async function FinanceiroPage({
     try {
       // D-16: geração preguiçosa continua rodando em toda carga da rota,
       // com filtro aplicado ou não — só a query de LEITURA abaixo muda.
-      await garantirParcelas(supabase, competencias)
+      // A partir da Phase 6.1 (PARCELA-06), o conjunto de competências alvo
+      // é calculado por card dentro de garantirParcelas/parcelasFaltantes
+      // (período completo vs. fallback de dois meses), não mais uma janela
+      // fixa passada por aqui.
+      await garantirParcelas(supabase, hojeISO)
 
       let query = supabase
         .from("parcelas")
