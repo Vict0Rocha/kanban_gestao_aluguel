@@ -9,6 +9,7 @@ import {
   EXCLUSAO_BLOQUEADA_POR_LANCAMENTO,
   EXCLUSAO_COLUNA_BLOQUEADA_POR_LANCAMENTO,
   MENSAGEM_PARCELA_OCULTA,
+  parcelaVisivel,
   type CardVisibilidade,
 } from "./visibilidade"
 
@@ -515,6 +516,160 @@ export async function setCardAtivoAction(
     return { ok: false, error: semLinhas("atualizar o imóvel") }
   }
   return { ok: true, data: undefined }
+}
+
+// ------------------------------------------------------------------
+// Arquivamento (D-07/D-08/D-10/D-12)
+// ------------------------------------------------------------------
+
+export async function arquivarCardAction(cardId: string): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(cardId, "Imóvel")
+  if (invalido) return { ok: false, error: invalido }
+
+  // Grava só `arquivado_em`. Arquivamento e situação do contrato (`ativo`)
+  // são ortogonais de propósito: se arquivar também desativasse,
+  // desarquivar teria de adivinhar se o contrato estava ativo antes dessa
+  // gravação — e essa informação já teria sido perdida. D-12 diz que
+  // desarquivar devolve o contrato ao funcionamento normal, não a um
+  // estado inventado, então esta action nunca toca `ativo`.
+  const { data, error } = await sessao.supabase
+    .from("cards")
+    .update({ arquivado_em: new Date().toISOString() })
+    .eq("id", cardId)
+    .select("id")
+
+  if (error) {
+    console.error("arquivarCard", error)
+    return { ok: false, error: erroDoBanco(error.code, "arquivar o imóvel") }
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: semLinhas("arquivar o imóvel") }
+  }
+  return { ok: true, data: undefined }
+}
+
+export async function desarquivarCardAction(cardId: string): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(cardId, "Imóvel")
+  if (invalido) return { ok: false, error: invalido }
+
+  // Idêntica a `arquivarCardAction`, gravando nulo. Nada é regenerado
+  // aqui: as parcelas que a regra de D-01 escondia enquanto o contrato
+  // estava arquivado simplesmente voltam a passar em
+  // `avaliarVisibilidadeParcela` (visibilidade.ts), porque nunca foram
+  // apagadas (D-03/D-12) — só ficaram fora do que a query/regra mostrava.
+  const { data, error } = await sessao.supabase
+    .from("cards")
+    .update({ arquivado_em: null })
+    .eq("id", cardId)
+    .select("id")
+
+  if (error) {
+    console.error("desarquivarCard", error)
+    return { ok: false, error: erroDoBanco(error.code, "desarquivar o imóvel") }
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: semLinhas("desarquivar o imóvel") }
+  }
+  return { ok: true, data: undefined }
+}
+
+/**
+ * Pré-voo do diálogo de exclusão (plano 06.2-06). Chama o MESMO
+ * `cardTemLancamento` que é a trava real em `deleteCardAction` — não uma
+ * consulta parecida. Quando a verificação falha, esta action devolve falha
+ * (não `{ temLancamento: null }`): o diálogo trata isso como "não deu para
+ * conferir" e cai na variante permissiva, porque o servidor — não este
+ * pré-voo — é o portão de verdade (D-15). Um pré-voo instável nunca pode
+ * travar sozinho uma exclusão legítima.
+ */
+export async function cardTemLancamentoAction(
+  cardId: string
+): Promise<ActionResult<{ temLancamento: boolean }>> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(cardId, "Imóvel")
+  if (invalido) return { ok: false, error: invalido }
+
+  const temLancamento = await cardTemLancamento(sessao.supabase, cardId)
+  if (temLancamento === null) {
+    return { ok: false, error: erroDoBanco(undefined, "conferir o histórico do imóvel") }
+  }
+  return { ok: true, data: { temLancamento } }
+}
+
+/**
+ * O aviso de pendência de D-10: quantas parcelas em aberto o contrato tem e
+ * quanto falta pagar, para o popup de arquivamento mostrar antes de
+ * confirmar. D-10 é explícito: avisa, nunca bloqueia — em erro de
+ * consulta esta action devolve falha, e o diálogo (plano 06.2-06) tem
+ * estado próprio para isso, sem nunca desabilitar o botão de arquivar por
+ * causa dele.
+ */
+export async function contarParcelasEmAbertoAction(
+  cardId: string
+): Promise<ActionResult<{ quantidade: number; total: number }>> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(cardId, "Imóvel")
+  if (invalido) return { ok: false, error: invalido }
+
+  const { data, error } = await sessao.supabase
+    .from("parcelas")
+    .select(
+      "competencia, valor_original, cards!inner(ativo, periodo_inicio, periodo_fim, arquivado_em), parcela_lancamentos(tipo, valor)"
+    )
+    .eq("card_id", cardId)
+
+  if (error) {
+    console.error("contarParcelasEmAberto", error)
+    return { ok: false, error: erroDoBanco(error.code, "consultar as parcelas do imóvel") }
+  }
+
+  // Mesmo motivo documentado em recalcularEGravarStatus: sem Database
+  // generics no cliente, os embeds são inferidos de um jeito que não bate
+  // exatamente com o shape real devolvido pelo PostgREST.
+  const parcelas = (data ?? []) as unknown as {
+    competencia: string
+    valor_original: number
+    cards: CardVisibilidade
+    parcela_lancamentos: LancamentoResumo[] | null
+  }[]
+
+  let quantidade = 0
+  let total = 0
+
+  for (const parcela of parcelas) {
+    // Terceiro consumidor da regra única de D-01: o aviso conta exatamente
+    // o que o usuário enxerga no Financeiro, não linhas que a regra
+    // esconde.
+    const visivel = parcelaVisivel({
+      competencia: parcela.competencia,
+      card: parcela.cards,
+      temLancamento: (parcela.parcela_lancamentos?.length ?? 0) > 0,
+      hojeISO: hojeISO(),
+    })
+    if (!visivel) continue
+
+    const { valorDevido, valorPago } = somarLancamentos(
+      parcela.valor_original,
+      parcela.parcela_lancamentos
+    )
+    const status = statusDeParcela(valorDevido, valorPago)
+    if (status === "paga" || status === "conciliada") continue
+
+    quantidade += 1
+    total += Math.max(valorDevido - valorPago, 0)
+  }
+
+  return { ok: true, data: { quantidade, total } }
 }
 
 // ------------------------------------------------------------------

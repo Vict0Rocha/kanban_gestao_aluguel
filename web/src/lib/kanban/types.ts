@@ -12,6 +12,10 @@ export type Card = {
   periodo_fim: string | null
   observacoes: string | null
   ativo: boolean
+  // Nulo = não arquivado (D-07). Guarda QUANDO o contrato foi arquivado,
+  // não só SE foi — coluna já existe no banco desde o plano 06.2-03, este
+  // tipo só a expõe para a UI dos planos 06.2-06/06.2-07.
+  arquivado_em: string | null
   created_at: string
   updated_at: string
 }
