@@ -18,6 +18,11 @@ export default async function BoardPage() {
           .from("columns")
           .select("*, cards(*)")
           .eq("board_id", board.id)
+          // D-08: filtro sobre o recurso embutido (sem `!inner`) filtra as
+          // LINHAS do embed `cards`, preservando a coluna — uma coluna que
+          // ficou sem card por causa deste filtro continua aparecendo,
+          // vazia, em vez de sumir do board inteiro.
+          .is("cards.arquivado_em", null)
           .order("position")
           .order("position", { referencedTable: "cards" })
       ).data ?? [])

@@ -36,10 +36,16 @@ export default async function AuthenticatedLayout({
 
   // Only contracts with an end date can ever raise an alert, so the rest
   // never leave the database.
+  //
+  // D-08: contrato arquivado não gera alerta de vencimento — ele saiu de
+  // operação, e um alerta sobre ele seria ruído. Filtro de topo, simples
+  // (diferente da regra de visibilidade de parcela, D-06, que não se
+  // expressa numa única query).
   const { data } = await supabase
     .from("cards")
     .select("*, alerts(card_id, type, trigger_date, status)")
-    .not("periodo_fim", "is", null);
+    .not("periodo_fim", "is", null)
+    .is("arquivado_em", null);
 
   const cards: CardWithAlerts[] = data ?? [];
 
