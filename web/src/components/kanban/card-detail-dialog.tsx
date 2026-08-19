@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { cn } from "@/lib/utils"
 import type { Card } from "@/lib/kanban/types"
 import type { CardDetailsInput } from "@/lib/kanban/types"
 import { Button } from "@/components/ui/button"
@@ -34,11 +35,13 @@ export function CardDetailDialog({
   open,
   onOpenChange,
   onSave,
+  onToggleAtivo,
 }: {
   card: Card
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (id: string, input: CardDetailsInput) => Promise<void>
+  onToggleAtivo: (id: string, ativo: boolean) => void
 }) {
   const [form, setForm] = React.useState(() => toFormState(card))
   const [error, setError] = React.useState<string | null>(null)
@@ -99,6 +102,29 @@ export function CardDetailDialog({
         <DialogHeader>
           <DialogTitle>Detalhes do imóvel</DialogTitle>
         </DialogHeader>
+
+        {/* Fora do form: escrita otimista imediata via onToggleAtivo, sem
+            esperar o botão "Salvar" do formulário abaixo. */}
+        <div className="flex items-center justify-between gap-2 border-b border-border pb-4">
+          <span className="text-sm font-medium text-foreground">Situação</span>
+          <button
+            type="button"
+            onClick={() => onToggleAtivo(card.id, !card.ativo)}
+            aria-label={
+              card.ativo
+                ? `Marcar ${card.endereco} como inativo`
+                : `Marcar ${card.endereco} como ativo`
+            }
+            className={cn(
+              "rounded-full border px-2 py-1 text-xs font-semibold transition-colors",
+              card.ativo
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-border bg-muted text-muted-foreground"
+            )}
+          >
+            {card.ativo ? "Ativo" : "Inativo"}
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-3">
