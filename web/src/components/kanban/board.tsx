@@ -32,7 +32,6 @@ import { SearchField } from "@/components/search-field"
 import {
   createCard,
   createColumn,
-  deleteCard,
   deleteColumn,
   moveCard,
   renameColumn,
@@ -307,15 +306,31 @@ export function Board({
     )
   }
 
-  async function handleDeleteCard(id: string) {
-    persistOrRevert(
-      columns.map((c) => ({
+  // Arquivar e excluir aguardam o servidor dentro do próprio diálogo, que já
+  // tem um estado de espera próprio (rótulo trocando, botão desabilitado) —
+  // então o caminho otimista não compraria nenhuma velocidade percebida
+  // aqui. Para a exclusão o caminho otimista seria ativamente errado: um
+  // card que some e volta voando com um toast se lê como falha técnica,
+  // quando o que aconteceu foi uma recusa de política deliberada e
+  // correta, que precisa ser lida — e a mensagem pertence ao diálogo que o
+  // usuário está olhando, não a um toast no canto. O servidor já
+  // respondeu quando estas duas funções rodam; elas só tiram o card da
+  // tela.
+  function handleDeleteCard(id: string) {
+    setColumns((prev) =>
+      prev.map((c) => ({
         ...c,
         cards: c.cards.filter((card) => card.id !== id),
-      })),
-      columns,
-      () => deleteCard(id),
-      "Não foi possível excluir o imóvel."
+      }))
+    )
+  }
+
+  function handleArquivarCard(id: string) {
+    setColumns((prev) =>
+      prev.map((c) => ({
+        ...c,
+        cards: c.cards.filter((card) => card.id !== id),
+      }))
     )
   }
 
@@ -385,6 +400,7 @@ export function Board({
               onRename={handleRenameColumn}
               onDeleteColumn={handleDeleteColumn}
               onDeleteCard={handleDeleteCard}
+              onArquivarCard={handleArquivarCard}
               onUpdateCard={handleUpdateCard}
               onToggleAtivo={handleToggleAtivo}
               onCreateCard={handleCreateCard}
@@ -413,6 +429,7 @@ export function Board({
           <CardItem
             card={activeCard}
             onDelete={() => {}}
+            onArquivado={() => {}}
             onUpdate={async () => {}}
             onToggleAtivo={() => {}}
           />

@@ -32,6 +32,7 @@ export function Column({
   onRename,
   onDeleteColumn,
   onDeleteCard,
+  onArquivarCard,
   onUpdateCard,
   onToggleAtivo,
   onCreateCard,
@@ -44,6 +45,8 @@ export function Column({
   onRename: (id: string, name: string) => void
   onDeleteColumn: (id: string) => void
   onDeleteCard: (id: string) => void
+  /** Opcional pelo mesmo motivo do `onArquivado` de `CardItem` — ver comentário lá. */
+  onArquivarCard?: (id: string) => void
   onUpdateCard: (id: string, input: CardDetailsInput) => Promise<void>
   onToggleAtivo: (id: string, ativo: boolean) => void
   onCreateCard: (
@@ -183,6 +186,7 @@ export function Column({
               card={card}
               matched={searching ? matchedIds.has(card.id) : undefined}
               onDelete={onDeleteCard}
+              onArquivado={onArquivarCard}
               onUpdate={onUpdateCard}
               onToggleAtivo={onToggleAtivo}
               registerRef={registerRef}
