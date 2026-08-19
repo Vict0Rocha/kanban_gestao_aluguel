@@ -6,6 +6,8 @@ import type { AlertStatus, AlertType } from "./alerts"
 import { somarLancamentos, statusDeParcela, type LancamentoResumo } from "./parcelas"
 import {
   avaliarVisibilidadeParcela,
+  EXCLUSAO_BLOQUEADA_POR_LANCAMENTO,
+  EXCLUSAO_COLUNA_BLOQUEADA_POR_LANCAMENTO,
   MENSAGEM_PARCELA_OCULTA,
   type CardVisibilidade,
 } from "./visibilidade"
@@ -19,10 +21,10 @@ import {
  *    ficam as regras de negócio — o formulário no navegador valida só para dar
  *    resposta rápida, e não dá para confiar nele.
  *
- * 2. O cliente do Supabase usado aqui é o de sessão do usuário, não o
- *    `service_role`. Então o RLS continua valendo por baixo: se esta camada
- *    tiver um bug de autorização, o banco ainda barra. Trocar por
- *    `service_role` concentraria todo o risco nestas funções.
+ * 2. O cliente do Supabase usado aqui é o de sessão do usuário — nunca o
+ *    de papel privilegiado (`service_role`) — então o RLS continua valendo
+ *    por baixo: se esta camada tiver um bug de autorização, o banco ainda
+ *    barra. Trocar essa escolha concentraria todo o risco nestas funções.
  *
  * Server Actions são endpoints POST de verdade, alcançáveis fora da interface,
  * e a checagem de sessão da página não se estende até aqui — por isso cada
@@ -277,6 +279,17 @@ export async function deleteColumnAction(columnId: string): Promise<ActionResult
 
   if (error) {
     console.error("deleteColumn", error)
+    // Nenhuma pré-checagem própria é acrescentada aqui — o trigger de banco
+    // `cards_impede_exclusao_com_lancamento` (migration
+    // 20260819000000_cards_arquivado_em.sql) já cobre este caminho de
+    // cascade atomicamente, com o predicado exato de D-14, inclusive para
+    // CADA card da coluna. Uma pré-checagem por coluna seria uma segunda
+    // consulta e uma segunda cópia da regra; o que faltava não era a
+    // trava, era a mensagem — por isso só o SQLSTATE do trigger é mapeado
+    // aqui.
+    if (error.code === "P0001") {
+      return { ok: false, error: EXCLUSAO_COLUNA_BLOQUEADA_POR_LANCAMENTO }
+    }
     return { ok: false, error: erroDoBanco(error.code, "excluir a coluna") }
   }
   if (!data || data.length === 0) {
@@ -393,12 +406,65 @@ export async function moveCardAction(
   return { ok: true, data: undefined }
 }
 
+/**
+ * Predicado de D-14 (qualquer lançamento de qualquer tipo trava a exclusão),
+ * numa única implementação. `deleteCardAction` (a trava) e
+ * `cardTemLancamentoAction` (o pré-voo do diálogo, plano 06.2-06) chamam
+ * exatamente esta função — nenhum dos dois consulta por conta própria, pela
+ * mesma disciplina de ponto único de verdade que `visibilidade.ts` documenta.
+ *
+ * `.limit(1)` faz a consulta parar no primeiro acerto, sem contar tudo — só
+ * "existe" importa, não "quantos". `!inner` é obrigatório para filtrar por
+ * coluna do embed, mesmo padrão que `financeiro/page.tsx` já usa.
+ *
+ * Devolve `true`/`false` quando a consulta funciona, e `null` quando ela
+ * falha — a incerteza é devolvida ao chamador para decidir: a trava de
+ * exclusão fecha (recusa), o pré-voo do diálogo abre (deixa o servidor
+ * decidir de verdade no submit).
+ */
+async function cardTemLancamento(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  cardId: string
+): Promise<boolean | null> {
+  const { data, error } = await supabase
+    .from("parcela_lancamentos")
+    .select("id, parcelas!inner(card_id)")
+    .eq("parcelas.card_id", cardId)
+    .limit(1)
+
+  if (error) {
+    console.error("cardTemLancamento", error)
+    return null
+  }
+  return (data?.length ?? 0) > 0
+}
+
 export async function deleteCardAction(cardId: string): Promise<ActionResult> {
   const sessao = await requireUser()
   if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
 
   const invalido = id(cardId, "Imóvel")
   if (invalido) return { ok: false, error: invalido }
+
+  // D-14/D-15: a trava real. A confirmação digitada (`excluir <numero>`)
+  // que o plano 06.2-06 constrói na interface é conveniência — dá ao
+  // usuário uma chance de parar antes de mandar o POST — e NUNCA foi a
+  // trava. Esta função recusa mesmo quando chamada direto, fora da
+  // interface, porque Server Actions são endpoints POST de verdade.
+  const temLancamento = await cardTemLancamento(sessao.supabase, cardId)
+
+  if (temLancamento === true) {
+    return { ok: false, error: EXCLUSAO_BLOQUEADA_POR_LANCAMENTO }
+  }
+  if (temLancamento === null) {
+    // Falha fechada: o custo de errar para o lado permissivo aqui é
+    // destruição irreversível de histórico financeiro via cascade
+    // (cards -> parcelas -> parcela_lancamentos). O custo de errar para o
+    // lado restritivo é o usuário tentar de novo. Entre os dois, só o
+    // primeiro é irreversível — por isso a verificação que falhou nunca
+    // deixa passar.
+    return { ok: false, error: erroDoBanco(undefined, "excluir o imóvel") }
+  }
 
   const { data, error } = await sessao.supabase
     .from("cards")
@@ -408,6 +474,15 @@ export async function deleteCardAction(cardId: string): Promise<ActionResult> {
 
   if (error) {
     console.error("deleteCard", error)
+    // Caminho de corrida: alguém registrou um lançamento entre a
+    // verificação acima e este delete. O trigger de banco
+    // `cards_impede_exclusao_com_lancamento` pega esse caso — e também
+    // qualquer caminho de código futuro que esqueça a verificação — e
+    // devolve o SQLSTATE de exceção do trigger, que vira a mesma frase
+    // explicativa daqui.
+    if (error.code === "P0001") {
+      return { ok: false, error: EXCLUSAO_BLOQUEADA_POR_LANCAMENTO }
+    }
     return { ok: false, error: erroDoBanco(error.code, "excluir o imóvel") }
   }
   if (!data || data.length === 0) {
