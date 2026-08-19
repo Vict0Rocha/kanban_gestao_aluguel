@@ -5,15 +5,15 @@ milestone_name: Módulo Financeiro
 current_phase: 06.1
 status: completed
 stopped_at: "Roadmap da v2.0 escrito — Phases 4-8, 28 de 28 requisitos mapeados, traceability preenchida em REQUIREMENTS.md. Próximo passo: `/gsd-plan-phase 4`. Pendências herdadas da v1.0 continuam abertas: confirmar ROBUST-02 com login real e decidir sobre SEC-02 quando o usuário quiser retomar segurança."
-last_updated: "2026-08-19T02:12:15.154Z"
+last_updated: "2026-08-19T15:03:30.959Z"
 last_activity: 2026-08-18
 last_activity_desc: Phase 6 marked complete
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 4
   total_plans: 15
   completed_plans: 15
-  percent: 67
+  percent: 57
 current_phase_name: consulta-financeira-e-gera-o-por-per-odo
 ---
 
@@ -97,6 +97,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 ### Roadmap Evolution
 
 - Phase 06.1 inserted after Phase 6: Consulta financeira e geração por período — feedback do usuário após testar Phase 6 em produção (URGENT)
+- Phase 06.2 inserted after Phase 6.1: Feedback do usuario apos usar Phases 6/6.1 em producao: ativo nao escondia parcelas futuras, mudanca de datas do card nao refletia no Financeiro, e excluir card apagava historico financeiro em cascata sem trava (URGENT)
 
 ## Deferred Items
 

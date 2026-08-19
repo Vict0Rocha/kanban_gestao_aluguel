@@ -50,6 +50,15 @@
 - [x] **CONSULTA-01**: Usuário pode filtrar as parcelas da aba Financeiro por proprietário, inquilino, período e ID do contrato; cada filtro é opcional e só é aplicado se preenchido, combinando entre si
 - [x] **CONSULTA-02**: Sem nenhum filtro aplicado, a aba Financeiro mostra por padrão as parcelas vencendo no dia de hoje
 
+### VIDA — ciclo de vida do contrato
+
+- [ ] **VIDA-01**: A visibilidade de uma parcela é derivada na leitura por uma regra única: ela aparece se tiver ao menos um lançamento, **ou** se a competência estiver dentro do período atual do card **e** (o contrato estiver ativo **ou** a competência for ≤ o mês atual)
+- [ ] **VIDA-02**: Contrato inativo não exibe parcelas de meses futuros; a do mês atual e as de meses passados (inclusive vencidas em aberto) continuam visíveis e operáveis. Reativar restaura a visibilidade sem regenerar nada
+- [ ] **VIDA-03**: Alterar `periodo_inicio`/`periodo_fim` de um card reflete no Financeiro na carga seguinte — parcelas que saíram do período deixam de aparecer, exceto as que já têm lançamento
+- [ ] **VIDA-04**: Toda escrita sobre uma parcela não-visível pela regra de VIDA-01 é recusada no servidor, com mensagem em português comum — a ocultação na tela é consequência da regra, não a trava
+- [ ] **VIDA-05**: Usuário pode arquivar um contrato (com confirmação que avisa sobre parcelas em aberto); arquivado, ele some de Board, Financeiro, Relatórios e alertas sem nada ser apagado. Uma aba "Arquivados" lista os arquivados e permite desarquivar, devolvendo o contrato ao funcionamento normal
+- [ ] **VIDA-06**: Excluir um contrato exige confirmação digitada (`excluir <id do contrato>`) e é bloqueado no servidor se existir qualquer lançamento financeiro ligado a ele; nesse caso o sistema oferece arquivar no lugar
+
 ### FINREL — relatórios financeiros
 
 - [ ] **FINREL-01**: Usuário pode ver um relatório das parcelas pagas
@@ -134,6 +143,12 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | PARCELA-06 | Phase 6.1 | Concluído |
 | CONSULTA-01 | Phase 6.1 | Concluído |
 | CONSULTA-02 | Phase 6.1 | Concluído |
+| VIDA-01 | Phase 6.2 | Pendente |
+| VIDA-02 | Phase 6.2 | Pendente |
+| VIDA-03 | Phase 6.2 | Pendente |
+| VIDA-04 | Phase 6.2 | Pendente |
+| VIDA-05 | Phase 6.2 | Pendente |
+| VIDA-06 | Phase 6.2 | Pendente |
 | BAIXA-01 | Phase 6 | Concluído |
 | BAIXA-02 | Phase 6 | Concluído |
 | BAIXA-03 | Phase 6 | Concluído |
@@ -152,10 +167,11 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | FINREL-05 | Phase 8 | Pendente |
 
 **Coverage:**
-- v2.0 requirements: 33 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, Phase 7: 4, Phase 8: 5
-- Mapped to phases: 33
+- v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
+- Mapped to phases: 39
 - Unmapped: 0
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
+- VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 
 > **Correção de contagem:** este documento dizia "26 total". A soma real das categorias da v2.0 (CONTRATO 2 + PARCELA 4 + BAIXA 5 + CONCIL 4 + FINUI 4 + FINREL 5 + FINSEG 3 + FINDOC 1) é **28**. Nenhum requisito foi adicionado ou removido — só a contagem estava errada.
 

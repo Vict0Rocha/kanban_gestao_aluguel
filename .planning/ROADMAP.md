@@ -31,6 +31,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 5: Aba Financeiro com parcelas automáticas** - Abrir a aba mostra as parcelas do mês atual e do próximo mês de cada contrato ativo, sem clicar em "gerar"
 - [x] **Phase 6: Baixa e ajustes de parcela** - Registrar recebimento total ou parcial, multa e desconto, com histórico que nunca é sobrescrito
 - [x] **Phase 6.1: Consulta financeira e geração por período** (INSERTED) - Vencendo hoje como padrão, filtros por proprietário/inquilino/período/ID, geração pelo período completo do contrato com backfill
+- [ ] **Phase 6.2: Ciclo de vida do contrato** (INSERTED) - Visibilidade derivada do estado do card, arquivar/desarquivar, e exclusão travada por movimentação financeira
 - [ ] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
 - [ ] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
 
@@ -130,6 +131,29 @@ Plans:
 - [x] 06.1-05-PLAN.md — Filtro completo (proprietário/inquilino/período/ID) atrás do botão "Filtrar", consulta real no servidor
 - [x] 06.1-06-PLAN.md — Geração retroativa por período completo, com checkpoint de pré-voo de impacto em produção (D-17)
 
+### Phase 06.2: Ciclo de vida do contrato (INSERTED)
+
+**Goal:** O que o Financeiro mostra passa a obedecer o estado atual do card do Board — período, situação ativo/inativo e arquivamento — sem nunca esconder dinheiro que já entrou. O gestor pode arquivar um contrato encerrado (some de tudo, nada é apagado, dá para desarquivar) e só consegue excluir de verdade um contrato que nunca teve movimentação financeira.
+**Requirements**: VIDA-01, VIDA-02, VIDA-03, VIDA-04, VIDA-05, VIDA-06
+**Depends on:** Phase 6.1
+**Why inserted**: Feedback do usuário depois de usar as Phases 6/6.1 em produção (2026-08-19). Três problemas concretos apareceram: (a) marcar um contrato como inativo não impedia parcelas futuras de continuarem visíveis e editáveis; (b) mudar as datas de um card não refletia no Financeiro, que ficava mostrando parcelas fora do período vigente; (c) excluir um card apaga silenciosamente todo o histórico financeiro via `on delete cascade`, sem nenhuma confirmação — risco real de perda de dado em produção.
+**Success Criteria** (what must be TRUE):
+
+  1. Uma única regra de visibilidade derivada, calculada na leitura, governa toda parcela: aparece se tiver qualquer lançamento (nunca some), ou se a competência estiver dentro do período atual do card **e** (contrato ativo **ou** competência ≤ mês atual)
+  2. Contrato marcado como inativo deixa de exibir parcelas de meses futuros; a do mês atual e as de meses passados continuam visíveis e operáveis; reativar devolve tudo, sem regenerar nada
+  3. Mudar `periodo_inicio`/`periodo_fim` de um card faz o Financeiro refletir o novo período na carga seguinte — parcelas que saíram do período somem, **exceto** as que já têm lançamento
+  4. Toda parcela que não está visível pela regra acima também é **recusada no servidor** para qualquer escrita (baixa, ajuste) — esconder na tela não é a trava, é só a consequência dela
+  5. Arquivar um contrato o remove de Board, Financeiro, Relatórios e alertas sem apagar nada; uma aba "Arquivados" lista os arquivados e permite desarquivar, devolvendo o contrato ao funcionamento normal
+  6. Excluir um contrato exige confirmação digitada (`excluir <id>`) e é **bloqueado no servidor** se existir qualquer lançamento financeiro ligado a ele — nesse caso o sistema oferece arquivar no lugar
+
+**Pilares cruzados**: o critério 4 é o que separa esta fase de um ajuste cosmético — a regra de visibilidade tem que existir em um único lugar, consumida tanto pela leitura quanto pela validação de escrita, senão as duas divergem com o tempo. O critério 6 corrige um risco que já existe hoje em produção (`cards → parcelas → parcela_lancamentos` em cascata). A trava de exclusão por "qualquer lançamento" já cobre automaticamente a conciliação da Phase 7, sem precisar de código novo depois.
+**Plans**: TBD
+**UI hint**: yes
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 6.2 to break down)
+
 ### Phase 7: Conciliação e destrava rastreada
 
 **Goal**: Uma parcela já conferida fica protegida contra alteração acidental, e desfazer essa proteção sempre deixa rastro de quem, quando e por quê
@@ -173,7 +197,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 7 → 8
+Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -181,6 +205,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 7 → 8
 | 5. Aba Financeiro com parcelas automáticas | 3/3 | Complete | 2026-08-17 |
 | 6. Baixa e ajustes de parcela | 2/2 | Complete | 2026-08-18 |
 | 6.1. Consulta financeira e geração por período (INSERTED) | 6/6 | Complete | 2026-08-18 |
+| 6.2. Ciclo de vida do contrato (INSERTED) | 0/TBD | Not started | - |
 | 7. Conciliação e destrava rastreada | 0/TBD | Not started | - |
 | 8. Relatórios financeiros | 0/TBD | Not started | - |
 
