@@ -5,16 +5,16 @@ milestone_name: Módulo Financeiro
 current_phase: 06.2
 current_phase_name: ciclo-de-vida-do-contrato
 status: executing
-stopped_at: Completed 06.2-05-PLAN.md
-last_updated: "2026-08-19T22:46:37.819Z"
+stopped_at: Phase 6.2 plano 06 concluído (diálogos de arquivar/excluir no card)
+last_updated: "2026-08-19T23:45:00.000Z"
 last_activity: 2026-08-19
-last_activity_desc: Phase 06.2 plano 04 (visibilidade.ts) concluído e verificado em produção, avançar para 06.2-05
+last_activity_desc: Phase 06.2 plano 06 (diálogos de arquivar/excluir) concluído e verificado em produção, avançar para 06.2-07
 progress:
   total_phases: 7
   completed_phases: 4
-  total_plans: 22
-  completed_plans: 20
-  percent: 57
+  total_plans: 23
+  completed_plans: 21
+  percent: 65
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-08-16)
 ## Current Position
 
 Phase: 06.2 (ciclo-de-vida-do-contrato) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 Status: Ready to execute
-Last activity: 2026-08-19 — plano 06.2-04 (regra única de visibilidade de parcela) concluído e verificado em produção
+Last activity: 2026-08-19 — plano 06.2-06 (diálogos de arquivar/excluir no card) concluído e verificado em produção
 
 **Ordem de execução:** 4 → 5 → 6 → 7 → 8. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -79,6 +79,7 @@ Last activity: 2026-08-19 — plano 06.2-04 (regra única de visibilidade de par
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-19: Plano 06.2-06 concluído — `ArquivarContratoDialog`/`ExcluirContratoDialog` (novos, irmãos do div ordenável do dnd-kit) trazem arquivar e excluir para o card do Board. Bug real de vazamento de evento do dnd-kit (já observado uma vez neste arquivo) testado explicitamente em produção e não se repetiu — digitar espaço e selecionar texto no campo de confirmação funcionam sem iniciar arraste. Board passou a aguardar o servidor em arquivar/excluir, mantendo arraste e toggle Ativo/Inativo otimistas. VIDA-06 completo; VIDA-05 aguarda o plano 06.2-07 (aba Arquivados, ainda não construída — usuário confirmou sua ausência, como esperado)
 - 2026-08-19: Plano 06.2-04 concluído — `avaliarVisibilidadeParcela` (`web/src/lib/kanban/visibilidade.ts`) é a única implementação da regra de visibilidade, consumida pela leitura (Financeiro) e pela escrita (`registrarPagamentoAction`/`ajustarParcelaAction`). Verificado em produção com prova por SQL: inativar/reativar não altera contagem nem ids de parcela; mudar período some da tela sem apagar do banco; lançamento fora do período/com contrato inativo continua aparecendo (override D-05); tentativa de escrita numa aba desatualizada foi recusada pelo servidor com zero lançamentos gravados. VIDA-01 a VIDA-04 completos
 - 2026-08-19: Plano 06.2-03 aplicado em produção (`aplicar-agora`) — `cards.arquivado_em` e o trigger `cards_impede_exclusao_com_lancamento` estão vivos, bloqueando exclusão de card/coluna com lançamento financeiro. Verificação pós-push completa (coluna, trigger, os três lados do backstop, policies, Board/Financeiro/Relatórios) contra produção real, com prova por SQL — não pela tela — de que dado com lançamento sobrevive a uma tentativa de exclusão recusada
 - 2026-08-19: Nova técnica de ensaio contra pooling do SQL Editor do Supabase (D-19 extendida): condensar baseline + DDL + provas num único bloco `do $$ ... $$;` terminando em `raise exception` proposital — elimina o risco de connection-hopping do pool entre comandos separados, porque é um único comando. Documentada em `supabase/verificacao_cards_arquivado_em.sql` como via (c), agora a técnica preferida para ensaios futuros neste projeto
