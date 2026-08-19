@@ -10,10 +10,11 @@ import { cn } from "@/lib/utils"
  * Sem largura mínima fixa na classe: cresce com o conteúdo, para não
  * cortar/apertar a partir de 3 dígitos (UI Consideration "long-text").
  *
- * `variant="subtle"` é exclusiva do card do Board — a pílula fica mais
- * discreta para não competir com o valor do aluguel na face sempre-visível
- * do card. `parcelas-table.tsx` não passa a prop e mantém a aparência
- * "default" de sempre.
+ * `variant="subtle"` é exclusiva do card do Board (face do card e diálogo de
+ * detalhes) — a pílula fica mais discreta para não competir com o valor do
+ * aluguel, e mostra só o número, sem o prefixo "#" (pedido do usuário depois
+ * de ver em produção). `parcelas-table.tsx` não passa a prop e mantém a
+ * aparência "default" de sempre, com "#N".
  */
 export function IdPill({
   numero,
@@ -32,7 +33,7 @@ export function IdPill({
       )}
       aria-label={`Contrato número ${numero}`}
     >
-      #{numero}
+      {variant === "subtle" ? numero : `#${numero}`}
     </span>
   )
 }

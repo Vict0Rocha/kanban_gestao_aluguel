@@ -5,6 +5,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import type { Card } from "@/lib/kanban/types"
 import type { CardDetailsInput } from "@/lib/kanban/types"
+import { IdPill } from "@/components/financeiro/id-pill"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -100,7 +101,10 @@ export function CardDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Detalhes do imóvel</DialogTitle>
+          <div className="flex items-center justify-between gap-2 pr-6">
+            <DialogTitle>Detalhes do imóvel</DialogTitle>
+            <IdPill numero={card.numero} variant="subtle" />
+          </div>
         </DialogHeader>
 
         {/* Fora do form: escrita otimista imediata via onToggleAtivo, sem
