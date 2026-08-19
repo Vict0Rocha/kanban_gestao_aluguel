@@ -35,6 +35,7 @@ export function Column({
   onUpdateCard,
   onToggleAtivo,
   onCreateCard,
+  registerRef,
 }: {
   column: ColumnType
   searching: boolean
@@ -49,6 +50,7 @@ export function Column({
     columnId: string,
     input: { proprietario: string; valor: number; endereco: string }
   ) => Promise<void>
+  registerRef?: (id: string, el: HTMLDivElement | null) => void
 }) {
   const [editingName, setEditingName] = React.useState(false)
   const [name, setName] = React.useState(column.name)
@@ -183,6 +185,7 @@ export function Column({
               onDelete={onDeleteCard}
               onUpdate={onUpdateCard}
               onToggleAtivo={onToggleAtivo}
+              registerRef={registerRef}
             />
           ))}
         </SortableContext>

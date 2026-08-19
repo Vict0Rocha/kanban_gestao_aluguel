@@ -77,6 +77,30 @@ export function Board({
   const totalCards = countCards(columns)
   const matchCount = matchedIds.size
 
+  // Nós DOM dos cards, para o Enter da busca rolar até o resultado. Um ref
+  // (não estado) porque preencher/esvaziar o Map a cada montagem/desmontagem
+  // de card não deve disparar um re-render do board.
+  const cardRefs = React.useRef(new Map<string, HTMLDivElement>())
+  const registerCardRef = React.useCallback((id: string, el: HTMLDivElement | null) => {
+    if (el) {
+      cardRefs.current.set(id, el)
+    } else {
+      cardRefs.current.delete(id)
+    }
+  }, [])
+
+  function handleSearchSubmit() {
+    // Sem essa guarda, Enter com o campo vazio rolaria para o primeiro card
+    // do board: query vazia bate com todo mundo via matchingIds.
+    if (!searching || matchedIds.size === 0) return
+
+    const [firstMatchId] = matchedIds
+    cardRefs.current.get(firstMatchId)?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    })
+  }
+
   // Estado do board no início do arraste. Um arraste entre colunas já alterou
   // `columns` no onDragOver antes do onDragEnd rodar, então este é o único
   // ponto de volta correto se a gravação for recusada.
@@ -324,6 +348,7 @@ export function Board({
         <SearchField
           value={query}
           onChange={setQuery}
+          onSubmit={handleSearchSubmit}
           resultSummary={
             searching
               ? `${matchCount} de ${totalCards} imóveis em destaque`
@@ -363,6 +388,7 @@ export function Board({
               onUpdateCard={handleUpdateCard}
               onToggleAtivo={handleToggleAtivo}
               onCreateCard={handleCreateCard}
+              registerRef={registerCardRef}
             />
           ))}
         </SortableContext>

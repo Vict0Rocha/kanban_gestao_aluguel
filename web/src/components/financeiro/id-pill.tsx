@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils"
+
 /**
  * Pílula de identificador sequencial do contrato (D-07/D-08, CONTRATO-03).
  * Componente de apresentação puro — sem "use client" — mesmo molde de
@@ -7,11 +9,27 @@
  *
  * Sem largura mínima fixa na classe: cresce com o conteúdo, para não
  * cortar/apertar a partir de 3 dígitos (UI Consideration "long-text").
+ *
+ * `variant="subtle"` é exclusiva do card do Board — a pílula fica mais
+ * discreta para não competir com o valor do aluguel na face sempre-visível
+ * do card. `parcelas-table.tsx` não passa a prop e mantém a aparência
+ * "default" de sempre.
  */
-export function IdPill({ numero }: { numero: number }) {
+export function IdPill({
+  numero,
+  variant = "default",
+}: {
+  numero: number
+  variant?: "default" | "subtle"
+}) {
   return (
     <span
-      className="inline-flex h-5 items-center rounded-full bg-secondary/25 px-2 text-xs font-semibold tabular-nums text-secondary-foreground"
+      className={cn(
+        "inline-flex h-5 items-center rounded-full px-2 text-xs tabular-nums",
+        variant === "default" &&
+          "bg-secondary/25 font-semibold text-secondary-foreground",
+        variant === "subtle" && "bg-muted font-medium text-muted-foreground"
+      )}
       aria-label={`Contrato número ${numero}`}
     >
       #{numero}

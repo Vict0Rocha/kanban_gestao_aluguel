@@ -30,6 +30,7 @@ export function CardItem({
   onDelete,
   onUpdate,
   onToggleAtivo,
+  registerRef,
 }: {
   card: Card
   /**
@@ -42,11 +43,25 @@ export function CardItem({
   onDelete: (id: string) => void
   onUpdate: (id: string, input: CardDetailsInput) => Promise<void>
   onToggleAtivo: (id: string, ativo: boolean) => void
+  /**
+   * Registra o nó DOM deste card no Map do board, para o Enter da busca
+   * rolar até ele. Opcional — a cópia visual do card no DragOverlay não
+   * recebe essa prop, para não sobrescrever a referência do card real.
+   */
+  registerRef?: (id: string, el: HTMLDivElement | null) => void
 }) {
   const [detailOpen, setDetailOpen] = React.useState(false)
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: card.id, data: { type: "card", columnId: card.column_id } })
+
+  const setRefs = React.useCallback(
+    (el: HTMLDivElement | null) => {
+      setNodeRef(el)
+      registerRef?.(card.id, el)
+    },
+    [setNodeRef, registerRef, card.id]
+  )
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -62,7 +77,7 @@ export function CardItem({
     // what broke typing spaces and selecting text in the detail form.
     <AlertDialog>
       <div
-        ref={setNodeRef}
+        ref={setRefs}
         style={style}
         {...attributes}
         {...listeners}
@@ -109,31 +124,7 @@ export function CardItem({
           <p className="text-sm font-semibold text-primary">
             {formatCurrency(card.valor)}
           </p>
-          <div className="flex items-center gap-1.5">
-            <IdPill numero={card.numero} />
-            <button
-              type="button"
-              onPointerDown={(event) => event.stopPropagation()}
-              onMouseDown={(event) => event.stopPropagation()}
-              onClick={(event) => {
-                event.stopPropagation()
-                onToggleAtivo(card.id, !card.ativo)
-              }}
-              aria-label={
-                card.ativo
-                  ? `Marcar ${card.endereco} como inativo`
-                  : `Marcar ${card.endereco} como ativo`
-              }
-              className={cn(
-                "rounded-full border px-2 py-1 text-xs font-semibold transition-colors",
-                card.ativo
-                  ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-border bg-muted text-muted-foreground"
-              )}
-            >
-              {card.ativo ? "Ativo" : "Inativo"}
-            </button>
-          </div>
+          <IdPill numero={card.numero} variant="subtle" />
         </div>
       </div>
 
@@ -160,6 +151,7 @@ export function CardItem({
         open={detailOpen}
         onOpenChange={setDetailOpen}
         onSave={onUpdate}
+        onToggleAtivo={onToggleAtivo}
       />
     </AlertDialog>
   )
