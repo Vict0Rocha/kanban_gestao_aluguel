@@ -5,15 +5,21 @@ import {
   type LinhaParcela,
   type ParcelaComCard,
 } from "@/lib/kanban/parcelas"
+import { filtrarParcelasVisiveis } from "@/lib/kanban/visibilidade"
 import { FinanceiroView } from "@/components/financeiro/financeiro-view"
 
-const SELECT_PARCELA_PADRAO =
-  "id, card_id, competencia, vencimento, valor_original, status, cards(endereco, proprietario, numero), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
-
 // `!inner` é obrigatório para poder filtrar por coluna do embed — sem ela o
-// PostgREST não aceita `.ilike()`/`.eq()` em `cards.*`.
+// PostgREST não aceita `.ilike()`/`.eq()`/`.is()` em `cards.*`. Desde a
+// Phase 6.2 as DUAS constantes usam `!inner`, porque as duas precisam do
+// filtro `cards.arquivado_em is null` (D-08) aplicado na query abaixo — o
+// `!inner` nunca descarta nenhuma linha legítima aqui porque
+// `parcelas.card_id` é `not null` com FK para `cards`: o embed nunca podia
+// ser nulo de verdade.
+const SELECT_PARCELA_PADRAO =
+  "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, ativo, periodo_inicio, periodo_fim, arquivado_em), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
+
 const SELECT_PARCELA_FILTRADA =
-  "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, inquilino), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
+  "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, inquilino, ativo, periodo_inicio, periodo_fim, arquivado_em), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
 
 /** Dia 1 do mês seguinte a "YYYY-MM", sem passar por Date — mesmo padrão usado em parcelas.ts. */
 function inicioMesSeguinte(periodoYYYYMM: string): string {
@@ -74,6 +80,9 @@ export default async function FinanceiroPage({
       .from("cards")
       .select("id", { count: "exact", head: true })
       .eq("ativo", true)
+      // D-08: um contrato arquivado não sustenta sozinho a frase "há
+      // contrato ativo" — arquivado some de tudo, inclusive daqui.
+      .is("arquivado_em", null)
 
     if (!erroContagem) {
       temContratoAtivo = (count ?? 0) > 0
@@ -91,6 +100,10 @@ export default async function FinanceiroPage({
       let query = supabase
         .from("parcelas")
         .select(filtrosAtivos ? SELECT_PARCELA_FILTRADA : SELECT_PARCELA_PADRAO)
+        // D-08: arquivado some de tudo. Filtro barato de banco, não passa
+        // pela regra em memória de `filtrarParcelasVisiveis` — vale para
+        // os dois ramos (padrão e filtrado) abaixo.
+        .is("cards.arquivado_em", null)
 
       if (filtrosAtivos) {
         if (proprietario) {
@@ -126,7 +139,15 @@ export default async function FinanceiroPage({
       // array.
       const parcelas = (data ?? []) as unknown as ParcelaComCard[]
 
-      linhas = montarLinhas(parcelas, hojeISO)
+      // D-06: a regra de visibilidade não se expressa numa única query
+      // PostgREST (depende de "tem lançamento" + período do card + mês
+      // corrente ao mesmo tempo), então roda em memória sobre o resultado
+      // já trazido pela query acima. A ~48 contratos com ~24 parcelas cada
+      // o custo é irrelevante — o caminho de escala está registrado em
+      // docs/data-model.md.
+      const visiveis = filtrarParcelasVisiveis(parcelas, hojeISO)
+
+      linhas = montarLinhas(visiveis, hojeISO)
     } catch (erroCapturado) {
       // O objeto de erro do Supabase nunca chega ao navegador — só o log
       // do servidor. A página renderiza uma constante (ver ParcelasTable).

@@ -36,7 +36,13 @@ export type CardParaGeracao = {
   periodo_fim: string | null
 }
 
-/** A linha de `parcelas` como o PostgREST devolve, com os dois embeds. */
+/**
+ * A linha de `parcelas` como o PostgREST devolve, com os dois embeds.
+ * Desde a Phase 6.2, o embed `cards` também traz os quatro campos que
+ * `avaliarVisibilidadeParcela` (visibilidade.ts) precisa para decidir se a
+ * parcela aparece — `montarLinhas` continua usando só `endereco`,
+ * `proprietario` e `numero`.
+ */
 export type ParcelaComCard = {
   id: string
   card_id: string
@@ -44,7 +50,15 @@ export type ParcelaComCard = {
   vencimento: string
   valor_original: number
   status: StatusParcela
-  cards: { endereco: string; proprietario: string; numero: number } | null
+  cards: {
+    endereco: string
+    proprietario: string
+    numero: number
+    ativo: boolean
+    periodo_inicio: string | null
+    periodo_fim: string | null
+    arquivado_em: string | null
+  } | null
   parcela_lancamentos: LancamentoDetalhado[] | null
 }
 
@@ -61,8 +75,13 @@ export type LinhaParcela = {
   lancamentos: LancamentoDetalhado[]
 }
 
-/** Dia 1 do mês da string "YYYY-MM-DD" recebida, sem passar por Date. */
-function inicioDoMes(dataISO: string): string {
+/**
+ * Dia 1 do mês da string "YYYY-MM-DD" recebida, sem passar por Date.
+ * Exportada (Phase 6.2) porque `visibilidade.ts` precisa dela para o
+ * passo do mês corrente da regra de visibilidade — reimplementar seria
+ * criar a segunda cópia que essa fase existe para evitar.
+ */
+export function inicioDoMes(dataISO: string): string {
   const [ano, mes] = dataISO.split("-")
   return `${ano}-${mes}-01`
 }
@@ -401,6 +420,9 @@ export async function garantirParcelas(
     .from("cards")
     .select("id, valor, periodo_inicio, periodo_fim")
     .eq("ativo", true)
+    // D-09: contrato arquivado não gera parcela — gerar geraria dado
+    // fantasma para algo que já é invisível em tudo (D-08).
+    .is("arquivado_em", null)
 
   if (erroCards) throw erroCards
 
