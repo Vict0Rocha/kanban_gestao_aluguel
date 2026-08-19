@@ -152,11 +152,11 @@ Plans:
 
 Plans:
 
-- [ ] 06.2-01-PLAN.md — Migração aditiva: coluna `cards.arquivado_em` + trigger de backstop contra o cascade de exclusão, com runbook de ensaio
-- [ ] 06.2-02-PLAN.md — Ensaiar a migração contra produção (transação revertida, aviso de pooling D-19) e registrar o resultado
-- [ ] 06.2-03-PLAN.md — Aplicar a migração em produção (checkpoint:decision) e documentar em `docs/data-model.md`
-- [ ] 06.2-04-PLAN.md — A regra única de visibilidade (`visibilidade.ts`), consumida pela leitura do Financeiro e pela trava de escrita de pagamento/ajuste
-- [ ] 06.2-05-PLAN.md — Trava de exclusão no servidor, Server Actions de arquivar/desarquivar/contar pendências, auditoria de call sites de `cards`
+- [x] 06.2-01-PLAN.md — Migração aditiva: coluna `cards.arquivado_em` + trigger de backstop contra o cascade de exclusão, com runbook de ensaio
+- [x] 06.2-02-PLAN.md — Ensaiar a migração contra produção (transação revertida, aviso de pooling D-19) e registrar o resultado
+- [x] 06.2-03-PLAN.md — Aplicar a migração em produção (checkpoint:decision) e documentar em `docs/data-model.md`
+- [x] 06.2-04-PLAN.md — A regra única de visibilidade (`visibilidade.ts`), consumida pela leitura do Financeiro e pela trava de escrita de pagamento/ajuste
+- [x] 06.2-05-PLAN.md — Trava de exclusão no servidor, Server Actions de arquivar/desarquivar/contar pendências, auditoria de call sites de `cards`
 - [ ] 06.2-06-PLAN.md — Diálogos de arquivar/excluir no card do Board, fragmento no lugar do envoltório, botão de arquivar, board não-otimista
 - [ ] 06.2-07-PLAN.md — Rota `/arquivados` com desarquivamento, e a nota explicativa do Financeiro no filtro por ID
 

@@ -5,16 +5,16 @@ milestone_name: Módulo Financeiro
 current_phase: 06.2
 current_phase_name: ciclo-de-vida-do-contrato
 status: executing
-stopped_at: Phase 6.2 plano 04 concluído (regra única de visibilidade, leitura + escrita)
-last_updated: "2026-08-19T22:30:00.000Z"
+stopped_at: Completed 06.2-05-PLAN.md
+last_updated: "2026-08-19T22:46:37.819Z"
 last_activity: 2026-08-19
 last_activity_desc: Phase 06.2 plano 04 (visibilidade.ts) concluído e verificado em produção, avançar para 06.2-05
 progress:
   total_phases: 7
   completed_phases: 4
-  total_plans: 23
-  completed_plans: 19
-  percent: 62
+  total_plans: 22
+  completed_plans: 20
+  percent: 57
 ---
 
 # Project State
@@ -29,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-08-16)
 ## Current Position
 
 Phase: 06.2 (ciclo-de-vida-do-contrato) — EXECUTING
-Plan: 5 of 7
+Plan: 6 of 7
 Status: Ready to execute
 Last activity: 2026-08-19 — plano 06.2-04 (regra única de visibilidade de parcela) concluído e verificado em produção
 
@@ -67,6 +67,11 @@ Last activity: 2026-08-19 — plano 06.2-04 (regra única de visibilidade de par
 - Trend: Estável
 
 *Updated after each plan completion*
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 06.2-ciclo-de-vida-do-contrato P05 | 35min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -84,6 +89,9 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - 2026-08-14: Error Boundary implementado em dois níveis (`app/error.tsx`, `app/(app)/error.tsx`) usando a prop `retry` (não `reset` — mudança da v16 do Next confirmada nos docs locais)
 - 2026-08-14: Tela de "acesso pendente" implementada via `supabase.rpc("is_team_member")` no `(app)/layout.tsx` — não verificada com sessão real, ver Blockers
 - 2026-08-14: Usuário optou por não mexer em mais configuração de segurança por enquanto — SEC-02 fica pendente por escolha, não por falta de trabalho
+- [Phase ?]: deleteCardAction trava no servidor via cardTemLancamento (unica implementacao de D-14), falha fechada quando a verificacao falha
+- [Phase ?]: arquivarCardAction/desarquivarCardAction escrevem so arquivado_em, nunca ativo -- ortogonais por decisao (D-12)
+- [Phase ?]: Filtro arquivado_em sobre embed cards(*) em page.tsx/relatorios usa .is() sem !inner, para preservar a coluna e filtrar so as linhas do embed
 
 ### Pending Todos
 
@@ -115,6 +123,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-19T15:19:26.038Z
-Stopped at: Phase 6.2 UI-SPEC aprovado
-Resume file: .planning/phases/06.2-ciclo-de-vida-do-contrato/06.2-UI-SPEC.md
+Last session: 2026-08-19T22:46:37.756Z
+Stopped at: Completed 06.2-05-PLAN.md
+Resume file: None
