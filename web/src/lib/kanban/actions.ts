@@ -541,7 +541,7 @@ async function exigirParcelaVisivel(
   // ausência vem do RLS filtrando a linha para quem está fora da allowlist
   // (T-06.2-18): a resposta segura é recusar, não presumir visível (D-04).
   if (error || !data) {
-    console.error("exigirParcelaVisivel", error)
+    console.error("trava de visibilidade da parcela (leitura)", error)
     return MENSAGEM_PARCELA_OCULTA.indeterminado
   }
 
@@ -684,6 +684,11 @@ export async function ajustarParcelaAction(
     textoOpcional(observacao, "Observação", 2000)
   if (invalido) return { ok: false, error: invalido }
 
+  // D-04/D-15: mesma trava de registrarPagamentoAction, mesmo ponto no
+  // fluxo — depois da validação de campos, antes do insert.
+  const recusa = await exigirParcelaVisivel(sessao.supabase, parcelaId)
+  if (recusa) return { ok: false, error: recusa }
+
   // Sem campo `data` (A-04, fica no default current_date do banco).
   const { data: inserido, error } = await sessao.supabase
     .from("parcela_lancamentos")
@@ -704,10 +709,20 @@ export async function ajustarParcelaAction(
     return { ok: false, error: semLinhas("registrar o ajuste") }
   }
 
-  // Mesmo helper da Task 1 — nenhuma lógica de status nova é escrita aqui,
-  // D-04 é reusado, não reimplementado. Esta ação nunca consulta ou
-  // condiciona a escrita à flag manual de contrato ativo/inativo do card
-  // (D-07) — só setCardAtivoAction e garantirParcelas tocam nessa flag.
+  // Mesmo helper de registrarPagamentoAction — nenhuma lógica de status
+  // nova é escrita aqui, D-04 (o cálculo de status) é reusado, não
+  // reimplementado.
+  //
+  // Comentário antigo desta linha (Phase 6) dizia que esta ação nunca
+  // consulta nem condiciona a escrita à flag manual de contrato
+  // ativo/inativo do card. Isso deixou de ser verdade nesta fase: a
+  // trava de visibilidade acima (chamada logo após a validação de campos)
+  // já reconsultou a parcela e decidiu aceitar ou recusar via
+  // `avaliarVisibilidadeParcela` (visibilidade.ts), que entre outras
+  // coisas olha a flag do contrato. Nem esta action nem
+  // `registrarPagamentoAction` tomam decisão própria sobre situação do
+  // contrato, período ou arquivamento — a decisão inteira vem de
+  // `avaliarVisibilidadeParcela`.
   const erroStatus = await recalcularEGravarStatus(sessao.supabase, parcelaId)
   if (erroStatus) return { ok: false, error: erroStatus }
 
