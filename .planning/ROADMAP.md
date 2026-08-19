@@ -147,12 +147,18 @@ Plans:
   6. Excluir um contrato exige confirmação digitada (`excluir <id>`) e é **bloqueado no servidor** se existir qualquer lançamento financeiro ligado a ele — nesse caso o sistema oferece arquivar no lugar
 
 **Pilares cruzados**: o critério 4 é o que separa esta fase de um ajuste cosmético — a regra de visibilidade tem que existir em um único lugar, consumida tanto pela leitura quanto pela validação de escrita, senão as duas divergem com o tempo. O critério 6 corrige um risco que já existe hoje em produção (`cards → parcelas → parcela_lancamentos` em cascata). A trava de exclusão por "qualquer lançamento" já cobre automaticamente a conciliação da Phase 7, sem precisar de código novo depois.
-**Plans**: TBD
+**Plans**: 7 plans
 **UI hint**: yes
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 6.2 to break down)
+- [ ] 06.2-01-PLAN.md — Migração aditiva: coluna `cards.arquivado_em` + trigger de backstop contra o cascade de exclusão, com runbook de ensaio
+- [ ] 06.2-02-PLAN.md — Ensaiar a migração contra produção (transação revertida, aviso de pooling D-19) e registrar o resultado
+- [ ] 06.2-03-PLAN.md — Aplicar a migração em produção (checkpoint:decision) e documentar em `docs/data-model.md`
+- [ ] 06.2-04-PLAN.md — A regra única de visibilidade (`visibilidade.ts`), consumida pela leitura do Financeiro e pela trava de escrita de pagamento/ajuste
+- [ ] 06.2-05-PLAN.md — Trava de exclusão no servidor, Server Actions de arquivar/desarquivar/contar pendências, auditoria de call sites de `cards`
+- [ ] 06.2-06-PLAN.md — Diálogos de arquivar/excluir no card do Board, fragmento no lugar do envoltório, botão de arquivar, board não-otimista
+- [ ] 06.2-07-PLAN.md — Rota `/arquivados` com desarquivamento, e a nota explicativa do Financeiro no filtro por ID
 
 ### Phase 7: Conciliação e destrava rastreada
 
@@ -205,7 +211,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8
 | 5. Aba Financeiro com parcelas automáticas | 3/3 | Complete | 2026-08-17 |
 | 6. Baixa e ajustes de parcela | 2/2 | Complete | 2026-08-18 |
 | 6.1. Consulta financeira e geração por período (INSERTED) | 6/6 | Complete | 2026-08-18 |
-| 6.2. Ciclo de vida do contrato (INSERTED) | 0/TBD | Not started | - |
+| 6.2. Ciclo de vida do contrato (INSERTED) | 0/7 | Not started | - |
 | 7. Conciliação e destrava rastreada | 0/TBD | Not started | - |
 | 8. Relatórios financeiros | 0/TBD | Not started | - |
 
