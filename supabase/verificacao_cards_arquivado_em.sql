@@ -647,3 +647,64 @@ alter table public.cards drop column if exists arquivado_em;
 --
 -- Migração aprovada para aplicação em produção pelo plano 06.2-03.
 -- ============================================================
+
+
+-- ============================================================
+-- RESULTADO DO PUSH E DA VERIFICAÇÃO PÓS-PUSH — 2026-08-19
+--
+-- Checkpoint:decision (Task 1) resolvido como `aplicar-agora`.
+--
+-- Push aplicado via SQL Editor do Supabase (colando a DDL completa
+-- da migração, sem o wrapper begin/rollback do ensaio — mesmo
+-- caminho documentado em 04-03-SUMMARY.md, CLI ausente na máquina
+-- do operador): "Sucesso" / "Success. No rows returned".
+--
+-- Parte B rodada contra o banco já migrado. BLOCO 4 rodado em duas
+-- consultas separadas (o SQL Editor só devolve o resultado da
+-- última quando várias são coladas juntas — mesma limitação já
+-- registrada no restante deste arquivo):
+--   - coluna: data_type = timestamp with time zone, is_nullable =
+--     YES, column_default = null — exatamente o esperado
+--   - arquivados = 0 — esperado
+--   - cards_total = 50, updated_at_max = 2026-08-19 14:11:32.099956+00
+--     — idêntico ao baseline do ensaio (plano 06.2-02); nada foi
+--     tocado pelo push
+--
+-- BLOCO 5: trigger cards_impede_exclusao_com_lancamento presente em
+-- pg_trigger, tgenabled = 'O'.
+--
+-- BLOCO 6 (os três lados do backstop contra o banco já migrado)
+-- rodado via a mesma técnica da via (c) — um único bloco `do $$ ...
+-- $$;` terminando em `raise exception`, adaptado para não depender
+-- de nenhum estado gravado antes do push (script em
+-- pos-push-06.2-bloco6.sql, não versionado, gerado ad-hoc para este
+-- checkpoint):
+--   - 2.4: OK recusado (card 88706ed9-778f-4dde-8478-addaa13a2a81)
+--     — mesmo card usado no ensaio, com lançamento real; exclusão
+--     recusada pelo trigger em produção
+--   - 2.5: OK excluído (card 12a909c5-d135-4ee7-aa8f-69070c5cdaa5,
+--     temporário: false) — card real sem lançamento, excluído sem
+--     bloqueio; desfeito pelo rollback automático da exceção
+--     proposital, como toda a via (c)
+--   - 2.6: OK recusado (column cab7bbfe-95bb-4af6-be6a-9e2b26947468)
+--     — cascade via exclusão de coluna também recusado em produção
+--
+-- BLOCO 7: pg_policies para public.cards segue listando exatamente
+-- "team full access cards" (cmd ALL, qual e with_check =
+-- is_team_member()) — nenhuma policy criada, alterada ou removida.
+--
+-- Parte 2 (navegador, contra produção), confirmada pelo operador:
+--   - Board carrega com os mesmos contratos; toggle Ativo/Inativo
+--     continua salvando
+--   - Financeiro carrega normalmente (regressão D-20 sem problema)
+--   - Relatórios carrega com os mesmos números
+--   - Exclusão de card COM lançamento: falhou (mensagem genérica,
+--     esperada até o plano 06.2-05 mapear P0001). Confirmado por
+--     SQL — não pela tela — que o card (id 3496b6d5-e79c-49f2-
+--     950b-4b71699350c6) e seu lançamento (lancamentos_do_card = 1)
+--     continuam no banco
+--   - Exclusão de card SEM nenhum lançamento: funcionou
+--
+-- Todos os critérios de aceite da Task 3 do plano 06.2-03 estão
+-- satisfeitos com evidência real contra produção.
+-- ============================================================
