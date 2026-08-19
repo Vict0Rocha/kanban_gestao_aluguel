@@ -2,10 +2,14 @@ import type { ActionResult, Card, CardDetailsInput } from "./types"
 import type { AlertStatus, AlertType } from "./alerts"
 import {
   ajustarParcelaAction,
+  arquivarCardAction,
+  cardTemLancamentoAction,
+  contarParcelasEmAbertoAction,
   createCardAction,
   createColumnAction,
   deleteCardAction,
   deleteColumnAction,
+  desarquivarCardAction,
   moveCardAction,
   moveColumnAction,
   registrarPagamentoAction,
@@ -71,6 +75,22 @@ export async function deleteCard(id: string) {
 
 export async function setCardAtivo(id: string, ativo: boolean) {
   return unwrap(setCardAtivoAction(id, ativo))
+}
+
+export async function arquivarCard(id: string) {
+  return unwrap(arquivarCardAction(id))
+}
+
+export async function desarquivarCard(id: string) {
+  return unwrap(desarquivarCardAction(id))
+}
+
+export async function cardTemLancamento(id: string) {
+  return unwrap(cardTemLancamentoAction(id))
+}
+
+export async function contarParcelasEmAberto(id: string) {
+  return unwrap(contarParcelasEmAbertoAction(id))
 }
 
 export async function resolveAlert(input: {

@@ -18,6 +18,10 @@ export default async function RelatoriosPage() {
           .from("columns")
           .select("*, cards(*)")
           .eq("board_id", board.id)
+          // D-08: mesmo filtro de page.tsx (Board) — sem `!inner`, filtra
+          // as linhas do embed `cards` e preserva a coluna, que continua
+          // aparecendo vazia em vez de sumir dos relatórios.
+          .is("cards.arquivado_em", null)
           .order("position")
       ).data ?? [])
     : []

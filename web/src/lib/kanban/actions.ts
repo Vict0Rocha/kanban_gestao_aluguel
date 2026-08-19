@@ -6,7 +6,10 @@ import type { AlertStatus, AlertType } from "./alerts"
 import { somarLancamentos, statusDeParcela, type LancamentoResumo } from "./parcelas"
 import {
   avaliarVisibilidadeParcela,
+  EXCLUSAO_BLOQUEADA_POR_LANCAMENTO,
+  EXCLUSAO_COLUNA_BLOQUEADA_POR_LANCAMENTO,
   MENSAGEM_PARCELA_OCULTA,
+  parcelaVisivel,
   type CardVisibilidade,
 } from "./visibilidade"
 
@@ -19,10 +22,10 @@ import {
  *    ficam as regras de negócio — o formulário no navegador valida só para dar
  *    resposta rápida, e não dá para confiar nele.
  *
- * 2. O cliente do Supabase usado aqui é o de sessão do usuário, não o
- *    `service_role`. Então o RLS continua valendo por baixo: se esta camada
- *    tiver um bug de autorização, o banco ainda barra. Trocar por
- *    `service_role` concentraria todo o risco nestas funções.
+ * 2. O cliente do Supabase usado aqui é o de sessão do usuário — nunca o
+ *    de papel privilegiado (`service_role`) — então o RLS continua valendo
+ *    por baixo: se esta camada tiver um bug de autorização, o banco ainda
+ *    barra. Trocar essa escolha concentraria todo o risco nestas funções.
  *
  * Server Actions são endpoints POST de verdade, alcançáveis fora da interface,
  * e a checagem de sessão da página não se estende até aqui — por isso cada
@@ -277,6 +280,17 @@ export async function deleteColumnAction(columnId: string): Promise<ActionResult
 
   if (error) {
     console.error("deleteColumn", error)
+    // Nenhuma pré-checagem própria é acrescentada aqui — o trigger de banco
+    // `cards_impede_exclusao_com_lancamento` (migration
+    // 20260819000000_cards_arquivado_em.sql) já cobre este caminho de
+    // cascade atomicamente, com o predicado exato de D-14, inclusive para
+    // CADA card da coluna. Uma pré-checagem por coluna seria uma segunda
+    // consulta e uma segunda cópia da regra; o que faltava não era a
+    // trava, era a mensagem — por isso só o SQLSTATE do trigger é mapeado
+    // aqui.
+    if (error.code === "P0001") {
+      return { ok: false, error: EXCLUSAO_COLUNA_BLOQUEADA_POR_LANCAMENTO }
+    }
     return { ok: false, error: erroDoBanco(error.code, "excluir a coluna") }
   }
   if (!data || data.length === 0) {
@@ -393,12 +407,65 @@ export async function moveCardAction(
   return { ok: true, data: undefined }
 }
 
+/**
+ * Predicado de D-14 (qualquer lançamento de qualquer tipo trava a exclusão),
+ * numa única implementação. `deleteCardAction` (a trava) e
+ * `cardTemLancamentoAction` (o pré-voo do diálogo, plano 06.2-06) chamam
+ * exatamente esta função — nenhum dos dois consulta por conta própria, pela
+ * mesma disciplina de ponto único de verdade que `visibilidade.ts` documenta.
+ *
+ * `.limit(1)` faz a consulta parar no primeiro acerto, sem contar tudo — só
+ * "existe" importa, não "quantos". `!inner` é obrigatório para filtrar por
+ * coluna do embed, mesmo padrão que `financeiro/page.tsx` já usa.
+ *
+ * Devolve `true`/`false` quando a consulta funciona, e `null` quando ela
+ * falha — a incerteza é devolvida ao chamador para decidir: a trava de
+ * exclusão fecha (recusa), o pré-voo do diálogo abre (deixa o servidor
+ * decidir de verdade no submit).
+ */
+async function cardTemLancamento(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  cardId: string
+): Promise<boolean | null> {
+  const { data, error } = await supabase
+    .from("parcela_lancamentos")
+    .select("id, parcelas!inner(card_id)")
+    .eq("parcelas.card_id", cardId)
+    .limit(1)
+
+  if (error) {
+    console.error("cardTemLancamento", error)
+    return null
+  }
+  return (data?.length ?? 0) > 0
+}
+
 export async function deleteCardAction(cardId: string): Promise<ActionResult> {
   const sessao = await requireUser()
   if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
 
   const invalido = id(cardId, "Imóvel")
   if (invalido) return { ok: false, error: invalido }
+
+  // D-14/D-15: a trava real. A confirmação digitada (`excluir <numero>`)
+  // que o plano 06.2-06 constrói na interface é conveniência — dá ao
+  // usuário uma chance de parar antes de mandar o POST — e NUNCA foi a
+  // trava. Esta função recusa mesmo quando chamada direto, fora da
+  // interface, porque Server Actions são endpoints POST de verdade.
+  const temLancamento = await cardTemLancamento(sessao.supabase, cardId)
+
+  if (temLancamento === true) {
+    return { ok: false, error: EXCLUSAO_BLOQUEADA_POR_LANCAMENTO }
+  }
+  if (temLancamento === null) {
+    // Falha fechada: o custo de errar para o lado permissivo aqui é
+    // destruição irreversível de histórico financeiro via cascade
+    // (cards -> parcelas -> parcela_lancamentos). O custo de errar para o
+    // lado restritivo é o usuário tentar de novo. Entre os dois, só o
+    // primeiro é irreversível — por isso a verificação que falhou nunca
+    // deixa passar.
+    return { ok: false, error: erroDoBanco(undefined, "excluir o imóvel") }
+  }
 
   const { data, error } = await sessao.supabase
     .from("cards")
@@ -408,6 +475,15 @@ export async function deleteCardAction(cardId: string): Promise<ActionResult> {
 
   if (error) {
     console.error("deleteCard", error)
+    // Caminho de corrida: alguém registrou um lançamento entre a
+    // verificação acima e este delete. O trigger de banco
+    // `cards_impede_exclusao_com_lancamento` pega esse caso — e também
+    // qualquer caminho de código futuro que esqueça a verificação — e
+    // devolve o SQLSTATE de exceção do trigger, que vira a mesma frase
+    // explicativa daqui.
+    if (error.code === "P0001") {
+      return { ok: false, error: EXCLUSAO_BLOQUEADA_POR_LANCAMENTO }
+    }
     return { ok: false, error: erroDoBanco(error.code, "excluir o imóvel") }
   }
   if (!data || data.length === 0) {
@@ -440,6 +516,160 @@ export async function setCardAtivoAction(
     return { ok: false, error: semLinhas("atualizar o imóvel") }
   }
   return { ok: true, data: undefined }
+}
+
+// ------------------------------------------------------------------
+// Arquivamento (D-07/D-08/D-10/D-12)
+// ------------------------------------------------------------------
+
+export async function arquivarCardAction(cardId: string): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(cardId, "Imóvel")
+  if (invalido) return { ok: false, error: invalido }
+
+  // Grava só `arquivado_em`. Arquivamento e situação do contrato (`ativo`)
+  // são ortogonais de propósito: se arquivar também desativasse,
+  // desarquivar teria de adivinhar se o contrato estava ativo antes dessa
+  // gravação — e essa informação já teria sido perdida. D-12 diz que
+  // desarquivar devolve o contrato ao funcionamento normal, não a um
+  // estado inventado, então esta action nunca toca `ativo`.
+  const { data, error } = await sessao.supabase
+    .from("cards")
+    .update({ arquivado_em: new Date().toISOString() })
+    .eq("id", cardId)
+    .select("id")
+
+  if (error) {
+    console.error("arquivarCard", error)
+    return { ok: false, error: erroDoBanco(error.code, "arquivar o imóvel") }
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: semLinhas("arquivar o imóvel") }
+  }
+  return { ok: true, data: undefined }
+}
+
+export async function desarquivarCardAction(cardId: string): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(cardId, "Imóvel")
+  if (invalido) return { ok: false, error: invalido }
+
+  // Idêntica a `arquivarCardAction`, gravando nulo. Nada é regenerado
+  // aqui: as parcelas que a regra de D-01 escondia enquanto o contrato
+  // estava arquivado simplesmente voltam a passar em
+  // `avaliarVisibilidadeParcela` (visibilidade.ts), porque nunca foram
+  // apagadas (D-03/D-12) — só ficaram fora do que a query/regra mostrava.
+  const { data, error } = await sessao.supabase
+    .from("cards")
+    .update({ arquivado_em: null })
+    .eq("id", cardId)
+    .select("id")
+
+  if (error) {
+    console.error("desarquivarCard", error)
+    return { ok: false, error: erroDoBanco(error.code, "desarquivar o imóvel") }
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: semLinhas("desarquivar o imóvel") }
+  }
+  return { ok: true, data: undefined }
+}
+
+/**
+ * Pré-voo do diálogo de exclusão (plano 06.2-06). Chama o MESMO
+ * `cardTemLancamento` que é a trava real em `deleteCardAction` — não uma
+ * consulta parecida. Quando a verificação falha, esta action devolve falha
+ * (não `{ temLancamento: null }`): o diálogo trata isso como "não deu para
+ * conferir" e cai na variante permissiva, porque o servidor — não este
+ * pré-voo — é o portão de verdade (D-15). Um pré-voo instável nunca pode
+ * travar sozinho uma exclusão legítima.
+ */
+export async function cardTemLancamentoAction(
+  cardId: string
+): Promise<ActionResult<{ temLancamento: boolean }>> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(cardId, "Imóvel")
+  if (invalido) return { ok: false, error: invalido }
+
+  const temLancamento = await cardTemLancamento(sessao.supabase, cardId)
+  if (temLancamento === null) {
+    return { ok: false, error: erroDoBanco(undefined, "conferir o histórico do imóvel") }
+  }
+  return { ok: true, data: { temLancamento } }
+}
+
+/**
+ * O aviso de pendência de D-10: quantas parcelas em aberto o contrato tem e
+ * quanto falta pagar, para o popup de arquivamento mostrar antes de
+ * confirmar. D-10 é explícito: avisa, nunca bloqueia — em erro de
+ * consulta esta action devolve falha, e o diálogo (plano 06.2-06) tem
+ * estado próprio para isso, sem nunca desabilitar o botão de arquivar por
+ * causa dele.
+ */
+export async function contarParcelasEmAbertoAction(
+  cardId: string
+): Promise<ActionResult<{ quantidade: number; total: number }>> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(cardId, "Imóvel")
+  if (invalido) return { ok: false, error: invalido }
+
+  const { data, error } = await sessao.supabase
+    .from("parcelas")
+    .select(
+      "competencia, valor_original, cards!inner(ativo, periodo_inicio, periodo_fim, arquivado_em), parcela_lancamentos(tipo, valor)"
+    )
+    .eq("card_id", cardId)
+
+  if (error) {
+    console.error("contarParcelasEmAberto", error)
+    return { ok: false, error: erroDoBanco(error.code, "consultar as parcelas do imóvel") }
+  }
+
+  // Mesmo motivo documentado em recalcularEGravarStatus: sem Database
+  // generics no cliente, os embeds são inferidos de um jeito que não bate
+  // exatamente com o shape real devolvido pelo PostgREST.
+  const parcelas = (data ?? []) as unknown as {
+    competencia: string
+    valor_original: number
+    cards: CardVisibilidade
+    parcela_lancamentos: LancamentoResumo[] | null
+  }[]
+
+  let quantidade = 0
+  let total = 0
+
+  for (const parcela of parcelas) {
+    // Terceiro consumidor da regra única de D-01: o aviso conta exatamente
+    // o que o usuário enxerga no Financeiro, não linhas que a regra
+    // esconde.
+    const visivel = parcelaVisivel({
+      competencia: parcela.competencia,
+      card: parcela.cards,
+      temLancamento: (parcela.parcela_lancamentos?.length ?? 0) > 0,
+      hojeISO: hojeISO(),
+    })
+    if (!visivel) continue
+
+    const { valorDevido, valorPago } = somarLancamentos(
+      parcela.valor_original,
+      parcela.parcela_lancamentos
+    )
+    const status = statusDeParcela(valorDevido, valorPago)
+    if (status === "paga" || status === "conciliada") continue
+
+    quantidade += 1
+    total += Math.max(valorDevido - valorPago, 0)
+  }
+
+  return { ok: true, data: { quantidade, total } }
 }
 
 // ------------------------------------------------------------------
