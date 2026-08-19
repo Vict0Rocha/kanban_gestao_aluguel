@@ -4,7 +4,6 @@ import * as React from "react"
 
 import { cardTemLancamento, deleteCard } from "@/lib/kanban/queries"
 import { EXCLUSAO_BLOQUEADA_POR_LANCAMENTO } from "@/lib/kanban/visibilidade"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
