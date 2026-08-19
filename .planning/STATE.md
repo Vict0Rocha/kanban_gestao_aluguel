@@ -5,16 +5,16 @@ milestone_name: Módulo Financeiro
 current_phase: 06.2
 current_phase_name: ciclo-de-vida-do-contrato
 status: executing
-stopped_at: Phase 6.2 plano 03 concluído (migração arquivado_em + backstop em produção)
-last_updated: "2026-08-19T21:00:00.000Z"
+stopped_at: Phase 6.2 plano 04 concluído (regra única de visibilidade, leitura + escrita)
+last_updated: "2026-08-19T22:30:00.000Z"
 last_activity: 2026-08-19
-last_activity_desc: Phase 06.2 plano 03 (push em produção) concluído, avançar para 06.2-04
+last_activity_desc: Phase 06.2 plano 04 (visibilidade.ts) concluído e verificado em produção, avançar para 06.2-05
 progress:
   total_phases: 7
   completed_phases: 4
   total_plans: 23
-  completed_plans: 18
-  percent: 59
+  completed_plans: 19
+  percent: 62
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-08-16)
 ## Current Position
 
 Phase: 06.2 (ciclo-de-vida-do-contrato) — EXECUTING
-Plan: 4 of 7
+Plan: 5 of 7
 Status: Ready to execute
-Last activity: 2026-08-19 — plano 06.2-03 (push em produção: arquivado_em + backstop de exclusão) concluído
+Last activity: 2026-08-19 — plano 06.2-04 (regra única de visibilidade de parcela) concluído e verificado em produção
 
 **Ordem de execução:** 4 → 5 → 6 → 7 → 8. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -74,6 +74,7 @@ Last activity: 2026-08-19 — plano 06.2-03 (push em produção: arquivado_em + 
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-19: Plano 06.2-04 concluído — `avaliarVisibilidadeParcela` (`web/src/lib/kanban/visibilidade.ts`) é a única implementação da regra de visibilidade, consumida pela leitura (Financeiro) e pela escrita (`registrarPagamentoAction`/`ajustarParcelaAction`). Verificado em produção com prova por SQL: inativar/reativar não altera contagem nem ids de parcela; mudar período some da tela sem apagar do banco; lançamento fora do período/com contrato inativo continua aparecendo (override D-05); tentativa de escrita numa aba desatualizada foi recusada pelo servidor com zero lançamentos gravados. VIDA-01 a VIDA-04 completos
 - 2026-08-19: Plano 06.2-03 aplicado em produção (`aplicar-agora`) — `cards.arquivado_em` e o trigger `cards_impede_exclusao_com_lancamento` estão vivos, bloqueando exclusão de card/coluna com lançamento financeiro. Verificação pós-push completa (coluna, trigger, os três lados do backstop, policies, Board/Financeiro/Relatórios) contra produção real, com prova por SQL — não pela tela — de que dado com lançamento sobrevive a uma tentativa de exclusão recusada
 - 2026-08-19: Nova técnica de ensaio contra pooling do SQL Editor do Supabase (D-19 extendida): condensar baseline + DDL + provas num único bloco `do $$ ... $$;` terminando em `raise exception` proposital — elimina o risco de connection-hopping do pool entre comandos separados, porque é um único comando. Documentada em `supabase/verificacao_cards_arquivado_em.sql` como via (c), agora a técnica preferida para ensaios futuros neste projeto
 - 2026-08-16: Roadmap da v2.0 desviou da divisão de 6 fases da spec em 3 pontos, todos por verificabilidade manual (o projeto não tem suíte automatizada): documentação absorvida pela fase de schema (o pilar 4 da própria spec proíbe deixar doc para o final), geração automática unida à listagem da aba Financeiro (sem a rota não há como abrir a aba e conferir), e as Server Actions dissolvidas em duas fatias verticais com UI própria (baixa/ajustes e conciliação/destrava). Resultado: 5 fases, mesmo escopo — ver ROADMAP.md § Desvios

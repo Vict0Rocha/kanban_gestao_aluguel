@@ -52,10 +52,10 @@
 
 ### VIDA — ciclo de vida do contrato
 
-- [ ] **VIDA-01**: A visibilidade de uma parcela é derivada na leitura por uma regra única: ela aparece se tiver ao menos um lançamento, **ou** se a competência estiver dentro do período atual do card **e** (o contrato estiver ativo **ou** a competência for ≤ o mês atual)
-- [ ] **VIDA-02**: Contrato inativo não exibe parcelas de meses futuros; a do mês atual e as de meses passados (inclusive vencidas em aberto) continuam visíveis e operáveis. Reativar restaura a visibilidade sem regenerar nada
-- [ ] **VIDA-03**: Alterar `periodo_inicio`/`periodo_fim` de um card reflete no Financeiro na carga seguinte — parcelas que saíram do período deixam de aparecer, exceto as que já têm lançamento
-- [ ] **VIDA-04**: Toda escrita sobre uma parcela não-visível pela regra de VIDA-01 é recusada no servidor, com mensagem em português comum — a ocultação na tela é consequência da regra, não a trava
+- [x] **VIDA-01**: A visibilidade de uma parcela é derivada na leitura por uma regra única: ela aparece se tiver ao menos um lançamento, **ou** se a competência estiver dentro do período atual do card **e** (o contrato estiver ativo **ou** a competência for ≤ o mês atual)
+- [x] **VIDA-02**: Contrato inativo não exibe parcelas de meses futuros; a do mês atual e as de meses passados (inclusive vencidas em aberto) continuam visíveis e operáveis. Reativar restaura a visibilidade sem regenerar nada
+- [x] **VIDA-03**: Alterar `periodo_inicio`/`periodo_fim` de um card reflete no Financeiro na carga seguinte — parcelas que saíram do período deixam de aparecer, exceto as que já têm lançamento
+- [x] **VIDA-04**: Toda escrita sobre uma parcela não-visível pela regra de VIDA-01 é recusada no servidor, com mensagem em português comum — a ocultação na tela é consequência da regra, não a trava
 - [ ] **VIDA-05**: Usuário pode arquivar um contrato (com confirmação que avisa sobre parcelas em aberto); arquivado, ele some de Board, Financeiro, Relatórios e alertas sem nada ser apagado. Uma aba "Arquivados" lista os arquivados e permite desarquivar, devolvendo o contrato ao funcionamento normal
 - [ ] **VIDA-06**: Excluir um contrato exige confirmação digitada (`excluir <id do contrato>`) e é bloqueado no servidor se existir qualquer lançamento financeiro ligado a ele; nesse caso o sistema oferece arquivar no lugar
 
@@ -143,10 +143,10 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | PARCELA-06 | Phase 6.1 | Concluído |
 | CONSULTA-01 | Phase 6.1 | Concluído |
 | CONSULTA-02 | Phase 6.1 | Concluído |
-| VIDA-01 | Phase 6.2 | Pendente |
-| VIDA-02 | Phase 6.2 | Pendente |
-| VIDA-03 | Phase 6.2 | Pendente |
-| VIDA-04 | Phase 6.2 | Pendente |
+| VIDA-01 | Phase 6.2 | Completo |
+| VIDA-02 | Phase 6.2 | Completo |
+| VIDA-03 | Phase 6.2 | Completo |
+| VIDA-04 | Phase 6.2 | Completo |
 | VIDA-05 | Phase 6.2 | Pendente |
 | VIDA-06 | Phase 6.2 | Pendente |
 | BAIXA-01 | Phase 6 | Concluído |
