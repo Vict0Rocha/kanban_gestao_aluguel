@@ -4,8 +4,8 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 06.1
 status: completed
-stopped_at: "Roadmap da v2.0 escrito — Phases 4-8, 28 de 28 requisitos mapeados, traceability preenchida em REQUIREMENTS.md. Próximo passo: `/gsd-plan-phase 4`. Pendências herdadas da v1.0 continuam abertas: confirmar ROBUST-02 com login real e decidir sobre SEC-02 quando o usuário quiser retomar segurança."
-last_updated: "2026-08-19T15:03:30.959Z"
+stopped_at: Phase 6.2 UI-SPEC aprovado
+last_updated: "2026-08-19T15:19:26.107Z"
 last_activity: 2026-08-18
 last_activity_desc: Phase 6 marked complete
 progress:
@@ -112,6 +112,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-16
-Stopped at: Roadmap da v2.0 escrito — Phases 4-8, 28 de 28 requisitos mapeados, traceability preenchida em REQUIREMENTS.md. Próximo passo: `/gsd-plan-phase 4`. Pendências herdadas da v1.0 continuam abertas: confirmar ROBUST-02 com login real e decidir sobre SEC-02 quando o usuário quiser retomar segurança.
-Resume file: None
+Last session: 2026-08-19T15:19:26.038Z
+Stopped at: Phase 6.2 UI-SPEC aprovado
+Resume file: .planning/phases/06.2-ciclo-de-vida-do-contrato/06.2-UI-SPEC.md
