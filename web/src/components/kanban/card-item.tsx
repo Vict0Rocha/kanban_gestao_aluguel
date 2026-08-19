@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { Trash2, User } from "lucide-react"
+import { Archive, Trash2, User } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/kanban/format"
@@ -12,22 +12,14 @@ import type { CardDetailsInput } from "@/lib/kanban/types"
 import { IdPill } from "@/components/financeiro/id-pill"
 import { Button } from "@/components/ui/button"
 import { CardDetailDialog } from "@/components/kanban/card-detail-dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { ArquivarContratoDialog } from "@/components/kanban/arquivar-contrato-dialog"
+import { ExcluirContratoDialog } from "@/components/kanban/excluir-contrato-dialog"
 
 export function CardItem({
   card,
   matched,
   onDelete,
+  onArquivado,
   onUpdate,
   onToggleAtivo,
   registerRef,
@@ -40,7 +32,21 @@ export function CardItem({
    * aqui serve para achar um imóvel no meio dos outros, não para escondê-los.
    */
   matched?: boolean
+  /**
+   * Mudou de significado no plano 06.2-06: antes pedia ao servidor para
+   * excluir o card, agora é chamado DEPOIS que o servidor já confirmou a
+   * exclusão (dentro de `ExcluirContratoDialog`) — só tira o card da tela.
+   * Mesmo nome, contrato diferente: quem reler este arquivo sem saber disso
+   * vai procurar uma chamada de rede aqui e não vai achar nenhuma.
+   */
   onDelete: (id: string) => void
+  /**
+   * O servidor confirmou o arquivamento (dentro de `ArquivarContratoDialog`)
+   * — só tira o card da tela. Opcional só para a Task 2 compilar sozinha
+   * antes de `board.tsx` repassar a função de verdade na Task 3; a cópia do
+   * card no `DragOverlay` também não precisa dela (é só visual).
+   */
+  onArquivado?: (id: string) => void
   onUpdate: (id: string, input: CardDetailsInput) => Promise<void>
   onToggleAtivo: (id: string, ativo: boolean) => void
   /**
@@ -51,6 +57,8 @@ export function CardItem({
   registerRef?: (id: string, el: HTMLDivElement | null) => void
 }) {
   const [detailOpen, setDetailOpen] = React.useState(false)
+  const [arquivarOpen, setArquivarOpen] = React.useState(false)
+  const [excluirOpen, setExcluirOpen] = React.useState(false)
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: card.id, data: { type: "card", columnId: card.column_id } })
@@ -69,13 +77,18 @@ export function CardItem({
   }
 
   return (
-    // AlertDialogContent and CardDetailDialog are siblings of the sortable
-    // div below, never descendants of it. React bubbles synthetic events
-    // (click, keydown, mousedown...) through the JSX tree, not the portaled
-    // DOM position, so a dialog nested inside this div would leak every
-    // keystroke and click to dnd-kit's drag listeners underneath — that's
-    // what broke typing spaces and selecting text in the detail form.
-    <AlertDialog>
+    // ArquivarContratoDialog, ExcluirContratoDialog e CardDetailDialog são
+    // irmãos do div ordenável abaixo, nunca descendentes dele. React
+    // borbulha eventos sintéticos (click, keydown, mousedown...) pela
+    // árvore JSX, não pela posição portalada no DOM, então um diálogo
+    // aninhado dentro deste div vazaria cada tecla e clique para os
+    // listeners de arraste do dnd-kit por baixo — foi isso que já quebrou
+    // digitar espaço e selecionar texto no formulário de detalhes uma vez.
+    // A restrição fica mais crítica aqui, não menos: o diálogo de exclusão
+    // carrega um campo de texto onde o usuário precisa digitar
+    // "excluir {numero}", e a barra de espaço é justamente a tecla que
+    // vazava.
+    <>
       <div
         ref={setRefs}
         style={style}
@@ -92,21 +105,20 @@ export function CardItem({
           isDragging && "opacity-40"
         )}
       >
-        <AlertDialogTrigger
-          render={
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="absolute top-1.5 right-1.5 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
-              aria-label="Excluir card"
-              onPointerDown={(event) => event.stopPropagation()}
-              onMouseDown={(event) => event.stopPropagation()}
-              onClick={(event) => event.stopPropagation()}
-            />
-          }
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="absolute top-1.5 right-1.5 text-muted-foreground opacity-0 group-hover:opacity-100 focus-visible:opacity-100 hover:bg-destructive/10 hover:text-destructive"
+          aria-label="Excluir card"
+          onPointerDown={(event) => event.stopPropagation()}
+          onMouseDown={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation()
+            setExcluirOpen(true)
+          }}
         >
           <Trash2 className="size-3.5" />
-        </AlertDialogTrigger>
+        </Button>
 
         <p className="pr-6 text-sm font-semibold text-foreground">
           {card.proprietario}
@@ -121,30 +133,46 @@ export function CardItem({
           </p>
         )}
         <div className="mt-2 flex items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-primary">
-            {formatCurrency(card.valor)}
-          </p>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              className="-ml-1 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 hover:bg-muted hover:text-foreground"
+              aria-label={`Arquivar ${card.endereco}`}
+              onPointerDown={(event) => event.stopPropagation()}
+              onMouseDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.stopPropagation()
+                setArquivarOpen(true)
+              }}
+            >
+              <Archive className="size-3" />
+            </Button>
+            <p className="text-sm font-semibold text-primary">
+              {formatCurrency(card.valor)}
+            </p>
+          </div>
           <IdPill numero={card.numero} variant="subtle" />
         </div>
       </div>
 
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Excluir este imóvel do board?</AlertDialogTitle>
-          <AlertDialogDescription>
-            {card.endereco} — essa ação não pode ser desfeita.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            onClick={() => onDelete(card.id)}
-          >
-            Excluir
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
+      <ArquivarContratoDialog
+        card={card}
+        open={arquivarOpen}
+        onOpenChange={setArquivarOpen}
+        onArquivado={(id) => onArquivado?.(id)}
+      />
+
+      <ExcluirContratoDialog
+        card={card}
+        open={excluirOpen}
+        onOpenChange={setExcluirOpen}
+        onExcluido={onDelete}
+        onPedirArquivamento={() => {
+          setExcluirOpen(false)
+          setArquivarOpen(true)
+        }}
+      />
 
       <CardDetailDialog
         card={card}
@@ -153,6 +181,6 @@ export function CardItem({
         onSave={onUpdate}
         onToggleAtivo={onToggleAtivo}
       />
-    </AlertDialog>
+    </>
   )
 }
