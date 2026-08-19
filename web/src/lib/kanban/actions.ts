@@ -4,6 +4,11 @@ import { createClient } from "@/lib/supabase/server"
 import type { ActionResult, Card, CardDetailsInput } from "./types"
 import type { AlertStatus, AlertType } from "./alerts"
 import { somarLancamentos, statusDeParcela, type LancamentoResumo } from "./parcelas"
+import {
+  avaliarVisibilidadeParcela,
+  MENSAGEM_PARCELA_OCULTA,
+  type CardVisibilidade,
+} from "./visibilidade"
 
 /**
  * Camada de escrita do sistema. Tudo que grava passa por aqui.
@@ -503,6 +508,62 @@ export async function resolveAlertAction(input: {
 // ------------------------------------------------------------------
 
 /**
+ * Fixa "hoje" no servidor, repetindo exatamente a expressão já usada em
+ * financeiro/page.tsx (A-04). Não vira utilitário compartilhado novo —
+ * está fora do escopo desta fase, e `parcelas.ts` não pode importar nada
+ * de servidor.
+ */
+function hojeISO(): string {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
+}
+
+/**
+ * D-04/D-15: esconder na tela é cosmético, esta função é a trava. Reconsulta
+ * a parcela mais o card mais os lançamentos — nunca confia no que a tela
+ * mandou — e chama a MESMA `avaliarVisibilidadeParcela` que decide o que o
+ * Financeiro mostra (visibilidade.ts). Devolve `null` quando a escrita é
+ * permitida, ou a frase de recusa (MENSAGEM_PARCELA_OCULTA) quando não é.
+ */
+async function exigirParcelaVisivel(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  parcelaId: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("parcelas")
+    .select(
+      "competencia, cards!inner(ativo, periodo_inicio, periodo_fim, arquivado_em), parcela_lancamentos(id)"
+    )
+    .eq("id", parcelaId)
+    .maybeSingle()
+
+  // Erro OU linha ausente recusa com a frase genérica — inclusive quando a
+  // ausência vem do RLS filtrando a linha para quem está fora da allowlist
+  // (T-06.2-18): a resposta segura é recusar, não presumir visível (D-04).
+  if (error || !data) {
+    console.error("exigirParcelaVisivel", error)
+    return MENSAGEM_PARCELA_OCULTA.indeterminado
+  }
+
+  // Mesmo motivo já documentado em recalcularEGravarStatus: sem Database
+  // generics no cliente, o embed precisa ser convertido via `unknown`.
+  const parcela = data as unknown as {
+    competencia: string
+    cards: CardVisibilidade
+    parcela_lancamentos: { id: string }[] | null
+  }
+
+  const resultado = avaliarVisibilidadeParcela({
+    competencia: parcela.competencia,
+    card: parcela.cards,
+    temLancamento: (parcela.parcela_lancamentos?.length ?? 0) > 0,
+    hojeISO: hojeISO(),
+  })
+
+  return resultado.visivel ? null : MENSAGEM_PARCELA_OCULTA[resultado.motivo]
+}
+
+/**
  * Única função que `registrarPagamentoAction`/`ajustarParcelaAction` usam
  * para decidir o novo status — nenhum dos dois recalcula por conta própria
  * (evita duplicar a regra de D-04 entre pagamento e ajuste). Sempre relê a
@@ -568,6 +629,13 @@ export async function registrarPagamentoAction(
     dataObrigatoria(data) ??
     textoOpcional(observacao, "Observação", 2000)
   if (invalido) return { ok: false, error: invalido }
+
+  // D-04/D-15: a trava real. A ocultação na tela (filtrarParcelasVisiveis
+  // em financeiro/page.tsx) é consequência, não a barreira — uma aba
+  // desatualizada ainda pode tentar este POST, então esta reconsulta é
+  // quem realmente decide.
+  const recusa = await exigirParcelaVisivel(sessao.supabase, parcelaId)
+  if (recusa) return { ok: false, error: recusa }
 
   const { data: inserido, error } = await sessao.supabase
     .from("parcela_lancamentos")
