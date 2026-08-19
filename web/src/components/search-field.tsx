@@ -18,12 +18,19 @@ export function SearchField({
   className,
   /** Lido por leitores de tela a cada mudança de resultado. */
   resultSummary,
+  /**
+   * Chamado ao confirmar a busca com Enter. Opcional — o board passa isso
+   * para navegar até o primeiro resultado; os relatórios não passam nada, e
+   * o Enter lá continua sem efeito, exatamente como antes.
+   */
+  onSubmit,
 }: {
   value: string
   onChange: (value: string) => void
   placeholder?: string
   className?: string
   resultSummary?: string
+  onSubmit?: () => void
 }) {
   const inputRef = React.useRef<HTMLInputElement>(null)
 
@@ -49,6 +56,10 @@ export function SearchField({
           if (event.key === "Escape" && value) {
             event.preventDefault()
             clear()
+          }
+          if (event.key === "Enter" && onSubmit) {
+            event.preventDefault()
+            onSubmit()
           }
         }}
         placeholder={placeholder}
