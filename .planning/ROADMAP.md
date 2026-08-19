@@ -30,7 +30,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 4: Fundação financeira** - Banco aceita parcelas e lançamentos só de quem está na allowlist, recusa dado inválido por conta própria, e o modelo está documentado
 - [x] **Phase 5: Aba Financeiro com parcelas automáticas** - Abrir a aba mostra as parcelas do mês atual e do próximo mês de cada contrato ativo, sem clicar em "gerar"
 - [x] **Phase 6: Baixa e ajustes de parcela** - Registrar recebimento total ou parcial, multa e desconto, com histórico que nunca é sobrescrito
-- [ ] **Phase 6.1: Consulta financeira e geração por período** (INSERTED) - Vencendo hoje como padrão, filtros por proprietário/inquilino/período/ID, geração pelo período completo do contrato com backfill
+- [x] **Phase 6.1: Consulta financeira e geração por período** (INSERTED) - Vencendo hoje como padrão, filtros por proprietário/inquilino/período/ID, geração pelo período completo do contrato com backfill
 - [ ] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
 - [ ] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
 
@@ -111,24 +111,24 @@ Plans:
 **Why inserted**: Feedback do usuário ao testar a Phase 6 em produção (2026-08-18) — pediu uma tela de consulta inspirada em ERPs profissionais (referência: Sienge) em vez do "mostra tudo de cara" herdado da Phase 5, mais duas regras de negócio novas sobre como as parcelas são geradas. Validado com sketch navegável (`.planning/sketches/001-consulta-financeiro/`, variante B escolhida) antes de formalizar.
 **Success Criteria** (what must be TRUE):
 
-  1. Abrir a aba Financeiro sem nenhum filtro mostra só as parcelas vencendo **hoje** — o seletor Mês atual/Próximo mês da Phase 5 (FINUI-02) é removido, não apenas escondido
-  2. Usuário filtra por proprietário, inquilino, período e/ou ID do contrato — cada campo é opcional e só entra na busca se preenchido; aplicar um filtro troca a visão padrão pelo resultado, sem misturar os dois
-  3. Cada contrato tem um ID sequencial (#1, #2, #3…) visível no card do Board e na consulta do Financeiro
-  4. O vencimento de uma parcela nova segue o dia do mês de `periodo_inicio` do contrato; contratos sem `periodo_inicio` usam o dia 20
-  5. Contrato com `periodo_inicio` **e** `periodo_fim` gera parcelas para todos os meses do período inteiro, incluindo os já passados (retroativo); contrato com só uma das duas datas, ou nenhuma, continua restrito a mês atual + próximo
+  1. ✓ Abrir a aba Financeiro sem nenhum filtro mostra só as parcelas vencendo **hoje** — o seletor Mês atual/Próximo mês da Phase 5 (FINUI-02) foi removido (arquivo excluído), não apenas escondido — confirmado em produção (06.1-04)
+  2. ✓ Usuário filtra por proprietário, inquilino, período e/ou ID do contrato — cada campo é opcional e só entra na busca se preenchido; aplicar um filtro troca a visão padrão pelo resultado, sem misturar os dois — confirmado em produção, incluindo E lógico entre campos e drawer respeitando a URL (06.1-05)
+  3. ✓ Cada contrato tem um ID sequencial (#1, #2, #3…) visível no card do Board e na consulta do Financeiro — `cards.numero` aplicado em produção (06.1-01/02/03), exibido nos dois lugares (06.1-04)
+  4. ✓ O vencimento de uma parcela nova segue o dia do mês de `periodo_inicio` do contrato; contratos sem `periodo_inicio` usam o dia 20 — confirmado por leitura de código e grep automatizado; parcelas antigas não reescritas, confirmado contra produção (06.1-04)
+  5. ✓ Contrato com `periodo_inicio` **e** `periodo_fim` gera parcelas para todos os meses do período inteiro, incluindo os já passados (retroativo); contrato com só uma das duas datas, ou nenhuma, continua restrito a mês atual + próximo — confirmado em produção; volume real (~235 parcelas novas, 3x a estimativa de pré-voo) investigado até a causa raiz e confirmado explicitamente pelo usuário como o comportamento desejado (06.1-06)
 
 **Pilares cruzados**: a geração retroativa (critério 5) reabre uma decisão que a spec original tinha fechado como "sem backfill" — o volume real de parcelas que isso cria em produção precisa ser medido (consulta SQL de pré-voo, mesmo espírito da Phase 4) antes do plano de execução assumir que é seguro rodar sem um portão de confirmação. FINSEG-01/02/03 continuam valendo sem re-implementação — esta fase só muda o que é gerado e como é consultado, não quem pode escrever
-**Plans**: 6 plans
+**Plans**: 6/6 plans executed
 **UI hint**: yes
 
 Plans:
 
-- [ ] 06.1-01-PLAN.md — Migração `cards.numero` (sequence, coluna, backfill, constraint única) + runbook de ensaio
-- [ ] 06.1-02-PLAN.md — Ensaiar a migração no SQL Editor de produção dentro de uma transação desfeita no fim
-- [ ] 06.1-03-PLAN.md — Aplicar em produção (checkpoint de decisão), conferir e documentar em `docs/data-model.md`
-- [ ] 06.1-04-PLAN.md — Fatia vertical: "Vencendo hoje" por padrão, vencimento com fallback no dia 20, pílula de ID no Board e no Financeiro
-- [ ] 06.1-05-PLAN.md — Filtro completo (proprietário/inquilino/período/ID) atrás do botão "Filtrar", consulta real no servidor
-- [ ] 06.1-06-PLAN.md — Geração retroativa por período completo, com checkpoint de pré-voo de impacto em produção (D-17)
+- [x] 06.1-01-PLAN.md — Migração `cards.numero` (sequence, coluna, backfill, constraint única) + runbook de ensaio
+- [x] 06.1-02-PLAN.md — Ensaiar a migração no SQL Editor de produção dentro de uma transação desfeita no fim (na prática, o pooling de conexão do SQL Editor transformou o ensaio em push real — ver 06.1-02-SUMMARY.md)
+- [x] 06.1-03-PLAN.md — Aplicar em produção (checkpoint de decisão, retroativamente confirmado), conferir e documentar em `docs/data-model.md`
+- [x] 06.1-04-PLAN.md — Fatia vertical: "Vencendo hoje" por padrão, vencimento com fallback no dia 20, pílula de ID no Board e no Financeiro
+- [x] 06.1-05-PLAN.md — Filtro completo (proprietário/inquilino/período/ID) atrás do botão "Filtrar", consulta real no servidor
+- [x] 06.1-06-PLAN.md — Geração retroativa por período completo, com checkpoint de pré-voo de impacto em produção (D-17)
 
 ### Phase 7: Conciliação e destrava rastreada
 
@@ -180,7 +180,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 7 → 8
 | 4. Fundação financeira | 4/4 | Complete | 2026-08-17 |
 | 5. Aba Financeiro com parcelas automáticas | 3/3 | Complete | 2026-08-17 |
 | 6. Baixa e ajustes de parcela | 2/2 | Complete | 2026-08-18 |
-| 6.1. Consulta financeira e geração por período (INSERTED) | 0/TBD | Not started | - |
+| 6.1. Consulta financeira e geração por período (INSERTED) | 6/6 | Complete | 2026-08-18 |
 | 7. Conciliação e destrava rastreada | 0/TBD | Not started | - |
 | 8. Relatórios financeiros | 0/TBD | Not started | - |
 

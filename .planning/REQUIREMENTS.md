@@ -12,7 +12,7 @@
 
 - [x] **CONTRATO-01**: Usuário pode marcar um contrato como ativo ou inativo direto no card do board, sem precisar abrir o modal de edição
 - [x] **CONTRATO-02**: Contrato marcado como inativo para de gerar novas parcelas, mas suas parcelas já existentes continuam visíveis e gerenciáveis até serem resolvidas
-- [ ] **CONTRATO-03**: Cada contrato tem um identificador sequencial numérico (#1, #2, #3…), atribuído automaticamente, exibido no card do Board e na consulta do Financeiro
+- [x] **CONTRATO-03**: Cada contrato tem um identificador sequencial numérico (#1, #2, #3…), atribuído automaticamente, exibido no card do Board e na consulta do Financeiro
 
 ### PARCELA — geração automática
 
@@ -20,8 +20,8 @@
 - [x] **PARCELA-02**: Abrir a aba Financeiro repetidamente não duplica parcelas — a geração é idempotente
 - [x] **PARCELA-03**: A parcela guarda o valor do aluguel vigente no momento em que foi gerada, de modo que um reajuste futuro não altera parcelas já criadas
 - [x] **PARCELA-04**: O sistema não gera parcela para competência fora do período do contrato (antes do início ou depois do fim)
-- [ ] **PARCELA-05**: O dia de vencimento de uma parcela é o dia do mês de `periodo_inicio` do contrato; contratos sem `periodo_inicio` usam o dia 20 como padrão
-- [ ] **PARCELA-06**: Quando o contrato tem `periodo_inicio` **e** `periodo_fim` preenchidos, a geração cria parcelas para todos os meses do período inteiro, incluindo meses já passados em relação a hoje (geração retroativa). Contratos com apenas uma das duas datas, ou nenhuma, continuam restritos a mês atual + próximo (PARCELA-01)
+- [x] **PARCELA-05**: O dia de vencimento de uma parcela é o dia do mês de `periodo_inicio` do contrato; contratos sem `periodo_inicio` usam o dia 20 como padrão
+- [x] **PARCELA-06**: Quando o contrato tem `periodo_inicio` **e** `periodo_fim` preenchidos, a geração cria parcelas para todos os meses do período inteiro, incluindo meses já passados em relação a hoje (geração retroativa). Contratos com apenas uma das duas datas, ou nenhuma, continuam restritos a mês atual + próximo (PARCELA-01)
 
 ### BAIXA — registro de pagamentos e ajustes
 
@@ -47,8 +47,8 @@
 
 ### CONSULTA — busca e filtros na aba Financeiro
 
-- [ ] **CONSULTA-01**: Usuário pode filtrar as parcelas da aba Financeiro por proprietário, inquilino, período e ID do contrato; cada filtro é opcional e só é aplicado se preenchido, combinando entre si
-- [ ] **CONSULTA-02**: Sem nenhum filtro aplicado, a aba Financeiro mostra por padrão as parcelas vencendo no dia de hoje
+- [x] **CONSULTA-01**: Usuário pode filtrar as parcelas da aba Financeiro por proprietário, inquilino, período e ID do contrato; cada filtro é opcional e só é aplicado se preenchido, combinando entre si
+- [x] **CONSULTA-02**: Sem nenhum filtro aplicado, a aba Financeiro mostra por padrão as parcelas vencendo no dia de hoje
 
 ### FINREL — relatórios financeiros
 
@@ -129,11 +129,11 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | FINUI-01 | Phase 5 | Concluído |
 | FINUI-02 | Phase 5 | Substituído (ver CONSULTA-02) |
 | FINUI-03 | Phase 5 | Concluído |
-| CONTRATO-03 | Phase 6.1 | Pendente |
-| PARCELA-05 | Phase 6.1 | Pendente |
-| PARCELA-06 | Phase 6.1 | Pendente |
-| CONSULTA-01 | Phase 6.1 | Pendente |
-| CONSULTA-02 | Phase 6.1 | Pendente |
+| CONTRATO-03 | Phase 6.1 | Concluído |
+| PARCELA-05 | Phase 6.1 | Concluído |
+| PARCELA-06 | Phase 6.1 | Concluído |
+| CONSULTA-01 | Phase 6.1 | Concluído |
+| CONSULTA-02 | Phase 6.1 | Concluído |
 | BAIXA-01 | Phase 6 | Concluído |
 | BAIXA-02 | Phase 6 | Concluído |
 | BAIXA-03 | Phase 6 | Concluído |
