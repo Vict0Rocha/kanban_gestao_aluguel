@@ -19,7 +19,20 @@
 -- supabase/verificacao_cards_numero.sql, seção "RESULTADO DO
 -- ENSAIO — 2026-08-18").
 --
--- Só existem DUAS saídas aceitas para a PARTE A (o BLOCO 2 inteiro,
+-- ATUALIZAÇÃO — ENSAIO REAL DE 2026-08-19 (ver "RESULTADO DO
+-- ENSAIO" no fim deste arquivo): mesmo colar TUDO num único clique
+-- de "Run" (via (a) abaixo) não é garantia suficiente quando
+-- existem comandos FORA de um `begin;...rollback;` explícito
+-- misturados com comandos DENTRO dele — só o trecho estritamente
+-- entre `begin;` e `rollback;` fica garantido na mesma conexão do
+-- pool. Uma primeira tentativa de contornar isso com variáveis de
+-- sessão (`set_config(..., false)`) para carregar resultados de
+-- leitura "antes" através de múltiplos comandos fora de transação
+-- FALHOU: os valores voltaram vazios. Isso levou a uma TERCEIRA
+-- via, (c) abaixo, que elimina o problema por construção ao usar
+-- um único comando PL/pgSQL em vez de vários.
+--
+-- Existem TRÊS saídas aceitas para a PARTE A (o BLOCO 2 inteiro,
 -- que abre transação e só fecha no rollback do fim da Parte A):
 --   (a) colar a PARTE A INTEIRA (do primeiro `select` do BLOCO 1
 --       até o `rollback;` que fecha o BLOCO 3... — na prática, a
@@ -29,10 +42,28 @@
 --       `psql "$DATABASE_URL" -f ...`), onde a continuidade de
 --       sessão é garantida por construção, e aí sim os blocos podem
 --       ser colados em pedaços separados dentro da mesma conexão
---       `psql`.
+--       `psql`; ou
+--   (c) [RECOMENDADA para ensaios que precisem combinar leitura-antes
+--       + DDL + provas + leitura-depois numa sessão garantida —
+--       descoberta e provada no ensaio de 2026-08-19, provavelmente
+--       a mais segura das três porque é auto-contida por construção]
+--       condensar baseline + DDL (nas duas passagens) + provas +
+--       confirmação final dentro de um ÚNICO bloco `do $$ ... $$;`
+--       — um comando PL/pgSQL só, portanto uma conexão só, sem
+--       depender de o pool manter cliques ou comandos separados
+--       amarrados. Capturar os resultados em variáveis locais e, no
+--       fim do bloco, disparar um `raise exception` proposital cuja
+--       mensagem concatena todos os resultados observados. Como DDL
+--       é transacional em Postgres e uma exceção não capturada
+--       aborta o `do $$` inteiro, isso desfaz TUDO sozinho — sem
+--       precisar de um segundo comando/clique para o `rollback;`, e
+--       sem risco de esquecê-lo. O SQL Editor mostra a mensagem de
+--       erro normalmente, com o resultado consolidado nela. Ver o
+--       exemplo real no bloco "RESULTADO DO ENSAIO" no fim deste
+--       arquivo.
 -- Rodar bloco a bloco dentro do SQL Editor do Studio, em cliques
--- separados de "Run", NÃO é uma terceira opção — é exatamente o
--- que já causou push acidental antes.
+-- separados de "Run", fora de uma das três vias acima, NÃO é uma
+-- via válida — é exatamente o que já causou push acidental antes.
 -- ============================================================
 
 
@@ -517,5 +548,102 @@ alter table public.cards drop column if exists arquivado_em;
 
 
 -- ============================================================
--- RESULTADO DO ENSAIO — <preencher no plano 06.2-02>
+-- RESULTADO DO ENSAIO — 2026-08-19
+--
+-- Contexto primeiro: a Parte A NÃO foi executada literalmente por
+-- nenhuma das duas vias previstas no plano — nem (a) um único Run
+-- colando tudo no SQL Editor, nem (b) psql/CLI direto contra
+-- produção. A via (a) foi tentada primeiro e revelou um problema
+-- novo: mesmo dentro de UM clique, comandos que ficam FORA de um
+-- `begin;...rollback;` explícito podem cair em conexões diferentes
+-- do pool do Supabase Studio — só o trecho estritamente entre
+-- `begin;` e `rollback;` fica garantido na mesma conexão. Uma
+-- primeira tentativa de contornar isso com variáveis de sessão
+-- (`set_config(..., false)`) para carregar resultados de leitura
+-- "antes" através de múltiplos comandos fora de transação FALHOU:
+-- os valores "antes" e das provas voltaram vazios, só os valores
+-- "depois" (que rodaram em sequência imediata, sem gap de clique)
+-- sobreviveram. Esta é uma extensão da lição de D-19 (Phase 6.1,
+-- ver supabase/verificacao_cards_numero.sql) — não uma repetição
+-- idêntica: lá o problema era `begin`/`rollback` em cliques
+-- separados; aqui o problema apareceu mesmo dentro de um único
+-- clique, por causa de comandos soltos fora da transação.
+--
+-- A técnica que efetivamente funcionou, desenvolvida ao vivo
+-- durante este ensaio e agora documentada como a via (c) do aviso
+-- de pooling no topo deste arquivo: todo o ensaio — baseline, DDL
+-- (duas passagens), as 7 provas — dentro de um ÚNICO bloco
+-- `do $$ ... $$;`. No final do bloco, em vez de um `rollback;`
+-- separado, um `raise exception` proposital cuja mensagem
+-- concatena os resultados capturados em variáveis locais. Como DDL
+-- é transacional em Postgres e uma exceção não capturada aborta o
+-- comando inteiro, isso desfaz TUDO sozinho — sem depender de um
+-- segundo comando/clique para o rollback, e sem risco de
+-- connection-hopping entre `begin` e `rollback`, porque não existem
+-- dois comandos separados: é um só.
+--
+-- Caminho de execução usado: (c) — bloco `do $$ ... $$;` único com
+-- `raise exception` final, não (a) nem (b) literalmente.
+--
+-- Baseline (antes, lido dentro do bloco):
+--   cards_total = 50, updated_at_max = 2026-08-19 14:11:32.099956+00,
+--   parcelas_total = 342, lancamentos_total = 16
+--
+-- IDs reais usados nas provas (para a Parte B repetir contra os
+-- mesmos alvos quando aplicável — note que a Prova 2.5 excluiu e
+-- restaurou um card real dentro da transação, então o mesmo `id`
+-- pode não ter mais o mesmo estado de "sem lançamento" depois de
+-- mais uso do app):
+--   - card com lançamento (Prova 2.4): 88706ed9-778f-4dde-8478-addaa13a2a81
+--   - card sem lançamento, real, não temporário (Prova 2.5): 12a909c5-d135-4ee7-aa8f-69070c5cdaa5
+--   - column do cascade (Prova 2.6): cab7bbfe-95bb-4af6-be6a-9e2b26947468
+--
+-- Resultado de cada prova, observado (não presumido):
+--   - 2.1: data_type = timestamp with time zone, is_nullable = YES,
+--     column_default vazio — exatamente o esperado
+--   - 2.2: arquivados = 0 — esperado
+--   - 2.3: trigger_existe = true — esperado
+--   - 2.4: OK recusado (card 88706ed9-778f-4dde-8478-addaa13a2a81)
+--     — backstop bloqueou a exclusão do card com lançamento, como
+--     deveria
+--   - 2.5: OK excluido (card 12a909c5-d135-4ee7-aa8f-69070c5cdaa5,
+--     temporario: false) — backstop liberou a exclusão de um card
+--     real (não precisou criar temporário) com parcelas mas sem
+--     lançamento nenhum, confirmando que o predicado de D-14 não é
+--     largo demais
+--   - 2.6: OK recusado (column cab7bbfe-95bb-4af6-be6a-9e2b26947468)
+--     — cascade via exclusão de coluna também recusado
+--   - 2.7 (dentro do bloco, antes do rollback automático via
+--     exceção): cards = 49 (um a menos, porque a Prova 2.5 de fato
+--     excluiu um card real dentro da transação — esperado, é o
+--     teste acontecendo), updated_at_max idêntico ao baseline
+--
+-- Depois (confirmado via consulta separada e independente, fora de
+-- qualquer transação, depois que a exceção proposital abortou o
+-- bloco `do $$`):
+--   cards_total = 50, updated_at_max = 2026-08-19 14:11:32.099956+00,
+--   parcelas_total = 342, lancamentos_total = 16,
+--   coluna_arquivado_em_existe = 0
+--
+-- Idêntico ao baseline em todos os quatro números, e a coluna
+-- realmente não existe mais: o rollback automático (via exceção)
+-- desfez tudo, incluindo o card real que a Prova 2.5 tinha apagado
+-- dentro do bloco — ele voltou.
+--
+-- Nenhuma correção foi necessária em
+-- supabase/migrations/20260819000000_cards_arquivado_em.sql: a DDL
+-- em si passou sem alteração nas duas passagens, dentro do bloco
+-- único. A única mudança foi de técnica de execução do ensaio, não
+-- da migração — por isso não houve necessidade de refazer o ensaio
+-- inteiro por causa de correção de arquivo (uma única rodada foi
+-- suficiente com a via (c)).
+--
+-- Todos os critérios de aceite da Task 1 do plano 06.2-02 estão
+-- satisfeitos com evidência real: caminho de execução declarado,
+-- baseline e IDs anotados, sete provas com resultado observado, a
+-- Prova 2.4 recusou e a Prova 2.5 passou, e depois do rollback
+-- `arquivado_em` não existe e os quatro números batem com o
+-- baseline.
+--
+-- Migração aprovada para aplicação em produção pelo plano 06.2-03.
 -- ============================================================
