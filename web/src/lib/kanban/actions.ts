@@ -783,6 +783,38 @@ async function exigirParcelaVisivel(
   return resultado.visivel ? null : MENSAGEM_PARCELA_OCULTA[resultado.motivo]
 }
 
+const MENSAGEM_PARCELA_CONCILIADA =
+  "Esta parcela está conciliada e travada contra alteração. Destrave antes de registrar pagamento ou lançar um ajuste."
+
+/**
+ * CONCIL-02/D-03: trava ADICIONAL à de `exigirParcelaVisivel` acima — não a
+ * substitui, não reaproveita a mesma consulta, roda depois dela. Uma
+ * parcela pode estar simultaneamente "visível" pela regra de D-01/6.2 e
+ * "travada" por esta regra; as duas checagens precisam passar para a
+ * escrita seguir. Relê `status` direto do banco, nunca confia no que a
+ * tela mandou (mesma disciplina da trava de visibilidade).
+ */
+async function exigirParcelaNaoConciliada(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  parcelaId: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("parcelas")
+    .select("status")
+    .eq("id", parcelaId)
+    .maybeSingle()
+
+  if (error || !data) {
+    console.error("trava de conciliada da parcela (leitura)", error)
+    return MENSAGEM_PARCELA_OCULTA.indeterminado
+  }
+
+  if (data.status === "conciliada") {
+    return MENSAGEM_PARCELA_CONCILIADA
+  }
+  return null
+}
+
 /**
  * Única função que `registrarPagamentoAction`/`ajustarParcelaAction` usam
  * para decidir o novo status — nenhum dos dois recalcula por conta própria
@@ -857,6 +889,12 @@ export async function registrarPagamentoAction(
   const recusa = await exigirParcelaVisivel(sessao.supabase, parcelaId)
   if (recusa) return { ok: false, error: recusa }
 
+  // CONCIL-02/D-03: trava ADICIONAL à de visibilidade acima — não a
+  // substitui. Uma parcela `conciliada` já é visível (tem lançamento), mas
+  // fica travada contra novo lançamento até ser destravada.
+  const recusaConciliada = await exigirParcelaNaoConciliada(sessao.supabase, parcelaId)
+  if (recusaConciliada) return { ok: false, error: recusaConciliada }
+
   const { data: inserido, error } = await sessao.supabase
     .from("parcela_lancamentos")
     .insert({
@@ -909,6 +947,12 @@ export async function ajustarParcelaAction(
   const recusa = await exigirParcelaVisivel(sessao.supabase, parcelaId)
   if (recusa) return { ok: false, error: recusa }
 
+  // CONCIL-02/D-03: trava ADICIONAL à de visibilidade acima — não a
+  // substitui. Uma parcela `conciliada` já é visível (tem lançamento), mas
+  // fica travada contra novo lançamento até ser destravada.
+  const recusaConciliada = await exigirParcelaNaoConciliada(sessao.supabase, parcelaId)
+  if (recusaConciliada) return { ok: false, error: recusaConciliada }
+
   // Sem campo `data` (A-04, fica no default current_date do banco).
   const { data: inserido, error } = await sessao.supabase
     .from("parcela_lancamentos")
@@ -946,5 +990,49 @@ export async function ajustarParcelaAction(
   const erroStatus = await recalcularEGravarStatus(sessao.supabase, parcelaId)
   if (erroStatus) return { ok: false, error: erroStatus }
 
+  return { ok: true, data: undefined }
+}
+
+/**
+ * CONCIL-01/D-01/D-02/D-07: conciliar é um clique direto, sem diálogo — o
+ * UPDATE condicionado a `status = "paga"` É a trava de corrida (D-01),
+ * não uma leitura seguida de escrita. Se a parcela não estiver em `paga`
+ * (já conciliada, aberta, parcial, ou some por RLS), o `.eq` devolve zero
+ * linhas e cai no mesmo `semLinhas` que qualquer outra trava de corrida
+ * do arquivo. `conciliada_em`/`conciliada_by` vêm exclusivamente da sessão
+ * do servidor (D-02), mesmo padrão de `created_by` em `createCardAction`.
+ *
+ * Deliberadamente NÃO chama `exigirParcelaVisivel` aqui — D-09 é
+ * explícito: conciliar continua disponível independente de
+ * ativo/inativo/arquivado, e uma parcela `paga` sempre tem um lançamento
+ * `pagamento`, então a visibilidade já é garantida por outro caminho
+ * (`avaliarVisibilidadeParcela`, que olha `temLancamento`). Não
+ * "consertar" adicionando essa chamada depois.
+ */
+export async function conciliarParcelaAction(parcelaId: string): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(parcelaId, "Parcela")
+  if (invalido) return { ok: false, error: invalido }
+
+  const { data, error } = await sessao.supabase
+    .from("parcelas")
+    .update({
+      status: "conciliada",
+      conciliada_em: new Date().toISOString(),
+      conciliada_by: sessao.user.id,
+    })
+    .eq("id", parcelaId)
+    .eq("status", "paga")
+    .select("id")
+
+  if (error) {
+    console.error("conciliarParcela", error)
+    return { ok: false, error: erroDoBanco(error.code, "conciliar a parcela") }
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: semLinhas("conciliar a parcela") }
+  }
   return { ok: true, data: undefined }
 }
