@@ -179,7 +179,7 @@ Plans:
 Plans:
 
 - [x] 07-01-PLAN.md — Conciliar em um clique (Server Action + botão + toast) e a trava de escrita server-side numa parcela conciliada
-- [ ] 07-02-PLAN.md — Destravar com motivo obrigatório (Server Action + diálogo) e o histórico de destravas em ParcelaHistoricoSheet
+- [x] 07-02-PLAN.md — Destravar com motivo obrigatório (Server Action + diálogo) e o histórico de destravas em ParcelaHistoricoSheet
 
 ### Phase 8: Relatórios financeiros
 

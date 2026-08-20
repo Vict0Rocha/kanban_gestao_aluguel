@@ -1036,3 +1036,93 @@ export async function conciliarParcelaAction(parcelaId: string): Promise<ActionR
   }
   return { ok: true, data: undefined }
 }
+
+/**
+ * CONCIL-03/D-04/D-05: o desfazer rastreado de `conciliarParcelaAction` —
+ * exige motivo, sempre. Dois passos, ambos decididos e executados aqui, no
+ * servidor: grava um lançamento `tipo='destrava'` (valor 0, evento de
+ * estado, não move dinheiro — mesma leitura de `somarLancamentos` em
+ * parcelas.ts) e devolve `parcelas.status` para `"paga"`.
+ *
+ * O teto de `motivo` é **500**, não 2000: reflete a CHECK
+ * `parcela_lancamentos_motivo_tamanho` da migration
+ * `20260816000000_financeiro_schema.sql`, distinta da CHECK de 2000 que
+ * cobre `observacao` nos outros lançamentos. Banco é a autoridade final
+ * (mesmo princípio do cabeçalho deste arquivo).
+ */
+export async function destravarParcelaAction(
+  parcelaId: string,
+  motivo: string
+): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(parcelaId, "Parcela") ?? textoObrigatorio(motivo, "Motivo", 500)
+  if (invalido) return { ok: false, error: invalido }
+
+  // Relê o status atual antes de qualquer gravação — nunca confia no que a
+  // tela mandou. Só uma parcela `conciliada` pode ser destravada; chamar
+  // esta action direto numa parcela paga/aberta/parcial é recusado aqui,
+  // antes de qualquer INSERT/UPDATE (T-07-06).
+  const { data: parcela, error: erroLeitura } = await sessao.supabase
+    .from("parcelas")
+    .select("status")
+    .eq("id", parcelaId)
+    .maybeSingle()
+
+  if (erroLeitura || !parcela) {
+    console.error("destravarParcela (leitura)", erroLeitura)
+    return { ok: false, error: erroDoBanco(erroLeitura?.code, "destravar a parcela") }
+  }
+  if (parcela.status !== "conciliada") {
+    return {
+      ok: false,
+      error: "Esta parcela não está conciliada — não há o que destravar.",
+    }
+  }
+
+  // Deliberadamente NÃO chama `exigirParcelaVisivel` aqui — mesma razão de
+  // D-09 documentada em `conciliarParcelaAction`: uma parcela `conciliada`
+  // sempre tem lançamento (o `pagamento` que a levou a `paga` antes de ser
+  // conciliada), então já é visível por outro caminho
+  // (`avaliarVisibilidadeParcela`, que olha `temLancamento`).
+  const { data: inserido, error: erroInsert } = await sessao.supabase
+    .from("parcela_lancamentos")
+    .insert({
+      parcela_id: parcelaId,
+      tipo: "destrava",
+      valor: 0,
+      motivo: motivo.trim(),
+      // D-02: vem da sessão do servidor, nunca do que o cliente mandou —
+      // mesmo raciocínio de createCardAction/registrarPagamentoAction.
+      criado_por: sessao.user.id,
+    })
+    .select("id")
+
+  if (erroInsert) {
+    console.error("destravarParcela (insert)", erroInsert)
+    return { ok: false, error: erroDoBanco(erroInsert.code, "destravar a parcela") }
+  }
+  if (!inserido || inserido.length === 0) {
+    return { ok: false, error: semLinhas("destravar a parcela") }
+  }
+
+  // Sem condição adicional de status no `.eq` — o SELECT acima já confirmou
+  // `conciliada` poucos milissegundos antes, e o INSERT que acabou de
+  // acontecer é o que autoriza esta gravação.
+  const { data: atualizado, error: erroUpdate } = await sessao.supabase
+    .from("parcelas")
+    .update({ status: "paga" })
+    .eq("id", parcelaId)
+    .select("id")
+
+  if (erroUpdate) {
+    console.error("destravarParcela (update)", erroUpdate)
+    return { ok: false, error: erroDoBanco(erroUpdate.code, "destravar a parcela") }
+  }
+  if (!atualizado || atualizado.length === 0) {
+    return { ok: false, error: semLinhas("destravar a parcela") }
+  }
+
+  return { ok: true, data: undefined }
+}

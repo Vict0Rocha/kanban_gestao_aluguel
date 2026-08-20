@@ -35,8 +35,8 @@
 
 - [x] **CONCIL-01**: Usuário pode conciliar (travar) uma parcela já paga, protegendo-a contra alteração acidental
 - [x] **CONCIL-02**: Tentar alterar uma parcela conciliada é bloqueado, com mensagem em linguagem simples explicando que é preciso destravar antes
-- [ ] **CONCIL-03**: Usuário pode destravar uma parcela conciliada informando um motivo, que é obrigatório
-- [ ] **CONCIL-04**: O histórico de destravas de uma parcela fica visível na própria parcela — quem destravou, quando e por quê
+- [x] **CONCIL-03**: Usuário pode destravar uma parcela conciliada informando um motivo, que é obrigatório
+- [x] **CONCIL-04**: O histórico de destravas de uma parcela fica visível na própria parcela — quem destravou, quando e por quê
 
 ### FINUI — aba Financeiro
 
@@ -158,8 +158,8 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | FINSEG-03 | Phase 6 | Concluído |
 | CONCIL-01 | Phase 7 | Concluído |
 | CONCIL-02 | Phase 7 | Concluído |
-| CONCIL-03 | Phase 7 | Pendente |
-| CONCIL-04 | Phase 7 | Pendente |
+| CONCIL-03 | Phase 7 | Concluído |
+| CONCIL-04 | Phase 7 | Concluído |
 | FINREL-01 | Phase 8 | Pendente |
 | FINREL-02 | Phase 8 | Pendente |
 | FINREL-03 | Phase 8 | Pendente |

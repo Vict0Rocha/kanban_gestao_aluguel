@@ -85,6 +85,12 @@ export function ParcelaHistoricoSheet({
                         {lancamento.observacao}
                       </p>
                     )}
+                    {lancamento.motivo && (
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-medium text-foreground">Motivo: </span>
+                        {lancamento.motivo}
+                      </p>
+                    )}
                   </li>
                 )
               })}
