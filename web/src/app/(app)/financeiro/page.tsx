@@ -50,6 +50,11 @@ export default async function FinanceiroPage({
   const inquilino = params.inquilino?.trim() ?? ""
   const periodo = params.periodo?.trim() ?? ""
   const idBusca = params.id?.trim() ?? ""
+  // T-06.1-17: id não numérico é ignorado, não derruba a página. Calculado
+  // uma vez e reusado tanto pelo filtro de parcelas quanto pela consulta da
+  // nota contextual do plano 06.2-07, para não duplicar a guarda.
+  const idNumerico =
+    idBusca && Number.isInteger(Number(idBusca)) ? Number(idBusca) : null
 
   // D-03/D-04: qualquer um dos quatro presente substitui a visão padrão.
   const filtrosAtivos = Boolean(
@@ -119,9 +124,8 @@ export default async function FinanceiroPage({
             .gte("vencimento", `${periodo}-01`)
             .lt("vencimento", inicioMesSeguinte(periodo))
         }
-        // T-06.1-17: id não numérico é ignorado, não derruba a página.
-        if (idBusca && Number.isInteger(Number(idBusca))) {
-          query = query.eq("cards.numero", Number(idBusca))
+        if (idNumerico !== null) {
+          query = query.eq("cards.numero", idNumerico)
         }
       } else {
         // Visão padrão (D-02): só as parcelas vencendo hoje.
@@ -156,6 +160,33 @@ export default async function FinanceiroPage({
     }
   }
 
+  // Nota contextual (plano 06.2-07): só quando o filtro é por ID numérico.
+  // Consulta independente, deliberadamente SEM filtro de `arquivado_em` —
+  // ela precisa enxergar justamente o contrato arquivado, que a query de
+  // parcelas acima esconde. Qualquer falha aqui vira `null` em silêncio:
+  // a nota é um extra e nunca pode marcar a página como em erro nem
+  // impedir a lista de renderizar (comportamento idêntico ao de hoje).
+  let contratoFiltro: {
+    numero: number
+    ativo: boolean
+    arquivado_em: string | null
+  } | null = null
+
+  if (idNumerico !== null) {
+    try {
+      const { data: contrato, error: erroContrato } = await supabase
+        .from("cards")
+        .select("numero, ativo, arquivado_em")
+        .eq("numero", idNumerico)
+        .maybeSingle()
+
+      contratoFiltro = erroContrato ? null : contrato
+    } catch (erroCapturado) {
+      console.error("financeiro:nota-contextual", erroCapturado)
+      contratoFiltro = null
+    }
+  }
+
   return (
     <div className="flex flex-col gap-5 p-6">
       <div>
@@ -181,6 +212,7 @@ export default async function FinanceiroPage({
             periodo,
             id: idBusca,
           }}
+          contratoFiltro={contratoFiltro}
         />
       ) : (
         <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">

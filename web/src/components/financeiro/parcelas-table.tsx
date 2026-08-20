@@ -100,11 +100,17 @@ export function ParcelasTable({
   erro,
   vazio,
   todayISO,
+  mensagemVazia,
 }: {
   linhas: LinhaParcela[]
   erro?: boolean
   vazio: "sem-contrato-ativo" | "sem-parcela-hoje" | "sem-resultado-filtro"
   todayISO: string
+  /** Quando presente, substitui a string escolhida por `VAZIO_LABEL` — usada
+   * pela nota contextual do Financeiro (plano 06.2-07) quando o filtro por
+   * ID resolve para um contrato inativo ou arquivado e a lista vem vazia.
+   * As três mensagens do mapa ficam inalteradas. */
+  mensagemVazia?: string
 }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
@@ -113,7 +119,9 @@ export function ParcelasTable({
           Não foi possível carregar as parcelas. Tente novamente.
         </p>
       ) : linhas.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{VAZIO_LABEL[vazio]}</p>
+        <p className="text-sm text-muted-foreground">
+          {mensagemVazia ?? VAZIO_LABEL[vazio]}
+        </p>
       ) : (
         <div>
           <Table>
