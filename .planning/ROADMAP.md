@@ -199,7 +199,7 @@ Plans:
 
 Plans:
 
-- [ ] 08-01-PLAN.md — Painel de filtro suspenso + relatório de 4 categorias (pagas/a vencer/vencidas/conciliadas) dentro de `/relatorios`, query sem filtro de arquivado/ativo (D-05), filtros combináveis por imóvel/proprietário/período/situação
+- [x] 08-01-PLAN.md — Painel de filtro suspenso + relatório de 4 categorias (pagas/a vencer/vencidas/conciliadas) dentro de `/relatorios`, query sem filtro de arquivado/ativo (D-05), filtros combináveis por imóvel/proprietário/período/situação
 
 ## Progress
 
@@ -214,6 +214,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8
 | 6.1. Consulta financeira e geração por período (INSERTED) | 6/6 | Complete | 2026-08-18 |
 | 6.2. Ciclo de vida do contrato (INSERTED) | 7/7 | Complete | 2026-08-19 |
 | 7. Conciliação e destrava rastreada | 2/2 | Complete | 2026-08-20 |
-| 8. Relatórios financeiros | 0/TBD | Not started | - |
+| 8. Relatórios financeiros | 1/1 | In Progress (aguardando verificação humana) | - |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código.

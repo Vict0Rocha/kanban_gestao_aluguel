@@ -61,11 +61,11 @@
 
 ### FINREL — relatórios financeiros
 
-- [ ] **FINREL-01**: Usuário pode ver um relatório das parcelas pagas
-- [ ] **FINREL-02**: Usuário pode ver um relatório das parcelas a vencer
-- [ ] **FINREL-03**: Usuário pode ver um relatório das parcelas vencidas
-- [ ] **FINREL-04**: Usuário pode ver um relatório das parcelas conciliadas
-- [ ] **FINREL-05**: Usuário pode combinar filtros por imóvel, proprietário e período nos relatórios financeiros, sem que um filtro resete os outros
+- [x] **FINREL-01**: Usuário pode ver um relatório das parcelas pagas
+- [x] **FINREL-02**: Usuário pode ver um relatório das parcelas a vencer
+- [x] **FINREL-03**: Usuário pode ver um relatório das parcelas vencidas
+- [x] **FINREL-04**: Usuário pode ver um relatório das parcelas conciliadas
+- [x] **FINREL-05**: Usuário pode combinar filtros por imóvel, proprietário e período nos relatórios financeiros, sem que um filtro resete os outros
 
 ### FINSEG — segurança do módulo financeiro
 
@@ -160,11 +160,11 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | CONCIL-02 | Phase 7 | Concluído |
 | CONCIL-03 | Phase 7 | Concluído |
 | CONCIL-04 | Phase 7 | Concluído |
-| FINREL-01 | Phase 8 | Pendente |
-| FINREL-02 | Phase 8 | Pendente |
-| FINREL-03 | Phase 8 | Pendente |
-| FINREL-04 | Phase 8 | Pendente |
-| FINREL-05 | Phase 8 | Pendente |
+| FINREL-01 | Phase 8 | Aguardando verificação humana |
+| FINREL-02 | Phase 8 | Aguardando verificação humana |
+| FINREL-03 | Phase 8 | Aguardando verificação humana |
+| FINREL-04 | Phase 8 | Aguardando verificação humana |
+| FINREL-05 | Phase 8 | Aguardando verificação humana |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5

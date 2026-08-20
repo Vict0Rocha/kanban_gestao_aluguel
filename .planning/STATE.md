@@ -5,16 +5,16 @@ milestone_name: Módulo Financeiro
 current_phase: 8
 current_phase_name: relatorios-financeiros
 status: executing
-stopped_at: "Phase 8 UI-SPEC aprovado (2 blocks + 1 flag corrigidos pelo orquestrador)"
-last_updated: "2026-08-20T13:45:00.000Z"
+stopped_at: Completed 08-01-PLAN.md — Relatórios financeiros (última fase do Módulo Financeiro v2.0). Aguardando verificação humana em produção (browser + SQL Editor) antes do merge.
+last_updated: "2026-08-20T14:15:43.822Z"
 last_activity: 2026-08-20
-last_activity_desc: "Phase 7 encerrada. Os quatro blocos de human-check (Conciliar/badge/toast/corrida entre abas, recusa server-side com o cenário de aba desatualizada, Destravar com motivo obrigatório, histórico de destravas) confirmados pelo usuário em produção. CONCIL-01..04 completos. Módulo Financeiro v2.0: só falta a Phase 8 (Relatórios financeiros)."
+last_activity_desc: "Plano 08-01 executado (worktree agent-a21e4bc9c4e5a64a0). Relatório financeiro de 4 categorias entregue em /relatorios, npm run lint/build verdes, todas as asserções de grep do plano passaram. Módulo Financeiro v2.0: falta só a verificação humana em produção dos dois blocos human-check do plano 08-01 para fechar a milestone."
 progress:
-  total_phases: 7
-  completed_phases: 6
-  total_plans: 24
-  completed_plans: 24
-  percent: 86
+  total_phases: 8
+  completed_phases: 7
+  total_plans: 26
+  completed_plans: 26
+  percent: 100
 ---
 
 # Project State
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 8 — Relatórios financeiros (a planejar)
+**Current focus:** Phase 8 — Relatórios financeiros (plano 08-01 executado, aguardando verificação humana em produção)
 
 ## Current Position
 
 Phase: 7 (Conciliação e destrava rastreada) — COMPLETE (2/2 planos, 4/4 critérios de sucesso)
-Phase: 8 (Relatórios financeiros) — NOT STARTED
-Status: Pronta para /gsd-plan-phase (ou discuss-phase) da Phase 8
-Last activity: 2026-08-20 — Phase 7 encerrada; os quatro human-checks confirmados em produção pelo usuário, incluindo o cenário de aba desatualizada para a trava de escrita (CONCIL-02)
+Phase: 8 (Relatórios financeiros) — PLANO 08-01 EXECUTADO (1/1 plano) — aguardando verificação humana em produção (2 blocos human-check pendentes)
+Status: Implementação completa (lint/build/grep verdes). Falta confirmar em produção: (1) os 4 totais batendo com SQL Editor, incluindo contrato arquivado/inativo; (2) os 4 filtros combinando sem recalcular ao vivo
+Last activity: 2026-08-20 — Plano 08-01 executado em worktree isolado (agent-a21e4bc9c4e5a64a0), commits 0c186eb (Task 1) e b93d7c6 (Task 2)
 
 **Ordem de execução:** 4 → 5 → 6 → 7 → 8. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -59,7 +59,7 @@ Last activity: 2026-08-20 — Phase 7 encerrada; os quatro human-checks confirma
 | 5 — Aba Financeiro com parcelas automáticas | 0/TBD | — | — |
 | 6 — Baixa e ajustes de parcela | 0/TBD | — | — |
 | 7 — Conciliação e destrava rastreada | 2/2 | 2 (~11min) | ~11min |
-| 8 — Relatórios financeiros | 0/TBD | — | — |
+| 8 — Relatórios financeiros | 1/1 | 15min | 15min |
 
 **Recent Trend:**
 
@@ -74,6 +74,7 @@ Last activity: 2026-08-20 — Phase 7 encerrada; os quatro human-checks confirma
 | Phase 06.2-ciclo-de-vida-do-contrato P05 | 35min | 3 tasks | 6 files |
 | Phase 07-concilia-o-e-destrava-rastreada P01 | ~10min | 2 tasks | 4 files |
 | Phase 07-concilia-o-e-destrava-rastreada P02 | ~12min | 3 tasks | 5 files |
+| Phase 08-relat-rios-financeiros P01 | 15min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -100,6 +101,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - [Phase ?]: arquivarCardAction/desarquivarCardAction escrevem so arquivado_em, nunca ativo -- ortogonais por decisao (D-12)
 - [Phase ?]: Filtro arquivado_em sobre embed cards(*) em page.tsx/relatorios usa .is() sem !inner, para preservar a coluna e filtrar so as linhas do embed
 - 2026-08-20: **Plano 07-02 concluído** (worktree isolado, `agent-af95894d026629c62`). `destravarParcelaAction` relê `status` antes de qualquer gravação (só aceita `"conciliada"`), grava lançamento `tipo="destrava"` com `motivo` obrigatório (teto real **500**, corrigindo um erro da UI-SPEC que citava 2000 — CHECK `parcela_lancamentos_motivo_tamanho` é distinta da CHECK de `observacao`) e devolve `status` a `"paga"`. `DestravarParcelaDialog` novo (motivo obrigatório, bloqueado no cliente antes do round-trip) e `AcoesCell` reestruturado: linha conciliada mostra só Destravar+Histórico, demais situações mantêm a sequência do plano 07-01. `ParcelaHistoricoSheet` agora renderiza `motivo` ao lado de `observacao`, fechando CONCIL-04 — os quatro `tipo` de `parcela_lancamentos` estão todos alcançáveis pela interface. `npm run lint`/`npm run build` verdes, todas as asserções de grep passaram. Commits: `3906a4e` (Task 1), `477f56b` (Task 2), `7373eba` (Task 3). **Human-check pendente em produção** (ver Blockers).
+- 2026-08-20: **Plano 08-01 concluído** (worktree isolado, `agent-a21e4bc9c4e5a64a0`). Relatório financeiro de 4 categorias (pagas/a vencer/vencidas/conciliadas) em /relatorios, calcularRelatorioFinanceiro reusa situacaoDaParcela/somarLancamentos verbatim (D-06/D-07). Nova query parcelas deliberadamente sem filtro de arquivado/ativo (D-05) — contrato arquivado/inativo entra nos totais. Painel de filtro suspenso (imóvel/proprietário/período/situação) disparado só por Gerar relatório (D-04/FINREL-05). reports-view.tsx preservado byte a byte (git diff confirma zero linhas de conteúdo pré-existente removidas), FilterChip/toggle exportados na Task 2 (exatamente 2 linhas alteradas). npm run lint/build verdes. Commits: 0c186eb (Task 1), b93d7c6 (Task 2). Última fase do Módulo Financeiro v2.0 — falta só verificação humana em produção (browser + SQL Editor).
 
 ### Pending Todos
 
@@ -112,6 +114,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - **SEC-02 depende do usuário.** Leaked Password Protection é toggle no painel do Supabase; usuário optou por adiar. Fora do escopo de fases da v2.0.
 - **Sem suíte automatizada.** Toda verificação da v2.0 é lint + build + teste manual no navegador (e SQL Editor do Supabase na Phase 4). Os critérios de sucesso do roadmap foram escritos para serem conferíveis à mão por causa disso.
 - **Produção com dados reais.** ~46 imóveis em uso; a migração da Phase 4 precisa ser aditiva e retrocompatível — nada de coluna apagada, nada de `ativo` nulo.
+- **FINREL-01..05 (Phase 8, plano 08-01) aguardam verificação humana em produção.** Implementação completa e verificada por lint/build/grep — ver `.planning/phases/08-relat-rios-financeiros/08-01-SUMMARY.md`. Faltam os dois `<human-check>` do plano: (1) comparar os 4 totais (pagas/a vencer/vencidas/conciliadas) contra o SQL Editor do Supabase, confirmando que contrato arquivado/inativo entra nos totais (D-05); (2) confirmar no navegador que os 4 filtros combinam em E lógico e só recalculam ao clicar "Gerar relatório" (D-04), nunca ao vivo. **Ação sugerida:** usuário abre `/relatorios` em produção após o merge e segue os dois roteiros de teste documentados na SUMMARY.
 
 ### Roadmap Evolution
 
@@ -131,6 +134,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-20T13:45:00.000Z
-Stopped at: Phase 8 UI-SPEC aprovado. Próximo passo: /gsd-plan-phase 8
-Resume file: .planning/phases/08-relat-rios-financeiros/08-UI-SPEC.md
+Last session: 2026-08-20T14:15:43.777Z
+Stopped at: Completed 08-01-PLAN.md — Relatórios financeiros (última fase do Módulo Financeiro v2.0). Aguardando verificação humana em produção (browser + SQL Editor) antes do merge.
+Resume file: None
