@@ -163,6 +163,42 @@ export function competenciaNoPeriodo(
   return true
 }
 
+/**
+ * O subconjunto de uma linha de `parcelas` de que a poda síncrona (D-01/D-02)
+ * e o pré-voo consultivo (D-05, `contarParcelasOrfasAction`) precisam — nunca
+ * a linha inteira.
+ */
+export type ParcelaCandidataPoda = {
+  id: string
+  competencia: string
+  status: StatusParcela
+  parcela_lancamentos: { id: string }[] | null
+}
+
+/**
+ * Critério de "órfã apagável" (D-01/D-02/D-03), única implementação — reusada
+ * tanto pela poda síncrona dentro de `updateCardAction` (actions.ts) quanto
+ * pelo pré-voo consultivo `contarParcelasOrfasAction`. `false` se
+ * `status !== "aberta"`; `false` se existir qualquer linha em
+ * `parcela_lancamentos`. As duas checagens são redundantes na prática — todo
+ * status diferente de `aberta` implica pelo menos um lançamento — mas ambas
+ * são mantidas de propósito, mesma defesa em profundidade que D-02 exige.
+ * Por fim, reusa `competenciaNoPeriodo` negada: nunca reimplementar a
+ * comparação de datas. D-03 (a poda não distingue direção — encurtar o fim
+ * ou adiantar o início podam igual) já está coberto aqui porque
+ * `competenciaNoPeriodo` testa os dois lados do período pela mesma
+ * comparação.
+ */
+export function parcelaOrfaApagavel(
+  parcela: Pick<ParcelaCandidataPoda, "competencia" | "status" | "parcela_lancamentos">,
+  novoInicio: string | null,
+  novoFim: string | null
+): boolean {
+  if (parcela.status !== "aberta") return false
+  if ((parcela.parcela_lancamentos?.length ?? 0) > 0) return false
+  return !competenciaNoPeriodo(parcela.competencia, novoInicio, novoFim)
+}
+
 export type ParcelaFaltante = {
   card_id: string
   competencia: string
@@ -180,6 +216,18 @@ export type ParcelaFaltante = {
  */
 export function temPeriodoCompleto(card: CardParaGeracao): boolean {
   return Boolean(card.periodo_inicio) && Boolean(card.periodo_fim)
+}
+
+/**
+ * Discriminador de D-06: `true` só quando `periodo_inicio` E `periodo_fim`
+ * estão AMBOS nulos. Um card com só `periodo_inicio` preenchido (prazo
+ * indeterminado, estado comum e intencional) devolve `false` aqui e continua
+ * caindo no fallback de `competenciasAlvo` sem nenhuma mudança de
+ * comportamento — D-06 é deliberadamente mais estreito que
+ * `!temPeriodoCompleto`.
+ */
+export function semNenhumaData(card: CardParaGeracao): boolean {
+  return !card.periodo_inicio && !card.periodo_fim
 }
 
 /**
@@ -233,6 +281,20 @@ export function competenciasAlvoParaCard(
 ): string[] {
   if (temPeriodoCompleto(card)) {
     return competenciasDoPeriodo(card.periodo_inicio!, card.periodo_fim!)
+  }
+
+  // D-06: contrato sem NENHUMA data cadastrada gera só a competência do mês
+  // atual — devolve só o primeiro elemento do par que `competenciasAlvo` já
+  // calcula, sem duplicar a lógica de virar o ano em dezembro. D-07: esta
+  // mudança vale só para geração daqui pra frente — `parcelasFaltantes`/
+  // `garantirParcelas` só fazem `upsert` do que falta (nunca um `delete`),
+  // então nunca apaga retroativamente uma parcela de "próximo mês" já gerada
+  // para um contrato sem data antes desta fase. Nenhum código de exclusão
+  // precisa ser escrito para D-07 valer — mesmo precedente de
+  // `vencimentoDaCompetencia` acima (mudança de regra de geração nunca
+  // reescreve o que já foi gerado).
+  if (semNenhumaData(card)) {
+    return [competenciasAlvo(hojeISO)[0]]
   }
 
   return competenciasAlvo(hojeISO)

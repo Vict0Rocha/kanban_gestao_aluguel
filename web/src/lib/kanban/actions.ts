@@ -3,7 +3,13 @@
 import { createClient } from "@/lib/supabase/server"
 import type { ActionResult, Card, CardDetailsInput } from "./types"
 import type { AlertStatus, AlertType } from "./alerts"
-import { somarLancamentos, statusDeParcela, type LancamentoResumo } from "./parcelas"
+import {
+  parcelaOrfaApagavel,
+  somarLancamentos,
+  statusDeParcela,
+  type LancamentoResumo,
+  type ParcelaCandidataPoda,
+} from "./parcelas"
 import { hojeEmCuiaba } from "./format"
 import type { ParcelaRelatorio } from "./relatorio-financeiro"
 import {
@@ -343,6 +349,77 @@ export async function createCardAction(
   return { ok: true, data }
 }
 
+/**
+ * Poda síncrona de parcelas órfãs (D-01/D-02/D-04), chamada só de dentro de
+ * `updateCardAction` — nunca a partir de outro caminho. `novoInicio`/
+ * `novoFim` são os valores JÁ gravados pelo UPDATE que acabou de rodar (mesmo
+ * cálculo, nunca recalculado diferente).
+ *
+ * **Nunca recebe a lista de ids de fora desta função.** Reconsulta o
+ * conjunto de candidatas na hora do delete — a consulta abaixo É a fonte de
+ * verdade, rodada milissegundos antes do delete, sem pausa de usuário no
+ * meio (Pitfall 1 do RESEARCH.md). O intervalo residual de corrida é o
+ * tempo entre a SELECT e o DELETE desta mesma chamada de servidor — não o
+ * intervalo (de segundos/minutos) entre o pré-voo consultivo
+ * (`contarParcelasOrfasAction`) e a confirmação do usuário.
+ *
+ * `.eq("status", "aberta")` dentro do próprio `.delete()` é a segunda camada
+ * de defesa que o supabase-js consegue expressar sem uma function de banco —
+ * o cliente não tem um `NOT EXISTS` para `.delete()`, por isso não há um
+ * guard `NOT EXISTS` direto no comando.
+ *
+ * Um DELETE que apaga menos do que o esperado (inclusive zero) NÃO é
+ * `semLinhas` — é o resultado correto quando a corrida excluiu alguma
+ * candidata no meio do caminho (ex.: um lançamento foi registrado entre a
+ * SELECT e o DELETE); não trata como falha.
+ */
+async function podarParcelasOrfas(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  cardId: string,
+  novoInicio: string | null,
+  novoFim: string | null
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("parcelas")
+    .select("id, competencia, status, parcela_lancamentos(id)")
+    .eq("card_id", cardId)
+    .eq("status", "aberta")
+
+  if (error) {
+    console.error("podarParcelasOrfas (leitura)", error)
+    return erroDoBanco(error.code, "salvar o imóvel")
+  }
+
+  const candidatas = (data ?? []) as unknown as ParcelaCandidataPoda[]
+  const idsOrfas = candidatas
+    .filter((parcela) => parcelaOrfaApagavel(parcela, novoInicio, novoFim))
+    .map((parcela) => parcela.id)
+
+  if (idsOrfas.length === 0) return null
+
+  const { data: apagadas, error: erroDelete } = await supabase
+    .from("parcelas")
+    .delete()
+    .in("id", idsOrfas)
+    .eq("status", "aberta")
+    .select("id")
+
+  if (erroDelete) {
+    console.error("podarParcelasOrfas (delete)", erroDelete)
+    return erroDoBanco(erroDelete.code, "salvar o imóvel")
+  }
+
+  // D-01 é uma exceção deliberada ao livro-razão append-only (T-09-03) —
+  // este log é o backstop de auditoria mínimo para uma investigação futura,
+  // mesmo não sendo um erro.
+  console.error("podarParcelasOrfas: parcelas apagadas", {
+    cardId,
+    idsApagados: (apagadas ?? []).map((parcela) => parcela.id),
+  })
+
+  return null
+}
+
 export async function updateCardAction(
   cardId: string,
   input: CardDetailsInput
@@ -352,6 +429,22 @@ export async function updateCardAction(
 
   const invalido = id(cardId, "Imóvel") ?? validarDetalhes(input)
   if (invalido) return { ok: false, error: invalido }
+
+  // D-04: lê o período ANTES do UPDATE para detectar, depois, se ele
+  // realmente mudou de valor nesta gravação — a poda só dispara nesse caso.
+  const { data: antes, error: erroAntes } = await sessao.supabase
+    .from("cards")
+    .select("periodo_inicio, periodo_fim")
+    .eq("id", cardId)
+    .maybeSingle()
+
+  if (erroAntes || !antes) {
+    console.error("updateCard (leitura do período anterior)", erroAntes)
+    return { ok: false, error: erroDoBanco(erroAntes?.code, "salvar o imóvel") }
+  }
+
+  const novoInicio = input.periodo_inicio || null
+  const novoFim = input.periodo_fim || null
 
   // Monta o registro campo a campo em vez de repassar o objeto recebido:
   // assim uma propriedade extra vinda do cliente (created_by, id, o que for)
@@ -364,8 +457,8 @@ export async function updateCardAction(
       valor: input.valor,
       inquilino: input.inquilino?.trim() || null,
       telefone: input.telefone?.trim() || null,
-      periodo_inicio: input.periodo_inicio || null,
-      periodo_fim: input.periodo_fim || null,
+      periodo_inicio: novoInicio,
+      periodo_fim: novoFim,
       observacoes: input.observacoes?.trim() || null,
     })
     .eq("id", cardId)
@@ -376,7 +469,58 @@ export async function updateCardAction(
     console.error("updateCard", error)
     return { ok: false, error: erroDoBanco(error?.code, "salvar o imóvel") }
   }
+
+  // D-01/D-02/D-04: a poda faz parte do mesmo salvamento — uma falha na
+  // exclusão não pode virar um salvamento "meio sucesso" que deixa órfã
+  // para trás sem avisar. Só dispara quando periodo_inicio e/ou periodo_fim
+  // realmente mudaram de valor nesta chamada.
+  if (antes.periodo_inicio !== novoInicio || antes.periodo_fim !== novoFim) {
+    const erroPoda = await podarParcelasOrfas(sessao.supabase, cardId, novoInicio, novoFim)
+    if (erroPoda) return { ok: false, error: erroPoda }
+  }
+
   return { ok: true, data }
+}
+
+/**
+ * Pré-voo consultivo de D-05: mesma consulta e o mesmo `parcelaOrfaApagavel`
+ * que `podarParcelasOrfas` usa, mas só de leitura — nenhum `.update()`/
+ * `.delete()` no corpo desta função. Nunca é usada para montar a lista do
+ * DELETE real (Pitfall 1 do RESEARCH.md); o card-detail-dialog.tsx chama
+ * esta action só para mostrar a contagem antes de o usuário confirmar.
+ */
+export async function contarParcelasOrfasAction(
+  cardId: string,
+  novoInicio: string | null,
+  novoFim: string | null
+): Promise<ActionResult<{ quantidade: number }>> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido =
+    id(cardId, "Imóvel") ??
+    validarData(novoInicio, "Data de início") ??
+    validarData(novoFim, "Data de fim") ??
+    validarPeriodo(novoInicio, novoFim)
+  if (invalido) return { ok: false, error: invalido }
+
+  const { data, error } = await sessao.supabase
+    .from("parcelas")
+    .select("id, competencia, status, parcela_lancamentos(id)")
+    .eq("card_id", cardId)
+    .eq("status", "aberta")
+
+  if (error) {
+    console.error("contarParcelasOrfas", error)
+    return { ok: false, error: erroDoBanco(error.code, "consultar as parcelas do imóvel") }
+  }
+
+  const candidatas = (data ?? []) as unknown as ParcelaCandidataPoda[]
+  const quantidade = candidatas.filter((parcela) =>
+    parcelaOrfaApagavel(parcela, novoInicio, novoFim)
+  ).length
+
+  return { ok: true, data: { quantidade } }
 }
 
 export async function moveCardAction(

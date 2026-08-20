@@ -6,6 +6,7 @@ import {
   cardTemLancamentoAction,
   conciliarParcelaAction,
   contarParcelasEmAbertoAction,
+  contarParcelasOrfasAction,
   createCardAction,
   createColumnAction,
   deleteCardAction,
@@ -93,6 +94,14 @@ export async function cardTemLancamento(id: string) {
 
 export async function contarParcelasEmAberto(id: string) {
   return unwrap(contarParcelasEmAbertoAction(id))
+}
+
+export async function contarParcelasOrfas(
+  cardId: string,
+  novoInicio: string | null,
+  novoFim: string | null
+) {
+  return unwrap(contarParcelasOrfasAction(cardId, novoInicio, novoFim))
 }
 
 export async function resolveAlert(input: {
