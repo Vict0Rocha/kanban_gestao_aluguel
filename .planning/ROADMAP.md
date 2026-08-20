@@ -32,7 +32,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 6: Baixa e ajustes de parcela** - Registrar recebimento total ou parcial, multa e desconto, com histórico que nunca é sobrescrito
 - [x] **Phase 6.1: Consulta financeira e geração por período** (INSERTED) - Vencendo hoje como padrão, filtros por proprietário/inquilino/período/ID, geração pelo período completo do contrato com backfill
 - [x] **Phase 6.2: Ciclo de vida do contrato** (INSERTED) - Visibilidade derivada do estado do card, arquivar/desarquivar, e exclusão travada por movimentação financeira
-- [ ] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
+- [x] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
 - [ ] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
 
 ## Phase Details
@@ -167,13 +167,13 @@ Plans:
 **Requirements**: CONCIL-01, CONCIL-02, CONCIL-03, CONCIL-04
 **Success Criteria** (what must be TRUE):
 
-  1. Conciliar só é oferecido para parcela já paga; ao conciliar, a linha passa a "conciliada" e mostra visualmente que está travada
-  2. Tentar dar baixa, acréscimo ou desconto numa parcela conciliada é recusado com uma frase simples dizendo que é preciso destravar antes — e a recusa acontece no servidor, não só escondendo o botão na tela
-  3. Destravar exige um motivo: com o campo vazio a ação não completa, e o motivo não é opcional em lugar nenhum do caminho
-  4. Depois de destravada, a parcela volta a aceitar lançamentos, e a própria parcela mostra o histórico de destravas — quem destravou, quando e o motivo de cada uma
+  1. ✓ Conciliar só é oferecido para parcela já paga; ao conciliar, a linha passa a "conciliada" e mostra visualmente que está travada — `conciliarParcelaAction` (UPDATE condicionado a `status='paga'`), badge de cadeado, confirmado em produção (07-01)
+  2. ✓ Tentar dar baixa, acréscimo ou desconto numa parcela conciliada é recusado com uma frase simples dizendo que é preciso destravar antes — e a recusa acontece no servidor, não só escondendo o botão na tela — `exigirParcelaNaoConciliada`, confirmado em produção com o cenário de aba desatualizada (07-01)
+  3. ✓ Destravar exige um motivo: com o campo vazio a ação não completa, e o motivo não é opcional em lugar nenhum do caminho — bloqueio no cliente antes do round-trip, `textoObrigatorio` no servidor, CHECK de banco como backstop, confirmado em produção (07-02)
+  4. ✓ Depois de destravada, a parcela volta a aceitar lançamentos, e a própria parcela mostra o histórico de destravas — quem destravou, quando e o motivo de cada uma — `ParcelaHistoricoSheet` exibindo `motivo`, confirmado em produção (07-02)
 
 **Pilares cruzados**: a obrigatoriedade do motivo é garantida pela CHECK constraint da Phase 4, não só pelo formulário; a recusa de alterar parcela conciliada usa a mesma sanitização de erro validada na Phase 6
-**Plans**: 1/2 plans executed
+**Plans**: 2/2 plans executed
 **UI hint**: yes
 
 Plans:
@@ -213,7 +213,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8
 | 6. Baixa e ajustes de parcela | 2/2 | Complete | 2026-08-18 |
 | 6.1. Consulta financeira e geração por período (INSERTED) | 6/6 | Complete | 2026-08-18 |
 | 6.2. Ciclo de vida do contrato (INSERTED) | 7/7 | Complete | 2026-08-19 |
-| 7. Conciliação e destrava rastreada | 1/2 | In Progress|  |
+| 7. Conciliação e destrava rastreada | 2/2 | Complete | 2026-08-20 |
 | 8. Relatórios financeiros | 0/TBD | Not started | - |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código.

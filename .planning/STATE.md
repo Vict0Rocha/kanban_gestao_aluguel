@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 06.2
-current_phase_name: concilia-o-e-destrava-rastreada
+current_phase: 8
+current_phase_name: relatorios-financeiros
 status: executing
-stopped_at: "Plano 07-02 executado e commitado (worktree agent-af95894d026629c62). Próximo passo: revisão/merge do usuário; human-check pendente em produção para 07-01 e 07-02."
-last_updated: "2026-08-20T12:37:22.092Z"
+stopped_at: "Phase 7 completa (2/2 planos, 4/4 critérios de sucesso) — todos os quatro human-checks confirmados em produção, incluindo o cenário de aba desatualizada para CONCIL-02. Pronta para planejar a Phase 8."
+last_updated: "2026-08-20T13:00:00.000Z"
 last_activity: 2026-08-20
-last_activity_desc: "Plano 07-02 concluído: destravarParcelaAction (relê status, exige motivo com teto 500, grava lançamento tipo='destrava' e devolve status a 'paga'), DestravarParcelaDialog, troca de botões em linha conciliada, e motivo visível em ParcelaHistoricoSheet. CONCIL-03/CONCIL-04 completos, fase 7 com código completo. Verificação humana em produção (diálogo, troca de botões, histórico) ainda pendente — ver Blockers/Concerns."
+last_activity_desc: "Phase 7 encerrada. Os quatro blocos de human-check (Conciliar/badge/toast/corrida entre abas, recusa server-side com o cenário de aba desatualizada, Destravar com motivo obrigatório, histórico de destravas) confirmados pelo usuário em produção. CONCIL-01..04 completos. Módulo Financeiro v2.0: só falta a Phase 8 (Relatórios financeiros)."
 progress:
   total_phases: 7
   completed_phases: 6
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 7 — Conciliação e destrava rastreada (07-01 e 07-02 executados; fase completa, aguardando human-check em produção)
+**Current focus:** Phase 8 — Relatórios financeiros (a planejar)
 
 ## Current Position
 
-Phase: 06.2 (ciclo-de-vida-do-contrato) — COMPLETE (7/7 planos)
-Phase: 7 (Conciliação e destrava rastreada) — CÓDIGO COMPLETO (2/2 planos: 07-01 e 07-02 concluídos)
-Status: Plano 07-02 executado em worktree isolado, aguardando revisão/merge do usuário; human-check em produção pendente para os dois planos antes de fechar a fase
-Last activity: 2026-08-20 — Plano 07-02 (Destravar) concluído: CONCIL-03/CONCIL-04 completos, lint/build/grep verdes; verificação humana em produção (motivo obrigatório no diálogo, troca de botões por linha, histórico de destravas) ainda pendente, ver Blockers/Concerns
+Phase: 7 (Conciliação e destrava rastreada) — COMPLETE (2/2 planos, 4/4 critérios de sucesso)
+Phase: 8 (Relatórios financeiros) — NOT STARTED
+Status: Pronta para /gsd-plan-phase (ou discuss-phase) da Phase 8
+Last activity: 2026-08-20 — Phase 7 encerrada; os quatro human-checks confirmados em produção pelo usuário, incluindo o cenário de aba desatualizada para a trava de escrita (CONCIL-02)
 
 **Ordem de execução:** 4 → 5 → 6 → 7 → 8. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -81,6 +81,8 @@ Last activity: 2026-08-20 — Plano 07-02 (Destravar) concluído: CONCIL-03/CONC
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-20: **Phase 7 encerrada.** Os quatro `<human-check>` dos planos 07-01/07-02 confirmados pelo usuário em produção: Conciliar em um clique com badge/toast/corrida entre abas; a trava server-side de Pagamento/Ajustar numa parcela conciliada testada especificamente com o cenário de aba desatualizada (a única forma real de exercitar essa trava, já que os botões somem da tela numa linha conciliada — sem essa checagem específica o teste teria sido inconclusivo); Destravar com motivo obrigatório; histórico de destravas em `ParcelaHistoricoSheet`. Nenhuma migração de banco foi necessária na fase inteira — o schema já antecipava tudo desde a Phase 4. Os quatro `tipo` de `parcela_lancamentos` (pagamento/acrescimo/desconto/destrava) estão todos alcançáveis pela interface agora, fechando o modelo de livro-razão. CONCIL-01..04 completos. Falta só a Phase 8 (Relatórios financeiros) para fechar o milestone v2.0
+
 - 2026-08-20: **Plano 07-01 concluído** (worktree isolado, `agent-a89786e00ac45bcf8`). `conciliarParcelaAction` grava `status='conciliada'`/`conciliada_em`/`conciliada_by` num único UPDATE condicionado a `.eq("status","paga")` — essa condição é a trava de corrida real de D-01, não uma leitura seguida de escrita. Botão "Conciliar" (ghost, ícone Lock) aparece só em `linha.situacao === "paga"`, sem diálogo (D-07), com `ConciliarFalhaToast` novo (cópia de `write-error-toast.tsx`, subtexto "Tente novamente." porque não é otimista). Trava adicional `exigirParcelaNaoConciliada` (CONCIL-02/D-03) chamada por `registrarPagamentoAction`/`ajustarParcelaAction` DEPOIS de `exigirParcelaVisivel` (Phase 6.2) — camada extra, não substituição. `npm run lint`/`npm run build` verdes, todas as asserções de grep do plano passaram. Commits: `0a9584f` (Task 1), `26fa42e` (Task 2). **Human-check pendente em produção** (ver Blockers) — verificação visual do badge, corrida entre abas, e mensagem inline de recusa ainda não confirmadas por humano.
 - 2026-08-19: **Phase 6.2 encerrada.** Plano 06.2-07 (rota `/arquivados` + nota contextual do Financeiro) concluído, fechando o último critério de sucesso da fase. No checkpoint final, o usuário encontrou a data de arquivamento mostrando o dia seguinte — investigação revelou um bug sistêmico pré-existente (não introduzido pela Phase 6.2): "hoje" era calculado 4 vezes no código com `new Date().getFullYear()/getMonth()/getDate()` no servidor, que em produção (Vercel) roda em UTC, não no fuso de Cuiabá (UTC-4). Das 20h à meia-noite, hora de Cuiabá, isso fazia o Financeiro mostrar "vencendo hoje" com parcelas de amanhã, classificar vencida/a_vencer um dia adiantado, e podia recusar um lançamento legítimo do mês corrente na trava de escrita. Corrigido com `hojeEmCuiaba()`/`formatInstantDate()` (`web/src/lib/kanban/format.ts`), usando `Intl.DateTimeFormat` com `timeZone: "America/Cuiaba"` — consolidando as 4 reimplementações antigas. Reconfirmado pelo usuário em produção após o deploy. **Lição registrada:** qualquer cálculo futuro de "hoje" ou "agora" no servidor deve usar `hojeEmCuiaba()`, nunca os getters de fuso local do `Date` nativo
 - 2026-08-19: Plano 06.2-06 concluído — `ArquivarContratoDialog`/`ExcluirContratoDialog` (novos, irmãos do div ordenável do dnd-kit) trazem arquivar e excluir para o card do Board. Bug real de vazamento de evento do dnd-kit (já observado uma vez neste arquivo) testado explicitamente em produção e não se repetiu — digitar espaço e selecionar texto no campo de confirmação funcionam sem iniciar arraste. Board passou a aguardar o servidor em arquivar/excluir, mantendo arraste e toggle Ativo/Inativo otimistas. VIDA-06 completo; VIDA-05 aguarda o plano 06.2-07 (aba Arquivados, ainda não construída — usuário confirmou sua ausência, como esperado)
@@ -105,10 +107,6 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
 ### Blockers/Concerns
 
-- **Phase 7 (planos 07-01 e 07-02) — human-check pendente, consolidado.** Quatro blocos `<human-check>` no total ainda não foram confirmados por um humano no navegador contra produção — só as asserções automatizadas (lint/build/grep) rodaram em ambos os planos:
-  - **07-01:** (1) botão Conciliar/badge/toast de falha/corrida entre abas; (2) recusa server-side de Pagamento/Ajustar numa parcela conciliada, mensagem inline no diálogo.
-  - **07-02:** (3) `DestravarParcelaDialog` — motivo vazio bloqueado no cliente ("Informe o motivo da destrava."), depois preenchido: label "Destravando...", diálogo fecha, linha volta a mostrar Pagamento/Ajustar/Conciliar e Situação volta a "Paga"; (4) `ParcelaHistoricoSheet` — entrada `destrava` mostra ícone Unlock, valor "—", e linha "Motivo: " com o texto digitado, ao lado de (não no lugar de) qualquer `observacao` de outros lançamentos.
-  Todos os quatro precisam de confirmação visual em produção antes de considerar a Phase 7 pronta para fechar.
 - **ROBUST-02 não verificado com login real.** O código está escrito, lintado e buildado, e segue o mesmo padrão de outras queries já funcionando no mesmo Server Component — mas o navegador embutido usado para verificação ficou instável (mesmo problema já visto durante o diagnóstico do Turnstile) e não foi possível confirmar visualmente que a tela de "acesso pendente" aparece corretamente para um usuário fora da allowlist. **Ação sugerida:** o usuário confirma manualmente, ou testa com uma conta de teste removida da allowlist. **Relevante para a v2.0:** a Phase 4 precisa provar que o RLS das tabelas novas barra quem está fora da allowlist — é uma boa oportunidade para fechar esta verificação junto.
 - **`.planning/codebase/CONCERNS.md` tem taxa de acerto baixa.** 3 de 3 achados de segurança verificados até agora eram falsos positivos. Tratar o restante como hipótese, não fato.
 - **SEC-02 depende do usuário.** Leaked Password Protection é toggle no painel do Supabase; usuário optou por adiar. Fora do escopo de fases da v2.0.
@@ -133,6 +131,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-20T12:37:22.050Z
-Stopped at: Plano 07-02 executado e commitado (worktree agent-af95894d026629c62). Próximo passo: revisão/merge do usuário; human-check pendente em produção para 07-01 e 07-02.
-Resume file: .planning/phases/07-concilia-o-e-destrava-rastreada/07-02-SUMMARY.md
+Last session: 2026-08-20T13:00:00.000Z
+Stopped at: Phase 7 completa e verificada em produção. Próximo passo: /gsd-discuss-phase 8 (Relatórios financeiros)
+Resume file: None
