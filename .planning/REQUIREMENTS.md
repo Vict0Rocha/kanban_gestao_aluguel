@@ -77,6 +77,16 @@
 
 - [ ] **FINDOC-01**: `docs/data-model.md` documenta as novas entidades (diagrama incluso) e o porquê de cada decisão não-óbvia: livro-razão append-only, geração preguiçosa sem cron, flag `ativo` manual em vez de derivada da data
 
+### INTEG — integridade de datas do contrato nas parcelas (pós-milestone, Phase 9)
+
+Fora do conjunto de 39 requisitos da v2.0 — trabalho aberto por um bug real encontrado na verificação final da Phase 8 (parcelas órfãs vazando nos relatórios quando o período de um contrato encolhe). Reverte deliberadamente D-03 (`docs/data-model.md`), decisão do usuário registrada em `.planning/phases/09-integridade-de-datas-do-contrato-nas-parcelas/09-CONTEXT.md`.
+
+- [ ] **INTEG-01**: Editar `periodo_inicio`/`periodo_fim` de um contrato que já tem parcelas geradas apaga de verdade as parcelas que ficaram fora do novo período, desde que não tenham nenhum pagamento nem lançamento (`status='aberta'` E zero `parcela_lancamentos`) — as demais nunca são tocadas. A regra vale nos dois sentidos: encurtar o fim ou adiantar o início do período podam pelo mesmo critério
+- [ ] **INTEG-02**: A poda roda de forma síncrona, dentro da mesma Server Action que grava o período do contrato, e só quando `periodo_inicio` e/ou `periodo_fim` realmente mudam de valor nessa gravação — nunca em todo salvamento de card
+- [ ] **INTEG-03**: Antes de salvar uma edição que vai apagar uma ou mais parcelas órfãs, o usuário vê quantas serão apagadas e precisa confirmar explicitamente antes do salvamento seguir; uma edição que não apaga nenhuma parcela salva sem fricção nova
+- [ ] **INTEG-04**: Um contrato sem nenhuma das duas datas (`periodo_inicio` E `periodo_fim` nulos) passa a gerar só a parcela do mês atual, não mais atual+próximo; um contrato com só `periodo_inicio` preenchido continua gerando atual+próximo, sem mudança. A mudança vale só para geração futura — nunca apaga retroativamente uma parcela de "próximo mês" já gerada antes desta fase
+- [ ] **INTEG-05**: As parcelas órfãs já existentes em produção antes desta fase são removidas por um script SQL revisável pelo operador (não uma migração), que mostra a lista exata antes de qualquer exclusão
+
 ## Carried over from v1.0
 
 Requisito não concluído na v1.0, mantido visível para não se perder. **Não faz parte do escopo de fases da v2.0** — é uma ação de painel, não trabalho de código, adiada por escolha do usuário.
@@ -165,11 +175,17 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | FINREL-03 | Phase 8 | Confirmado em produção |
 | FINREL-04 | Phase 8 | Confirmado em produção |
 | FINREL-05 | Phase 8 | Confirmado em produção |
+| INTEG-01 | Phase 9 | Pendente |
+| INTEG-02 | Phase 9 | Pendente |
+| INTEG-03 | Phase 9 | Pendente |
+| INTEG-04 | Phase 9 | Pendente |
+| INTEG-05 | Phase 9 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
 - Mapped to phases: 39
 - Unmapped: 0
+- Phase 9 (INTEG-01..05) é trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seção `### INTEG` acima
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 - VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 

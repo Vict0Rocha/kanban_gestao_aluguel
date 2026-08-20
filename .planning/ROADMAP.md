@@ -207,13 +207,22 @@ Plans:
 ### Phase 9: Integridade de datas do contrato nas parcelas
 
 **Goal:** Toda parte do sistema que gera ou mantém parcelas passa a respeitar fielmente `periodo_inicio`/`periodo_fim` do card no momento presente — editar a data de um contrato já com parcelas geradas apaga de verdade as que ficaram fora do novo período (só as sem pagamento/lançamento), e contrato sem nenhuma data gera só a parcela do mês atual
-**Requirements**: TBD (planner propõe novo prefixo — nenhum requisito de v2.0 cobre esta fase; ver 09-RESEARCH.md)
+**Requirements**: INTEG-01, INTEG-02, INTEG-03, INTEG-04, INTEG-05 (trabalho pós-milestone — nenhum requisito de v2.0 cobre esta fase; propostos e adicionados a REQUIREMENTS.md nesta rodada de planejamento; ver 09-RESEARCH.md)
 **Depends on:** Phase 8
-**Plans:** 0 plans
+**Success Criteria** (what must be TRUE):
+
+  1. Editar `periodo_inicio`/`periodo_fim` de um card com parcelas já geradas apaga de verdade as que ficaram fora do novo período, e só as que nunca tiveram pagamento nem lançamento (`status='aberta'` E zero `parcela_lancamentos`) — nas duas direções (encurtar o fim ou adiantar o início)
+  2. A poda roda dentro do mesmo salvamento do card, só quando `periodo_inicio`/`periodo_fim` realmente mudam de valor, com uma confirmação explícita mostrando a contagem antes de qualquer exclusão acontecer
+  3. Contrato sem nenhuma das duas datas passa a gerar só a parcela do mês atual, sem afetar retroativamente o que já foi gerado antes desta fase
+  4. As parcelas órfãs já existentes em produção antes desta fase foram removidas por um script SQL revisável, e `docs/data-model.md` documenta a reversão de D-03
+
+**Pilares cruzados**: esta fase reverte deliberadamente D-03 (Phase 6.2, `docs/data-model.md`) — a regra de visibilidade (`avaliarVisibilidadeParcela`) continua exatamente como está para todo o resto (arquivado, inativo-mês-futuro); só o subconjunto "fora do período + zero lançamento" passa de "esconder" para "apagar de verdade". A policy de RLS de `parcelas` (`for all ... using is_team_member()`, Phase 4) já cobre `DELETE`, sem migração nova
+**Plans**: 2 plans
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 9 to break down)
+- [ ] 09-01-PLAN.md — Poda ativa síncrona em `updateCardAction` + pré-voo consultivo + confirmação no diálogo do card (D-01 a D-07)
+- [ ] 09-02-PLAN.md — Limpeza das parcelas órfãs já existentes (script SQL revisável, D-08) + documentação da reversão de D-03
 
 ## Progress
 
@@ -229,6 +238,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 6.2. Ciclo de vida do contrato (INSERTED) | 7/7 | Complete | 2026-08-19 |
 | 7. Conciliação e destrava rastreada | 2/2 | Complete | 2026-08-20 |
 | 8. Relatórios financeiros | 1/1 | Complete | 2026-08-20 |
-| 9. Integridade de datas do contrato nas parcelas | 0/0 | Planning | - |
+| 9. Integridade de datas do contrato nas parcelas | 0/2 | Planned | - |
 
-**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phase 9 é trabalho pós-milestone (bug encontrado na verificação final da Phase 8) e ainda não tem requisitos formais — ver nota acima.
+**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phase 9 é trabalho pós-milestone (bug encontrado na verificação final da Phase 8): INTEG-01 a INTEG-05, fora da contagem de 39 da v2.0, mapeados aos planos 09-01/09-02 — ver REQUIREMENTS.md § INTEG.
