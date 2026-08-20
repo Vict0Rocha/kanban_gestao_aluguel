@@ -5,16 +5,16 @@ milestone_name: Módulo Financeiro
 current_phase: 8
 current_phase_name: relatorios-financeiros
 status: complete
-stopped_at: Phase 9 context gathered
-last_updated: "2026-08-20T15:52:20.741Z"
+stopped_at: Phase 9 UI-SPEC approved
+last_updated: "2026-08-20T18:15:26.679Z"
 last_activity: 2026-08-20
 last_activity_desc: "Plano 08-01 executado (worktree agent-a21e4bc9c4e5a64a0). Relatório financeiro de 4 categorias entregue em /relatorios, npm run lint/build verdes, todas as asserções de grep do plano passaram. Módulo Financeiro v2.0: falta só a verificação humana em produção dos dois blocos human-check do plano 08-01 para fechar a milestone."
 progress:
   total_phases: 8
-  completed_phases: 8
+  completed_phases: 7
   total_plans: 25
   completed_plans: 25
-  percent: 100
+  percent: 88
 ---
 
 # Project State
@@ -139,6 +139,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-20T15:52:20.715Z
-Stopped at: Phase 9 context gathered
-Resume file: .planning/phases/09-integridade-de-datas-do-contrato-nas-parcelas/09-CONTEXT.md
+Last session: 2026-08-20T18:15:26.649Z
+Stopped at: Phase 9 UI-SPEC approved
+Resume file: .planning/phases/09-integridade-de-datas-do-contrato-nas-parcelas/09-UI-SPEC.md
