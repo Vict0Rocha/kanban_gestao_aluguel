@@ -194,12 +194,12 @@ Plans:
   4. Uma parcela conta como vencida por causa da comparação entre vencimento e hoje, feita na leitura: ninguém precisa rodar nada para "virar o mês"
 
 **Pilares cruzados**: o relatório é somente leitura e roda com a sessão do usuário, então o RLS da Phase 4 continua filtrando as linhas — um usuário fora da allowlist vê relatório vazio, não dado de terceiro
-**Plans**: TBD
+**Plans**: 1 plan
 **UI hint**: yes
 
 Plans:
 
-- [ ] 08-01: TBD
+- [ ] 08-01-PLAN.md — Painel de filtro suspenso + relatório de 4 categorias (pagas/a vencer/vencidas/conciliadas) dentro de `/relatorios`, query sem filtro de arquivado/ativo (D-05), filtros combináveis por imóvel/proprietário/período/situação
 
 ## Progress
 
