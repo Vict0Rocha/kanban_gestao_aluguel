@@ -31,7 +31,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 5: Aba Financeiro com parcelas automáticas** - Abrir a aba mostra as parcelas do mês atual e do próximo mês de cada contrato ativo, sem clicar em "gerar"
 - [x] **Phase 6: Baixa e ajustes de parcela** - Registrar recebimento total ou parcial, multa e desconto, com histórico que nunca é sobrescrito
 - [x] **Phase 6.1: Consulta financeira e geração por período** (INSERTED) - Vencendo hoje como padrão, filtros por proprietário/inquilino/período/ID, geração pelo período completo do contrato com backfill
-- [ ] **Phase 6.2: Ciclo de vida do contrato** (INSERTED) - Visibilidade derivada do estado do card, arquivar/desarquivar, e exclusão travada por movimentação financeira
+- [x] **Phase 6.2: Ciclo de vida do contrato** (INSERTED) - Visibilidade derivada do estado do card, arquivar/desarquivar, e exclusão travada por movimentação financeira
 - [ ] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
 - [ ] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
 
