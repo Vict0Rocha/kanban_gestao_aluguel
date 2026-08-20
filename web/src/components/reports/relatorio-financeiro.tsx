@@ -4,6 +4,7 @@ import * as React from "react"
 import { AlertCircle, CheckCircle2, Clock, Lock, type LucideIcon } from "lucide-react"
 
 import { formatCurrency } from "@/lib/kanban/format"
+import { buscarParcelasRelatorioAction } from "@/lib/kanban/actions"
 import {
   calcularRelatorioFinanceiro,
   type FiltroRelatorioValores,
@@ -21,33 +22,59 @@ const ICONE_E_ROTULO: Record<SituacaoRelatorio, { icon: LucideIcon; label: strin
   conciliada: { icon: Lock, label: "Conciliadas" },
 }
 
-export function RelatorioFinanceiro({
-  parcelas,
-  erro,
-  todayISO,
-}: {
-  parcelas: ParcelaRelatorio[]
-  erro: boolean
-  todayISO: string
-}) {
+type Dados = { parcelas: ParcelaRelatorio[]; hojeISO: string }
+
+export function RelatorioFinanceiro() {
   // D-04: `aplicado` só muda dentro de `onGerar` (acionado pelo clique em
   // "Gerar relatório" em FiltroRelatorioFinanceiro), nunca em resposta a um
   // campo isolado — é isso que impede a consulta de rodar "ao vivo".
   const [aplicado, setAplicado] = React.useState<FiltroRelatorioValores | null>(
     null
   )
+  // Sem prop vinda do servidor: cada clique em "Gerar relatório" busca dados
+  // novos via `buscarParcelasRelatorioAction`, em vez de reaproveitar o que
+  // veio na carga inicial da página. Sem isso, uma aba deixada aberta
+  // enquanto um contrato é editado ou uma parcela é paga em outro lugar
+  // mostraria sempre o retrato de quando a página carregou.
+  const [dados, setDados] = React.useState<Dados | null>(null)
+  const [carregando, setCarregando] = React.useState(false)
+  const [erro, setErro] = React.useState(false)
 
   const categorias = React.useMemo(
     () =>
-      aplicado ? calcularRelatorioFinanceiro(parcelas, aplicado, todayISO) : null,
-    [parcelas, aplicado, todayISO]
+      aplicado && dados
+        ? calcularRelatorioFinanceiro(dados.parcelas, aplicado, dados.hojeISO)
+        : null,
+    [aplicado, dados]
   )
+
+  async function gerar(filtro: FiltroRelatorioValores) {
+    setCarregando(true)
+    setErro(false)
+    const resultado = await buscarParcelasRelatorioAction()
+    setCarregando(false)
+
+    if (!resultado.ok) {
+      setErro(true)
+      setAplicado(null)
+      return
+    }
+
+    setDados(resultado.data)
+    setAplicado(filtro)
+  }
+
+  function limpar() {
+    setAplicado(null)
+    setErro(false)
+  }
 
   return (
     <div className="flex flex-col gap-3">
       <FiltroRelatorioFinanceiro
-        onGerar={setAplicado}
-        onLimpar={() => setAplicado(null)}
+        onGerar={gerar}
+        onLimpar={limpar}
+        carregando={carregando}
       />
 
       {erro ? (

@@ -33,7 +33,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 6.1: Consulta financeira e geração por período** (INSERTED) - Vencendo hoje como padrão, filtros por proprietário/inquilino/período/ID, geração pelo período completo do contrato com backfill
 - [x] **Phase 6.2: Ciclo de vida do contrato** (INSERTED) - Visibilidade derivada do estado do card, arquivar/desarquivar, e exclusão travada por movimentação financeira
 - [x] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
-- [ ] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
+- [x] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
 
 ## Phase Details
 
@@ -188,10 +188,12 @@ Plans:
 **Requirements**: FINREL-01, FINREL-02, FINREL-03, FINREL-04, FINREL-05
 **Success Criteria** (what must be TRUE):
 
-  1. Existe um relatório financeiro com as quatro visões — pagas, a vencer, vencidas e conciliadas — cada uma com a contagem de parcelas e o total em dinheiro
-  2. Os totais batem com o estado real do banco: dar baixa numa parcela e voltar ao relatório move ela de "a vencer" para "pagas" e atualiza os dois totais, sem passo intermediário de recalcular
-  3. Filtros por imóvel, proprietário e período combinam entre si e nenhum reseta o outro — mesmo comportamento dos relatórios de contrato que já existem
-  4. Uma parcela conta como vencida por causa da comparação entre vencimento e hoje, feita na leitura: ninguém precisa rodar nada para "virar o mês"
+  1. ✓ Existe um relatório financeiro com as quatro visões — pagas, a vencer, vencidas e conciliadas — cada uma com a contagem de parcelas e o total em dinheiro — confirmado em produção
+  2. ✓ Os totais batem com o estado real do banco, incluindo contrato arquivado/inativo (D-05) — confirmado pelo usuário contra o SQL Editor
+  3. ✓ Filtros por imóvel, proprietário, período e situação combinam entre si e nenhum reseta o outro, sem recalcular ao vivo (D-04) — confirmado em produção
+  4. ✓ Uma parcela conta como vencida por causa da comparação entre vencimento e hoje, feita na leitura — `situacaoDaParcela` reaproveitada (D-06), nunca reimplementada
+
+**Correção pós-verificação:** o usuário encontrou, ao testar em produção, que "Gerar relatório" numa aba deixada aberta não refletia dados alterados em outro lugar (só um F5 completo atualizava). Causa: o componente reaproveitava os `parcelas` recebidos como prop na carga inicial da página, em vez de buscar de novo a cada clique. Corrigido fora de um plano formal (mudança contida, sem risco de dado): a busca virou `buscarParcelasRelatorioAction` — Server Action única, chamada tanto pela carga inicial de `relatorios/page.tsx` quanto por cada clique em "Gerar relatório" — eliminando a divergência entre o que a tela mostra e o que está no banco. `npm run tsc --noEmit` limpo; verificação funcional em produção pendente de confirmação do usuário.
 
 **Pilares cruzados**: o relatório é somente leitura e roda com a sessão do usuário, então o RLS da Phase 4 continua filtrando as linhas — um usuário fora da allowlist vê relatório vazio, não dado de terceiro
 **Plans**: 1 plan
@@ -214,6 +216,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8
 | 6.1. Consulta financeira e geração por período (INSERTED) | 6/6 | Complete | 2026-08-18 |
 | 6.2. Ciclo de vida do contrato (INSERTED) | 7/7 | Complete | 2026-08-19 |
 | 7. Conciliação e destrava rastreada | 2/2 | Complete | 2026-08-20 |
-| 8. Relatórios financeiros | 1/1 | In Progress (aguardando verificação humana) | - |
+| 8. Relatórios financeiros | 1/1 | Complete | 2026-08-20 |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código.

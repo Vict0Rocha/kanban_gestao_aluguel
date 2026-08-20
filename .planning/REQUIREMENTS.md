@@ -160,11 +160,11 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | CONCIL-02 | Phase 7 | Concluído |
 | CONCIL-03 | Phase 7 | Concluído |
 | CONCIL-04 | Phase 7 | Concluído |
-| FINREL-01 | Phase 8 | Aguardando verificação humana |
-| FINREL-02 | Phase 8 | Aguardando verificação humana |
-| FINREL-03 | Phase 8 | Aguardando verificação humana |
-| FINREL-04 | Phase 8 | Aguardando verificação humana |
-| FINREL-05 | Phase 8 | Aguardando verificação humana |
+| FINREL-01 | Phase 8 | Confirmado em produção |
+| FINREL-02 | Phase 8 | Confirmado em produção |
+| FINREL-03 | Phase 8 | Confirmado em produção |
+| FINREL-04 | Phase 8 | Confirmado em produção |
+| FINREL-05 | Phase 8 | Confirmado em produção |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5

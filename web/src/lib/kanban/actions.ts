@@ -5,6 +5,7 @@ import type { ActionResult, Card, CardDetailsInput } from "./types"
 import type { AlertStatus, AlertType } from "./alerts"
 import { somarLancamentos, statusDeParcela, type LancamentoResumo } from "./parcelas"
 import { hojeEmCuiaba } from "./format"
+import type { ParcelaRelatorio } from "./relatorio-financeiro"
 import {
   avaliarVisibilidadeParcela,
   EXCLUSAO_BLOQUEADA_POR_LANCAMENTO,
@@ -1125,4 +1126,54 @@ export async function destravarParcelaAction(
   }
 
   return { ok: true, data: undefined }
+}
+
+// ------------------------------------------------------------------
+// Relatório financeiro
+// ------------------------------------------------------------------
+
+/**
+ * Única fonte da consulta usada pelo relatório financeiro — chamada tanto
+ * pela primeira carga de `relatorios/page.tsx` (RSC) quanto por cada clique
+ * em "Gerar relatório" no cliente (`RelatorioFinanceiro`). Existe como action
+ * (em vez de só uma função de `queries.ts`) justamente para que o cliente
+ * consiga buscar dados frescos a cada clique — sem isso, um usuário com a
+ * aba de Relatórios aberta há um tempo, gerando o relatório de novo, receberia
+ * sempre os mesmos dados da carga inicial da página, mesmo que o contrato
+ * tenha sido editado ou uma parcela paga em outra aba/dispositivo nesse meio
+ * tempo.
+ *
+ * D-05: propositalmente SEM `.is("cards.arquivado_em", null)` e SEM
+ * `.eq("cards.ativo"/"ativo", true)` — o relatório financeiro inclui contrato
+ * arquivado/inativo (exceção deliberada à regra de visibilidade da Phase 6.2
+ * — ver 08-CONTEXT.md D-05).
+ */
+export async function buscarParcelasRelatorioAction(): Promise<
+  ActionResult<{ parcelas: ParcelaRelatorio[]; hojeISO: string }>
+> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const { data, error } = await sessao.supabase
+    .from("parcelas")
+    .select(
+      "competencia, vencimento, valor_original, status, cards(endereco, proprietario), parcela_lancamentos(tipo, valor)"
+    )
+
+  if (error) {
+    console.error("buscarParcelasRelatorio", error)
+    return { ok: false, error: erroDoBanco(error.code, "carregar o relatório") }
+  }
+
+  // Mesmo cast de relatorios/page.tsx: o parser de `.select()` do
+  // supabase-js não conhece o schema e infere o embed `cards` como array,
+  // mas `parcelas.card_id -> cards.id` é muitos-para-um — o PostgREST sempre
+  // devolve um objeto único ou null aqui, nunca array.
+  return {
+    ok: true,
+    data: {
+      parcelas: (data ?? []) as unknown as ParcelaRelatorio[],
+      hojeISO: hojeEmCuiaba(),
+    },
+  }
 }

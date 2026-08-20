@@ -28,9 +28,11 @@ const SITUACAO_OPTIONS: { value: SituacaoRelatorio; label: string }[] = [
 export function FiltroRelatorioFinanceiro({
   onGerar,
   onLimpar,
+  carregando,
 }: {
   onGerar: (filtro: FiltroRelatorioValores) => void
   onLimpar: () => void
+  carregando: boolean
 }) {
   // Fechado por padrão. Diferente de `FiltroParcelas`, não há URL
   // persistindo estado entre cargas nesta implementação (D-04: o filtro roda
@@ -158,11 +160,15 @@ export function FiltroRelatorioFinanceiro({
           {/* Task 1 entregou só a linha de ação — Task 2 inseriu os campos e
               os chips de situação ANTES desta linha, sem remover nada dela. */}
           <div className="mt-3 flex justify-end gap-2">
-            <Button variant="default" onClick={() => onGerar(campos)}>
-              Gerar relatório
+            <Button
+              variant="default"
+              onClick={() => onGerar(campos)}
+              disabled={carregando}
+            >
+              {carregando ? "Gerando..." : "Gerar relatório"}
             </Button>
             {temFiltroPreenchido && (
-              <Button variant="ghost" onClick={limpar}>
+              <Button variant="ghost" onClick={limpar} disabled={carregando}>
                 Limpar filtros
               </Button>
             )}
