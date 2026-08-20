@@ -219,3 +219,14 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8
 | 8. Relatórios financeiros | 1/1 | Complete | 2026-08-20 |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código.
+
+### Phase 9: Integridade de datas do contrato nas parcelas
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 9 to break down)
