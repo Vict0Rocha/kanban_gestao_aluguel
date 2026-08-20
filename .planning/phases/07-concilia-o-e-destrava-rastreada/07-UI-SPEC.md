@@ -1,10 +1,11 @@
 ---
 phase: 7
 slug: concilia-o-e-destrava-rastreada
-status: draft
+status: approved
 shadcn_initialized: true
 preset: base-nova (pre-existing — initialized in Phase 5, not re-run this session)
 created: 2026-08-19
+reviewed_at: 2026-08-19
 ---
 
 # Phase 7 — UI Design Contract
@@ -36,6 +37,14 @@ created: 2026-08-19
 No new spacing/sizing tokens — every button below reuses the exact `Button` variant/size
 vocabulary already in the row (`outline` = the row's one "primary" action, `ghost` = secondary,
 `ghost size="icon"` = Histórico). The cell keeps its existing `flex items-center gap-2`.
+
+**Visual hierarchy (per row):** the `outline` slot is always the eye's first stop — it is the
+row's one action styled with a visible border, everything else is borderless `ghost`. This phase
+doesn't change that rule, it changes which action occupies the slot: `Pagamento` on every
+non-conciliada row (unchanged from Phase 6), `Destravar` on a conciliada row (D-08 below).
+`Conciliar` deliberately does **not** compete for that slot — it stays `ghost`, appended after
+`Ajustar`, because a `paga` row's primary action is still logically "receive more money"
+(Pagamento), not "lock it" — conciliar is available, not emphasized.
 
 **Default row** (`a_vencer`, `vencida`, `parcial`, or `paga`-but-nothing-changes-otherwise):
 unchanged from Phase 6 — `Pagamento` (outline, `Banknote` icon) · `Ajustar` (ghost) ·
@@ -88,10 +97,10 @@ Declared values (must be multiples of 4):
 | xl | 32px | Not used by this phase |
 | 2xl | 48px | Not used by this phase |
 | 3xl | 64px | Not used by this phase |
+| 3xs ⚠ | 12px (`gap-3`/`p-3`) | *Inherited, production-established.* `ParcelaHistoricoSheet`'s lançamento cards (Phase 6); the new `motivo` line this phase adds to that same card (see Copywriting Contract) reuses the identical 12px rhythm — no new value introduced by this phase, listed here (not just as prose below) so a future reader sees the full scale in one table |
 
-Exceptions: `gap-3`/`p-3` (12px) — already the established compact-list-item spacing in
-`ParcelaHistoricoSheet`'s lançamento cards (Phase 6); the new `motivo` line added to that same
-card (see Copywriting Contract) reuses the identical 12px rhythm, no new value introduced.
+Not a multiple-of-4 token, carried forward for the reason above — same "inherited, not
+introduced" treatment `06.2-UI-SPEC.md` already established for this exact 3xs row.
 
 ---
 
@@ -208,11 +217,11 @@ Applicable state considerations resolved: 9 covered, 1 backstop, 0 unresolved.
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: FLAG (no explicit visual-hierarchy statement) — fixed: hierarchy paragraph added to Component Notes
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: FLAG (12px exception not in the token table) — fixed: added as `3xs` row
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** APPROVED (gsd-ui-checker, 2026-08-19) — both non-blocking FLAGs resolved by the orchestrator before planning
