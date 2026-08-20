@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import type { Column } from "@/lib/kanban/types"
+import { hojeEmCuiaba } from "@/lib/kanban/format"
 import { ReportsView } from "@/components/reports/reports-view"
 
 export default async function RelatoriosPage() {
@@ -26,10 +27,10 @@ export default async function RelatoriosPage() {
       ).data ?? [])
     : []
 
-  // Pin "today" on the server so the server render and the client hydration
-  // classify contracts against the exact same date.
-  const now = new Date()
-  const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
+  // Pin "today" no fuso de Cuiabá (não no fuso do processo — Vercel roda em
+  // UTC), para o render do servidor e a hidratação do cliente classificarem
+  // os contratos contra a mesma data.
+  const todayISO = hojeEmCuiaba()
 
   return <ReportsView columns={columns} todayISO={todayISO} />
 }

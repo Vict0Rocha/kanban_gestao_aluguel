@@ -2,6 +2,7 @@ import { AppShell } from "@/components/app-shell";
 import { AcessoPendente } from "@/components/acesso-pendente";
 import { createClient } from "@/lib/supabase/server";
 import type { CardWithAlerts } from "@/lib/kanban/alerts";
+import { hojeEmCuiaba } from "@/lib/kanban/format";
 
 export default async function AuthenticatedLayout({
   children,
@@ -49,8 +50,8 @@ export default async function AuthenticatedLayout({
 
   const cards: CardWithAlerts[] = data ?? [];
 
-  const now = new Date();
-  const todayISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  // Fuso de Cuiabá, não o fuso do processo (Vercel roda em UTC).
+  const todayISO = hojeEmCuiaba();
 
   return (
     <AppShell alertCards={cards} todayISO={todayISO}>

@@ -6,6 +6,7 @@ import {
   type ParcelaComCard,
 } from "@/lib/kanban/parcelas"
 import { filtrarParcelasVisiveis } from "@/lib/kanban/visibilidade"
+import { hojeEmCuiaba } from "@/lib/kanban/format"
 import { FinanceiroView } from "@/components/financeiro/financeiro-view"
 
 // `!inner` é obrigatório para poder filtrar por coluna do embed — sem ela o
@@ -68,10 +69,10 @@ export default async function FinanceiroPage({
     .limit(1)
     .maybeSingle()
 
-  // Pin "today" on the server, mesma linha usada em relatorios/page.tsx e
-  // (app)/layout.tsx (A-04).
-  const now = new Date()
-  const hojeISO = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
+  // Pin "today" no fuso de Cuiabá, não no fuso do processo (Vercel roda em
+  // UTC) — mesma função usada em relatorios/page.tsx, (app)/layout.tsx e
+  // actions.ts (A-04, corrigido junto com o bug de arquivado_em).
+  const hojeISO = hojeEmCuiaba()
 
   let linhas: LinhaParcela[] = []
   let erro = false

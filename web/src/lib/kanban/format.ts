@@ -19,6 +19,31 @@ export function formatDate(value: string) {
   return dateFormatter.format(new Date(year, month - 1, day))
 }
 
+const isoDateInCuiabaFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Cuiaba",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+})
+
+/**
+ * "Hoje" no fuso de referência do negócio (Cuiabá/MT, UTC-4), como
+ * "YYYY-MM-DD". Único jeito correto de calcular "hoje" no servidor.
+ *
+ * `new Date().getFullYear()/getMonth()/getDate()` lê o fuso do PROCESSO,
+ * não o do negócio — em produção (Vercel) o processo roda em UTC, que
+ * difere de Cuiabá em até 4 horas. Das 20h à meia-noite, hora de Cuiabá,
+ * o servidor já "virou o dia" em UTC enquanto ainda é hoje em Cuiabá — é
+ * exatamente esse o bug observado em produção (2026-08-19, `arquivado_em`
+ * mostrando 20/08 antes das 20h de Cuiabá). O locale "en-CA" é só um
+ * truque de formatação: é o locale cujo formato padrão de data já é
+ * "YYYY-MM-DD", então não precisa reconstruir a string à mão a partir de
+ * `getFullYear`/`getMonth`/`getDate` (que reintroduziriam o mesmo bug).
+ */
+export function hojeEmCuiaba(): string {
+  return isoDateInCuiabaFormatter.format(new Date())
+}
+
 const instantDateFormatter = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Cuiaba",
   day: "2-digit",

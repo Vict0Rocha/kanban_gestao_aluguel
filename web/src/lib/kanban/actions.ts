@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import type { ActionResult, Card, CardDetailsInput } from "./types"
 import type { AlertStatus, AlertType } from "./alerts"
 import { somarLancamentos, statusDeParcela, type LancamentoResumo } from "./parcelas"
+import { hojeEmCuiaba } from "./format"
 import {
   avaliarVisibilidadeParcela,
   EXCLUSAO_BLOQUEADA_POR_LANCAMENTO,
@@ -654,7 +655,7 @@ export async function contarParcelasEmAbertoAction(
       competencia: parcela.competencia,
       card: parcela.cards,
       temLancamento: (parcela.parcela_lancamentos?.length ?? 0) > 0,
-      hojeISO: hojeISO(),
+      hojeISO: hojeEmCuiaba(),
     })
     if (!visivel) continue
 
@@ -738,17 +739,6 @@ export async function resolveAlertAction(input: {
 // ------------------------------------------------------------------
 
 /**
- * Fixa "hoje" no servidor, repetindo exatamente a expressão já usada em
- * financeiro/page.tsx (A-04). Não vira utilitário compartilhado novo —
- * está fora do escopo desta fase, e `parcelas.ts` não pode importar nada
- * de servidor.
- */
-function hojeISO(): string {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`
-}
-
-/**
  * D-04/D-15: esconder na tela é cosmético, esta função é a trava. Reconsulta
  * a parcela mais o card mais os lançamentos — nunca confia no que a tela
  * mandou — e chama a MESMA `avaliarVisibilidadeParcela` que decide o que o
@@ -787,7 +777,7 @@ async function exigirParcelaVisivel(
     competencia: parcela.competencia,
     card: parcela.cards,
     temLancamento: (parcela.parcela_lancamentos?.length ?? 0) > 0,
-    hojeISO: hojeISO(),
+    hojeISO: hojeEmCuiaba(),
   })
 
   return resultado.visivel ? null : MENSAGEM_PARCELA_OCULTA[resultado.motivo]
