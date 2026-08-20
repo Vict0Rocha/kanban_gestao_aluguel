@@ -18,6 +18,8 @@ import { SearchField } from "@/components/search-field"
 import { StatTile } from "@/components/reports/stat-tile"
 import { ColumnBarChart } from "@/components/reports/column-bar-chart"
 import { ContractsTable } from "@/components/reports/contracts-table"
+import { RelatorioFinanceiro } from "@/components/reports/relatorio-financeiro"
+import type { ParcelaRelatorio } from "@/lib/kanban/relatorio-financeiro"
 
 const STATUS_OPTIONS: { value: ContractStatus; label: string }[] = [
   { value: "vencido", label: "Vencidos" },
@@ -79,10 +81,14 @@ function FilterRow({
 export function ReportsView({
   columns,
   todayISO,
+  parcelas,
+  erroRelatorioFinanceiro,
 }: {
   columns: Column[]
   /** Fixed on the server so SSR and hydration agree on "today". */
   todayISO: string
+  parcelas: ParcelaRelatorio[]
+  erroRelatorioFinanceiro: boolean
 }) {
   // Conjuntos em vez de valor único: as linhas de filtro se combinam entre si
   // (coluna 1 + coluna 2 com contratos vencidos + sem data, por exemplo), e
@@ -138,6 +144,12 @@ export function ReportsView({
           Uma visão geral da carteira para apoiar a decisão do dia.
         </p>
       </div>
+
+      <RelatorioFinanceiro
+        parcelas={parcelas}
+        erro={erroRelatorioFinanceiro}
+        todayISO={todayISO}
+      />
 
       <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
