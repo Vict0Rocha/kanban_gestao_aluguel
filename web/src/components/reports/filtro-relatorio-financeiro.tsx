@@ -9,10 +9,21 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { FilterChip, toggle } from "@/components/reports/reports-view"
 import {
   filtroRelatorioVazio,
   type FiltroRelatorioValores,
+  type SituacaoRelatorio,
 } from "@/lib/kanban/relatorio-financeiro"
+
+const SITUACAO_OPTIONS: { value: SituacaoRelatorio; label: string }[] = [
+  { value: "paga", label: "Pagas" },
+  { value: "a_vencer", label: "A vencer" },
+  { value: "vencida", label: "Vencidas" },
+  { value: "conciliada", label: "Conciliadas" },
+]
 
 export function FiltroRelatorioFinanceiro({
   onGerar,
@@ -27,6 +38,28 @@ export function FiltroRelatorioFinanceiro({
   // "abre se a URL já tiver filtro" não se aplica aqui. Simplificação
   // deliberada, ver 08-CONTEXT.md "Claude's Discretion".
   const [aberto, setAberto] = React.useState(false)
+  const [campos, setCampos] = React.useState<FiltroRelatorioValores>(
+    filtroRelatorioVazio()
+  )
+
+  function atualizarCampo(
+    campo: "imovel" | "proprietario" | "periodo",
+    valor: string
+  ) {
+    setCampos((atual) => ({ ...atual, [campo]: valor }))
+  }
+
+  const temFiltroPreenchido = Boolean(
+    campos.imovel.trim() ||
+      campos.proprietario.trim() ||
+      campos.periodo.trim() ||
+      campos.situacoes.size > 0
+  )
+
+  function limpar() {
+    setCampos(filtroRelatorioVazio())
+    onLimpar()
+  }
 
   return (
     <Collapsible open={aberto} onOpenChange={setAberto}>
@@ -56,18 +89,83 @@ export function FiltroRelatorioFinanceiro({
 
       <CollapsiblePanel>
         <div className="mt-3 rounded-2xl border border-border bg-card px-5 py-4">
-          {/* Task 1 entrega só a linha de ação — Task 2 insere os campos e
-              os chips de situação ANTES desta linha, sem remover nada dela. */}
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="default"
-              onClick={() => onGerar(filtroRelatorioVazio())}
+          <div className="grid grid-cols-[repeat(3,1fr)] gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="filtro-rel-imovel">Imóvel</Label>
+              <Input
+                id="filtro-rel-imovel"
+                type="text"
+                placeholder="Endereço do imóvel"
+                value={campos.imovel}
+                onChange={(event) =>
+                  atualizarCampo("imovel", event.target.value)
+                }
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="filtro-rel-proprietario">Proprietário</Label>
+              <Input
+                id="filtro-rel-proprietario"
+                type="text"
+                placeholder="Nome do proprietário"
+                value={campos.proprietario}
+                onChange={(event) =>
+                  atualizarCampo("proprietario", event.target.value)
+                }
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="filtro-rel-periodo">Período</Label>
+              <Input
+                id="filtro-rel-periodo"
+                type="month"
+                value={campos.periodo}
+                onChange={(event) =>
+                  atualizarCampo("periodo", event.target.value)
+                }
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="shrink-0 text-xs font-semibold text-muted-foreground uppercase">
+              Situação
+            </span>
+            <FilterChip
+              active={campos.situacoes.size === 0}
+              onClick={() =>
+                setCampos((atual) => ({ ...atual, situacoes: new Set() }))
+              }
             >
+              Todas
+            </FilterChip>
+            {SITUACAO_OPTIONS.map((option) => (
+              <FilterChip
+                key={option.value}
+                active={campos.situacoes.has(option.value)}
+                onClick={() =>
+                  setCampos((atual) => ({
+                    ...atual,
+                    situacoes: toggle(atual.situacoes, option.value),
+                  }))
+                }
+              >
+                {option.label}
+              </FilterChip>
+            ))}
+          </div>
+
+          {/* Task 1 entregou só a linha de ação — Task 2 inseriu os campos e
+              os chips de situação ANTES desta linha, sem remover nada dela. */}
+          <div className="mt-3 flex justify-end gap-2">
+            <Button variant="default" onClick={() => onGerar(campos)}>
               Gerar relatório
             </Button>
-            <Button variant="ghost" onClick={onLimpar}>
-              Limpar filtros
-            </Button>
+            {temFiltroPreenchido && (
+              <Button variant="ghost" onClick={limpar}>
+                Limpar filtros
+              </Button>
+            )}
           </div>
         </div>
       </CollapsiblePanel>

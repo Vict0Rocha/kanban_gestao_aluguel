@@ -29,13 +29,13 @@ const STATUS_OPTIONS: { value: ContractStatus; label: string }[] = [
 ]
 
 /** Conjunto vazio = nenhum filtro daquela linha, ou seja, tudo passa. */
-function toggle<T>(current: Set<T>, value: T): Set<T> {
+export function toggle<T>(current: Set<T>, value: T): Set<T> {
   const next = new Set(current)
   if (!next.delete(value)) next.add(value)
   return next
 }
 
-function FilterChip({
+export function FilterChip({
   active,
   children,
   onClick,
