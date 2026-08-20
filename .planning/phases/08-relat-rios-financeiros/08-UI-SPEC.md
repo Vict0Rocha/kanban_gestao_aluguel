@@ -1,10 +1,11 @@
 ---
 phase: 8
 slug: relatorios-financeiros
-status: draft
+status: approved
 shadcn_initialized: true
 preset: base-nova (baseColor neutral, iconLibrary lucide, rsc true)
 created: 2026-08-20
+reviewed_at: 2026-08-20
 ---
 
 # Phase 8 — UI Design Contract
@@ -35,32 +36,33 @@ Declared values (must be multiples of 4):
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| xs | 4px | Icon-to-label gaps inside chips/badges (`gap-1.5` ≈ 6px is the one pre-existing exception — see below) |
+| xs | 4px | Base unit |
+| 3xs ⚠ | 6px (`gap-1.5`) | *Inherited, production-established.* Icon-to-label gaps inside chips/badges — already live in `FilterChip` (`reports-view.tsx`), `ParcelaSituacaoBadge`, `StatTile`'s icon row, and `FiltroParcelas`' own field stacks. Not introduced by this phase; the new situação chips and filter-panel trigger reuse this exact class, verbatim, to stay visually identical to their siblings on the same page. Same treatment `06.2-UI-SPEC.md`/`07-UI-SPEC.md` already gave their own inherited exceptions — do not "round" to `gap-2` for grid purity, that would make the new chips look different from the contract-status chips two inches away |
 | sm | 8px | Compact element spacing (`gap-2` between filter fields) |
 | md | 16px | Default element spacing (`p-4`, `gap-4` — grid of the 4 category tiles) |
 | lg | 24px | Section padding (`p-6` page container, `gap-3`→`gap-5` page-level stacking) |
+| lg-alt ⚠ | 20px (`p-5`) | *Inherited, production-established.* The card-padding convention already used by every panel on `/relatorios` today — `ContractsTable`, `ColumnBarChart` (both siblings on this exact page) — plus `FiltroParcelas`, `ParcelasTable`, `ArquivadosView`. The new filter panel reuses this identical class string so it doesn't sit on the page with different padding than the panels right next to it |
 | xl | 32px | Not used in this phase's new pieces |
 | 2xl | 48px | Not used in this phase's new pieces |
 | 3xl | 64px | Not used in this phase's new pieces |
 
-Exceptions (pre-existing, not introduced by this phase — do not "fix"):
-- `gap-1.5` (6px) is already used throughout the app for icon+label pairs (`FilterChip` spacing equivalents, `ParcelaSituacaoBadge`, `StatTile` icon row) — this phase's new situação chips and the filter panel's trigger button inherit this exact pattern, not a new one.
-- `p-5` (20px) is the established card padding for `FiltroParcelas`' inner panel (`rounded-2xl border border-border bg-card px-5 py-4`) and for `ContractsTable`/`StatTile`-adjacent cards. The new financial filter panel reuses this exact class string — do not switch to `p-4`/`p-6` for visual novelty.
+Both ⚠ rows are reuse of classes already shipped and reviewed elsewhere in this codebase, verified against source (`contracts-table.tsx:15`, `column-bar-chart.tsx:15`, `filtro-parcelas.tsx:115`) — not new values invented for this phase. No other off-grid value appears anywhere in this contract.
 
 ---
 
 ## Typography
 
-This phase does not introduce new type roles — it reuses the four sizes and two weights already load-bearing on `/relatorios` and `/financeiro`.
+This phase's own new elements use exactly **two weights**: 400 (body) and 600 (semibold — filter-row labels, the two elements this phase actually authors from scratch). The panel heading and the situação chips are **verbatim reuse** of two already-shipped components (`FiltroParcelas`' `h2`, `FilterChip`) sitting on the same page — reusing their classes means inheriting their weights (700 and 500 respectively), listed below as explicit ⚠ inherited rows so they're not miscounted as new decisions this phase makes.
 
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 14px (`text-sm`) | 400 regular | 1.5 (Tailwind default `leading-normal`) |
-| Label / chip / uppercase micro-label | 12px (`text-xs`) | 600 semibold (`font-semibold`) — filter-row labels use `font-semibold uppercase`, chips use `font-medium` (500, existing exception, see below) | 1.4 |
-| Heading (panel title, e.g. "Relatório financeiro") | 16px (`text-base`), `font-heading font-bold` | 700 bold | 1.2 |
-| Display (page h1 "Relatórios" — untouched by this phase) | 24px (`text-2xl`), `font-heading font-extrabold` | 800 extrabold | 1.2 |
+| Label / uppercase micro-label (new, this phase) | 12px (`text-xs`) | 600 semibold (`font-semibold uppercase`) | 1.4 |
+| Heading ⚠ *inherited* | 16px (`text-base`), `font-heading font-bold` | 700 bold — verbatim `FiltroParcelas`' `h2` class (`filtro-parcelas.tsx:83`), same as `ContractsTable`'s `h2` on this exact page (`contracts-table.tsx:16`) | 1.2 |
+| Chip label ⚠ *inherited* | 12px (`text-xs`) | 500 medium (`font-medium`) — verbatim `FilterChip` (`reports-view.tsx:51`), the existing contract-status chips sitting two inches away on the same page | 1.4 |
+| Display (page h1 "Relatórios" — untouched by this phase, not authored here) | 24px (`text-2xl`), `font-heading font-extrabold` | 800 extrabold — pre-existing page chrome, this phase does not touch or repeat it | 1.2 |
 
-Weight exception (pre-existing, inherited not invented): the existing `FilterChip` component (`reports-view.tsx`) uses `font-medium` (500) for chip labels, one step lighter than the `font-semibold` (600) used on the `FilterRow` uppercase label above it. The new situação chips (paga/a vencer/vencida/conciliada) MUST reuse `FilterChip` verbatim, inheriting this exact weight — do not "correct" it to semibold, that would visually diverge the new chips from the contract-status chips sitting in the same page.
+The new situação chips (paga/a vencer/vencida/conciliada) MUST reuse `FilterChip` verbatim, inheriting its 500 weight — do not "correct" it to 600, that would visually diverge the new chips from the contract-status chips they sit next to. Same reasoning for the panel heading reusing `FiltroParcelas`' 700 verbatim. Both are reuse of shipped, reviewed components — not two additional weights invented by this phase's own design work.
 
 ---
 
@@ -103,6 +105,8 @@ Explicitly NOT accent: the collapsible trigger button ("Filtrar"/"Fechar filtros
 ---
 
 ## Layout & Component Contract (phase-specific, informed by Claude's Discretion in 08-CONTEXT.md)
+
+**Visual hierarchy (primary anchor for the composited page).** Before generation, the new filter panel plus its "Gerar relatório" CTA is the primary visual anchor of `/relatorios` — it sits first, right below the page subtitle, and is the only actionable surface this phase adds above the fold. After a report is generated, the anchor shifts to the four-category result grid (count + total per category), which is the actual payoff the user came for; the filter panel becomes secondary, available to refine and re-run. This is a two-stage hierarchy by design (CONTEXT.md's "não é um afterthought, é o ponto de entrada principal"), not an oversight — nothing about the existing page's own hierarchy (h1, contract-status chips, StatTiles, ColumnBarChart, ContractsTable) changes.
 
 **1. Filter panel — position and mechanics**
 Insert directly after the existing subtitle block (`reports-view.tsx` line 138, "Uma visão geral da carteira...") and before the existing filter card (line 142 `<div className="flex flex-col gap-3 rounded-2xl border...">`). A new, separate component (e.g. `FiltroRelatorioFinanceiro`, sibling file to `filtro-parcelas.tsx` but under `components/reports/`) — never import or move `FiltroParcelas` itself. Mirror its mechanics exactly:
@@ -159,11 +163,11 @@ No third-party registries declared or needed for this phase.
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: FLAG (no explicit focal-point statement) — fixed: hierarchy paragraph added to Layout & Component Contract
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: BLOCK (5 weights counted without explicit inherited-row framing) — fixed: table restructured with ⚠ inherited rows for 500/700, verified both are verbatim reuse of `FiltroParcelas`'/`FilterChip`'s already-shipped classes on the same page (`filtro-parcelas.tsx:83`, `reports-view.tsx:51`), this phase's own new elements use only 400/600
+- [x] Dimension 5 Spacing: BLOCK (`gap-1.5`/`p-5` flagged as off-grid) — fixed: both restructured as explicit ⚠ inherited rows, verified against source (`contracts-table.tsx:15`, `column-bar-chart.tsx:15`, `filtro-parcelas.tsx:115`) as pre-existing, already-shipped values, not new inventions
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** APPROVED (gsd-ui-checker, 2026-08-20, after orchestrator resolution of 2 BLOCKs + 1 FLAG) — both BLOCKs stemmed from the same root cause (verbatim reuse of already-shipped sibling-component classes on the same page, initially framed as narrative justification rather than explicit inherited-row markers); resolved using the same ⚠-row convention already established in `06.2-UI-SPEC.md` and `07-UI-SPEC.md` for identical situations, with every citation independently re-verified against source before merging
