@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 7
-current_phase_name: conciliacao-e-destrava-rastreada
+current_phase_name: concilia-o-e-destrava-rastreada
 status: executing
-stopped_at: Phase 7 UI-SPEC aprovado
-last_updated: "2026-08-20T01:00:00.000Z"
-last_activity: 2026-08-19
-last_activity_desc: Phase 06.2 concluída — todos os 6 critérios de sucesso e VIDA-01..06 completos, verificados em produção; dois bugs de fuso horário (Cuiabá vs UTC) encontrados e corrigidos no checkpoint final
+stopped_at: Plano 07-01 executado (Conciliar + trava de escrita); plano 07-02 (Destravar) ainda não iniciado
+last_updated: "2026-08-20T02:12:00.000Z"
+last_activity: 2026-08-20
+last_activity_desc: "Plano 07-01 concluído: conciliarParcelaAction (UPDATE condicionado a status='paga'), botão Conciliar na tabela sem diálogo, ConciliarFalhaToast, e exigirParcelaNaoConciliada travando registrarPagamentoAction/ajustarParcelaAction sobre parcela conciliada. CONCIL-01/CONCIL-02 completos. Verificação humana em produção (badge, corrida entre abas, mensagem no diálogo) ainda pendente — ver Blockers/Concerns."
 progress:
   total_phases: 7
   completed_phases: 5
-  total_plans: 23
-  completed_plans: 23
+  total_plans: 25
+  completed_plans: 24
   percent: 71
 ---
 
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 7 — Conciliação e destrava rastreada (a planejar)
+**Current focus:** Phase 7 — Conciliação e destrava rastreada (07-01 executado, 07-02 pendente)
 
 ## Current Position
 
 Phase: 06.2 (ciclo-de-vida-do-contrato) — COMPLETE (7/7 planos)
-Phase: 7 (Conciliação e destrava rastreada) — NOT STARTED
-Status: Pronta para /gsd-plan-phase (ou discuss-phase) da Phase 7
-Last activity: 2026-08-19 — Phase 6.2 encerrada; VIDA-01..06 completos, todos os 6 critérios de sucesso confirmados em produção
+Phase: 7 (Conciliação e destrava rastreada) — EM ANDAMENTO (1/2 planos: 07-01 concluído, 07-02 pendente)
+Status: Plano 07-01 executado em worktree isolado, aguardando revisão/merge do usuário antes do plano 07-02
+Last activity: 2026-08-20 — Plano 07-01 (Conciliar + trava de escrita server-side) concluído: CONCIL-01/CONCIL-02 completos, lint/build/grep verdes; verificação humana em produção (badge, corrida entre abas, mensagem no diálogo) ainda pendente, ver Blockers/Concerns
 
 **Ordem de execução:** 4 → 5 → 6 → 7 → 8. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -72,6 +72,7 @@ Last activity: 2026-08-19 — Phase 6.2 encerrada; VIDA-01..06 completos, todos 
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 06.2-ciclo-de-vida-do-contrato P05 | 35min | 3 tasks | 6 files |
+| Phase 07-concilia-o-e-destrava-rastreada P01 | ~10min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,7 @@ Last activity: 2026-08-19 — Phase 6.2 encerrada; VIDA-01..06 completos, todos 
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-20: **Plano 07-01 concluído** (worktree isolado, `agent-a89786e00ac45bcf8`). `conciliarParcelaAction` grava `status='conciliada'`/`conciliada_em`/`conciliada_by` num único UPDATE condicionado a `.eq("status","paga")` — essa condição é a trava de corrida real de D-01, não uma leitura seguida de escrita. Botão "Conciliar" (ghost, ícone Lock) aparece só em `linha.situacao === "paga"`, sem diálogo (D-07), com `ConciliarFalhaToast` novo (cópia de `write-error-toast.tsx`, subtexto "Tente novamente." porque não é otimista). Trava adicional `exigirParcelaNaoConciliada` (CONCIL-02/D-03) chamada por `registrarPagamentoAction`/`ajustarParcelaAction` DEPOIS de `exigirParcelaVisivel` (Phase 6.2) — camada extra, não substituição. `npm run lint`/`npm run build` verdes, todas as asserções de grep do plano passaram. Commits: `0a9584f` (Task 1), `26fa42e` (Task 2). **Human-check pendente em produção** (ver Blockers) — verificação visual do badge, corrida entre abas, e mensagem inline de recusa ainda não confirmadas por humano.
 - 2026-08-19: **Phase 6.2 encerrada.** Plano 06.2-07 (rota `/arquivados` + nota contextual do Financeiro) concluído, fechando o último critério de sucesso da fase. No checkpoint final, o usuário encontrou a data de arquivamento mostrando o dia seguinte — investigação revelou um bug sistêmico pré-existente (não introduzido pela Phase 6.2): "hoje" era calculado 4 vezes no código com `new Date().getFullYear()/getMonth()/getDate()` no servidor, que em produção (Vercel) roda em UTC, não no fuso de Cuiabá (UTC-4). Das 20h à meia-noite, hora de Cuiabá, isso fazia o Financeiro mostrar "vencendo hoje" com parcelas de amanhã, classificar vencida/a_vencer um dia adiantado, e podia recusar um lançamento legítimo do mês corrente na trava de escrita. Corrigido com `hojeEmCuiaba()`/`formatInstantDate()` (`web/src/lib/kanban/format.ts`), usando `Intl.DateTimeFormat` com `timeZone: "America/Cuiaba"` — consolidando as 4 reimplementações antigas. Reconfirmado pelo usuário em produção após o deploy. **Lição registrada:** qualquer cálculo futuro de "hoje" ou "agora" no servidor deve usar `hojeEmCuiaba()`, nunca os getters de fuso local do `Date` nativo
 - 2026-08-19: Plano 06.2-06 concluído — `ArquivarContratoDialog`/`ExcluirContratoDialog` (novos, irmãos do div ordenável do dnd-kit) trazem arquivar e excluir para o card do Board. Bug real de vazamento de evento do dnd-kit (já observado uma vez neste arquivo) testado explicitamente em produção e não se repetiu — digitar espaço e selecionar texto no campo de confirmação funcionam sem iniciar arraste. Board passou a aguardar o servidor em arquivar/excluir, mantendo arraste e toggle Ativo/Inativo otimistas. VIDA-06 completo; VIDA-05 aguarda o plano 06.2-07 (aba Arquivados, ainda não construída — usuário confirmou sua ausência, como esperado)
 - 2026-08-19: Plano 06.2-04 concluído — `avaliarVisibilidadeParcela` (`web/src/lib/kanban/visibilidade.ts`) é a única implementação da regra de visibilidade, consumida pela leitura (Financeiro) e pela escrita (`registrarPagamentoAction`/`ajustarParcelaAction`). Verificado em produção com prova por SQL: inativar/reativar não altera contagem nem ids de parcela; mudar período some da tela sem apagar do banco; lançamento fora do período/com contrato inativo continua aparecendo (override D-05); tentativa de escrita numa aba desatualizada foi recusada pelo servidor com zero lançamentos gravados. VIDA-01 a VIDA-04 completos
@@ -101,6 +103,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
 ### Blockers/Concerns
 
+- **Plano 07-01 — human-check pendente.** Dois blocos `<human-check>` do plano (verificação visual em produção do botão Conciliar/badge/toast/corrida entre abas, e da recusa server-side de Pagamento/Ajustar numa parcela conciliada) ainda não foram confirmados por um humano no navegador — só as asserções automatizadas (lint/build/grep) rodaram. Consolidar com os human-checks do plano 07-02 antes de considerar a Phase 7 pronta para fechar.
 - **ROBUST-02 não verificado com login real.** O código está escrito, lintado e buildado, e segue o mesmo padrão de outras queries já funcionando no mesmo Server Component — mas o navegador embutido usado para verificação ficou instável (mesmo problema já visto durante o diagnóstico do Turnstile) e não foi possível confirmar visualmente que a tela de "acesso pendente" aparece corretamente para um usuário fora da allowlist. **Ação sugerida:** o usuário confirma manualmente, ou testa com uma conta de teste removida da allowlist. **Relevante para a v2.0:** a Phase 4 precisa provar que o RLS das tabelas novas barra quem está fora da allowlist — é uma boa oportunidade para fechar esta verificação junto.
 - **`.planning/codebase/CONCERNS.md` tem taxa de acerto baixa.** 3 de 3 achados de segurança verificados até agora eram falsos positivos. Tratar o restante como hipótese, não fato.
 - **SEC-02 depende do usuário.** Leaked Password Protection é toggle no painel do Supabase; usuário optou por adiar. Fora do escopo de fases da v2.0.
@@ -125,6 +128,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-20T01:00:00.000Z
-Stopped at: Phase 7 UI-SPEC aprovado (2 flags não-bloqueantes corrigidos pelo orquestrador). Próximo passo: /gsd-plan-phase 7
-Resume file: .planning/phases/07-concilia-o-e-destrava-rastreada/07-UI-SPEC.md
+Last session: 2026-08-20T02:12:00.000Z
+Stopped at: Plano 07-01 executado e commitado (worktree agent-a89786e00ac45bcf8). Próximo passo: revisão/merge do usuário, depois plano 07-02 (Destravar)
+Resume file: .planning/phases/07-concilia-o-e-destrava-rastreada/07-01-SUMMARY.md
