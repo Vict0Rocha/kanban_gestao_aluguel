@@ -5,16 +5,16 @@ milestone_name: Módulo Financeiro
 current_phase: 8
 current_phase_name: relatorios-financeiros
 status: complete
-stopped_at: Módulo Financeiro v2.0 completo — Phase 8 fechada após verificação humana em produção. Dois problemas novos encontrados nessa verificação abrem trabalho pós-milestone (ver Decisions).
-last_updated: "2026-08-20T15:30:00.000Z"
+stopped_at: Phase 9 context gathered
+last_updated: "2026-08-20T15:52:20.741Z"
 last_activity: 2026-08-20
 last_activity_desc: "Plano 08-01 executado (worktree agent-a21e4bc9c4e5a64a0). Relatório financeiro de 4 categorias entregue em /relatorios, npm run lint/build verdes, todas as asserções de grep do plano passaram. Módulo Financeiro v2.0: falta só a verificação humana em produção dos dois blocos human-check do plano 08-01 para fechar a milestone."
 progress:
   total_phases: 8
-  completed_phases: 8
-  total_plans: 26
-  completed_plans: 26
-  percent: 100
+  completed_phases: 7
+  total_plans: 25
+  completed_plans: 25
+  percent: 88
 ---
 
 # Project State
@@ -124,6 +124,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
 - Phase 06.1 inserted after Phase 6: Consulta financeira e geração por período — feedback do usuário após testar Phase 6 em produção (URGENT)
 - Phase 06.2 inserted after Phase 6.1: Feedback do usuario apos usar Phases 6/6.1 em producao: ativo nao escondia parcelas futuras, mudanca de datas do card nao refletia no Financeiro, e excluir card apagava historico financeiro em cascata sem trava (URGENT)
+- Phase 9 added: Integridade de datas do contrato nas parcelas — feedback do usuário testando a Phase 8 em produção; encontrou parcelas órfãs quando a data de um contrato encolhe. Reverte deliberadamente D-03 (docs/data-model.md)
 
 ## Deferred Items
 
@@ -138,6 +139,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-20T15:30:00.000Z
-Stopped at: Módulo Financeiro v2.0 fechado (Phases 4-8). Prestes a abrir Phase 9 (integridade de datas do contrato nas parcelas) via gsd-discuss-phase — usuário confirmou a ordem (Phase 9 antes de Phase 10, página dedicada de relatório).
-Resume file: None
+Last session: 2026-08-20T15:52:20.715Z
+Stopped at: Phase 9 context gathered
+Resume file: .planning/phases/09-integridade-de-datas-do-contrato-nas-parcelas/09-CONTEXT.md
