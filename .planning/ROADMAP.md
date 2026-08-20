@@ -34,6 +34,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 6.2: Ciclo de vida do contrato** (INSERTED) - Visibilidade derivada do estado do card, arquivar/desarquivar, e exclusão travada por movimentação financeira
 - [x] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
 - [x] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
+- [ ] **Phase 9: Integridade de datas do contrato nas parcelas** - Editar a data de um contrato apaga de verdade as parcelas órfãs que ficaram fora do novo período, em vez de deixá-las soltas no banco
 
 ## Phase Details
 
@@ -203,10 +204,21 @@ Plans:
 
 - [x] 08-01-PLAN.md — Painel de filtro suspenso + relatório de 4 categorias (pagas/a vencer/vencidas/conciliadas) dentro de `/relatorios`, query sem filtro de arquivado/ativo (D-05), filtros combináveis por imóvel/proprietário/período/situação
 
+### Phase 9: Integridade de datas do contrato nas parcelas
+
+**Goal:** Toda parte do sistema que gera ou mantém parcelas passa a respeitar fielmente `periodo_inicio`/`periodo_fim` do card no momento presente — editar a data de um contrato já com parcelas geradas apaga de verdade as que ficaram fora do novo período (só as sem pagamento/lançamento), e contrato sem nenhuma data gera só a parcela do mês atual
+**Requirements**: TBD (planner propõe novo prefixo — nenhum requisito de v2.0 cobre esta fase; ver 09-RESEARCH.md)
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 9 to break down)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8
+Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -217,16 +229,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8
 | 6.2. Ciclo de vida do contrato (INSERTED) | 7/7 | Complete | 2026-08-19 |
 | 7. Conciliação e destrava rastreada | 2/2 | Complete | 2026-08-20 |
 | 8. Relatórios financeiros | 1/1 | Complete | 2026-08-20 |
+| 9. Integridade de datas do contrato nas parcelas | 0/0 | Planning | - |
 
-**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código.
-
-### Phase 9: Integridade de datas do contrato nas parcelas
-
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 8
-**Plans:** 0 plans
-
-Plans:
-
-- [ ] TBD (run /gsd-plan-phase 9 to break down)
+**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phase 9 é trabalho pós-milestone (bug encontrado na verificação final da Phase 8) e ainda não tem requisitos formais — ver nota acima.
