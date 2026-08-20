@@ -11,6 +11,7 @@ import {
   deleteCardAction,
   deleteColumnAction,
   desarquivarCardAction,
+  destravarParcelaAction,
   moveCardAction,
   moveColumnAction,
   registrarPagamentoAction,
@@ -123,4 +124,8 @@ export async function ajustarParcela(
 
 export async function conciliarParcela(parcelaId: string) {
   return unwrap(conciliarParcelaAction(parcelaId))
+}
+
+export async function destravarParcela(parcelaId: string, motivo: string) {
+  return unwrap(destravarParcelaAction(parcelaId, motivo))
 }
