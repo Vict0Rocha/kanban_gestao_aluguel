@@ -1,11 +1,14 @@
 "use client"
 
 import * as React from "react"
-import { Banknote, History } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Banknote, History, Lock } from "lucide-react"
 
+import { conciliarParcela } from "@/lib/kanban/queries"
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
 import type { LinhaParcela } from "@/lib/kanban/parcelas"
 import { AjustarParcelaDialog } from "@/components/financeiro/ajustar-parcela-dialog"
+import { ConciliarFalhaToast } from "@/components/financeiro/conciliar-falha-toast"
 import { IdPill } from "@/components/financeiro/id-pill"
 import { ParcelaHistoricoSheet } from "@/components/financeiro/parcela-historico-sheet"
 import { ParcelaSituacaoBadge } from "@/components/financeiro/parcela-situacao-badge"
@@ -32,13 +35,33 @@ const VAZIO_LABEL = {
 function AcoesCell({
   linha,
   todayISO,
+  onConciliarErro,
 }: {
   linha: LinhaParcela
   todayISO: string
+  onConciliarErro: (message: string) => void
 }) {
+  const router = useRouter()
   const [dialogoAberto, setDialogoAberto] = React.useState<
     "pagamento" | "ajustar" | "historico" | null
   >(null)
+  const [conciliando, setConciliando] = React.useState(false)
+
+  const handleConciliar = async () => {
+    setConciliando(true)
+    try {
+      await conciliarParcela(linha.id)
+      router.refresh()
+    } catch (error) {
+      onConciliarErro(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível conciliar a parcela. Tente novamente."
+      )
+    } finally {
+      setConciliando(false)
+    }
+  }
 
   return (
     <TableCell className="flex items-center gap-2">
@@ -57,6 +80,17 @@ function AcoesCell({
       >
         Ajustar
       </Button>
+      {linha.situacao === "paga" ? (
+        <Button
+          variant="ghost"
+          aria-label={`Conciliar parcela — ${linha.endereco}`}
+          disabled={conciliando}
+          onClick={handleConciliar}
+        >
+          <Lock className="size-4" />
+          {conciliando ? "Conciliando..." : "Conciliar"}
+        </Button>
+      ) : null}
       <Button
         variant="ghost"
         size="icon"
@@ -112,6 +146,8 @@ export function ParcelasTable({
    * As três mensagens do mapa ficam inalteradas. */
   mensagemVazia?: string
 }) {
+  const [conciliarErro, setConciliarErro] = React.useState<string | null>(null)
+
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       {erro ? (
@@ -161,11 +197,19 @@ export function ParcelasTable({
                   <TableCell>
                     <ParcelaSituacaoBadge situacao={linha.situacao} />
                   </TableCell>
-                  <AcoesCell linha={linha} todayISO={todayISO} />
+                  <AcoesCell
+                    linha={linha}
+                    todayISO={todayISO}
+                    onConciliarErro={setConciliarErro}
+                  />
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          <ConciliarFalhaToast
+            message={conciliarErro}
+            onDismiss={() => setConciliarErro(null)}
+          />
         </div>
       )}
     </div>

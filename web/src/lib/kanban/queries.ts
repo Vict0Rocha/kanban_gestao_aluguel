@@ -4,6 +4,7 @@ import {
   ajustarParcelaAction,
   arquivarCardAction,
   cardTemLancamentoAction,
+  conciliarParcelaAction,
   contarParcelasEmAbertoAction,
   createCardAction,
   createColumnAction,
@@ -118,4 +119,8 @@ export async function ajustarParcela(
   observacao: string | null
 ) {
   return unwrap(ajustarParcelaAction(parcelaId, tipo, valor, observacao))
+}
+
+export async function conciliarParcela(parcelaId: string) {
+  return unwrap(conciliarParcelaAction(parcelaId))
 }

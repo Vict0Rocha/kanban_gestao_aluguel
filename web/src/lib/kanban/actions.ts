@@ -948,3 +948,47 @@ export async function ajustarParcelaAction(
 
   return { ok: true, data: undefined }
 }
+
+/**
+ * CONCIL-01/D-01/D-02/D-07: conciliar é um clique direto, sem diálogo — o
+ * UPDATE condicionado a `status = "paga"` É a trava de corrida (D-01),
+ * não uma leitura seguida de escrita. Se a parcela não estiver em `paga`
+ * (já conciliada, aberta, parcial, ou some por RLS), o `.eq` devolve zero
+ * linhas e cai no mesmo `semLinhas` que qualquer outra trava de corrida
+ * do arquivo. `conciliada_em`/`conciliada_by` vêm exclusivamente da sessão
+ * do servidor (D-02), mesmo padrão de `created_by` em `createCardAction`.
+ *
+ * Deliberadamente NÃO chama `exigirParcelaVisivel` aqui — D-09 é
+ * explícito: conciliar continua disponível independente de
+ * ativo/inativo/arquivado, e uma parcela `paga` sempre tem um lançamento
+ * `pagamento`, então a visibilidade já é garantida por outro caminho
+ * (`avaliarVisibilidadeParcela`, que olha `temLancamento`). Não
+ * "consertar" adicionando essa chamada depois.
+ */
+export async function conciliarParcelaAction(parcelaId: string): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(parcelaId, "Parcela")
+  if (invalido) return { ok: false, error: invalido }
+
+  const { data, error } = await sessao.supabase
+    .from("parcelas")
+    .update({
+      status: "conciliada",
+      conciliada_em: new Date().toISOString(),
+      conciliada_by: sessao.user.id,
+    })
+    .eq("id", parcelaId)
+    .eq("status", "paga")
+    .select("id")
+
+  if (error) {
+    console.error("conciliarParcela", error)
+    return { ok: false, error: erroDoBanco(error.code, "conciliar a parcela") }
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: semLinhas("conciliar a parcela") }
+  }
+  return { ok: true, data: undefined }
+}
