@@ -5,8 +5,8 @@ milestone_name: Módulo Financeiro
 current_phase: 8
 current_phase_name: relatorios-financeiros
 status: executing
-stopped_at: "Phase 7 completa (2/2 planos, 4/4 critérios de sucesso) — todos os quatro human-checks confirmados em produção, incluindo o cenário de aba desatualizada para CONCIL-02. Pronta para planejar a Phase 8."
-last_updated: "2026-08-20T13:00:00.000Z"
+stopped_at: "Phase 8 contexto capturado (08-CONTEXT.md)"
+last_updated: "2026-08-20T13:20:00.000Z"
 last_activity: 2026-08-20
 last_activity_desc: "Phase 7 encerrada. Os quatro blocos de human-check (Conciliar/badge/toast/corrida entre abas, recusa server-side com o cenário de aba desatualizada, Destravar com motivo obrigatório, histórico de destravas) confirmados pelo usuário em produção. CONCIL-01..04 completos. Módulo Financeiro v2.0: só falta a Phase 8 (Relatórios financeiros)."
 progress:
@@ -131,6 +131,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-20T13:00:00.000Z
-Stopped at: Phase 7 completa e verificada em produção. Próximo passo: /gsd-discuss-phase 8 (Relatórios financeiros)
-Resume file: None
+Last session: 2026-08-20T13:20:00.000Z
+Stopped at: Phase 8 contexto capturado (08-CONTEXT.md). Próximo passo: /gsd-ui-phase 8
+Resume file: .planning/phases/08-relat-rios-financeiros/08-CONTEXT.md
