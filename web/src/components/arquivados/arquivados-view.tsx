@@ -4,7 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { ArchiveRestore } from "lucide-react"
 
-import { formatCurrency, formatDate } from "@/lib/kanban/format"
+import { formatCurrency, formatInstantDate } from "@/lib/kanban/format"
 import type { Card } from "@/lib/kanban/types"
 import { desarquivarCard } from "@/lib/kanban/queries"
 import { IdPill } from "@/components/financeiro/id-pill"
@@ -22,9 +22,9 @@ export type ContratoArquivado = Pick<
   Card,
   "id" | "numero" | "endereco" | "proprietario" | "inquilino" | "valor"
 > & {
-  /** `timestamptz`. Cortado para os 10 primeiros caracteres antes de
-   * `formatDate` — ver célula "Arquivado em" abaixo. Nunca passa pelo
-   * construtor `Date` com a string bruta. */
+  /** `timestamptz`. Renderizado via `formatInstantDate` (fuso de Cuiabá),
+   * nunca cortado para os 10 primeiros caracteres — isso devolveria a data
+   * em UTC, não em Cuiabá. Ver célula "Arquivado em" abaixo. */
   arquivado_em: string
 }
 
@@ -131,7 +131,7 @@ export function ArquivadosView({
                           {formatCurrency(contrato.valor)}
                         </TableCell>
                         <TableCell className="tabular-nums text-muted-foreground">
-                          {formatDate(contrato.arquivado_em.slice(0, 10))}
+                          {formatInstantDate(contrato.arquivado_em)}
                         </TableCell>
                         <TableCell>
                           <Button
