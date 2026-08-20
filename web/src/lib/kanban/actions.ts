@@ -783,6 +783,38 @@ async function exigirParcelaVisivel(
   return resultado.visivel ? null : MENSAGEM_PARCELA_OCULTA[resultado.motivo]
 }
 
+const MENSAGEM_PARCELA_CONCILIADA =
+  "Esta parcela está conciliada e travada contra alteração. Destrave antes de registrar pagamento ou lançar um ajuste."
+
+/**
+ * CONCIL-02/D-03: trava ADICIONAL à de `exigirParcelaVisivel` acima — não a
+ * substitui, não reaproveita a mesma consulta, roda depois dela. Uma
+ * parcela pode estar simultaneamente "visível" pela regra de D-01/6.2 e
+ * "travada" por esta regra; as duas checagens precisam passar para a
+ * escrita seguir. Relê `status` direto do banco, nunca confia no que a
+ * tela mandou (mesma disciplina da trava de visibilidade).
+ */
+async function exigirParcelaNaoConciliada(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  parcelaId: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("parcelas")
+    .select("status")
+    .eq("id", parcelaId)
+    .maybeSingle()
+
+  if (error || !data) {
+    console.error("trava de conciliada da parcela (leitura)", error)
+    return MENSAGEM_PARCELA_OCULTA.indeterminado
+  }
+
+  if (data.status === "conciliada") {
+    return MENSAGEM_PARCELA_CONCILIADA
+  }
+  return null
+}
+
 /**
  * Única função que `registrarPagamentoAction`/`ajustarParcelaAction` usam
  * para decidir o novo status — nenhum dos dois recalcula por conta própria
@@ -857,6 +889,12 @@ export async function registrarPagamentoAction(
   const recusa = await exigirParcelaVisivel(sessao.supabase, parcelaId)
   if (recusa) return { ok: false, error: recusa }
 
+  // CONCIL-02/D-03: trava ADICIONAL à de visibilidade acima — não a
+  // substitui. Uma parcela `conciliada` já é visível (tem lançamento), mas
+  // fica travada contra novo lançamento até ser destravada.
+  const recusaConciliada = await exigirParcelaNaoConciliada(sessao.supabase, parcelaId)
+  if (recusaConciliada) return { ok: false, error: recusaConciliada }
+
   const { data: inserido, error } = await sessao.supabase
     .from("parcela_lancamentos")
     .insert({
@@ -908,6 +946,12 @@ export async function ajustarParcelaAction(
   // fluxo — depois da validação de campos, antes do insert.
   const recusa = await exigirParcelaVisivel(sessao.supabase, parcelaId)
   if (recusa) return { ok: false, error: recusa }
+
+  // CONCIL-02/D-03: trava ADICIONAL à de visibilidade acima — não a
+  // substitui. Uma parcela `conciliada` já é visível (tem lançamento), mas
+  // fica travada contra novo lançamento até ser destravada.
+  const recusaConciliada = await exigirParcelaNaoConciliada(sessao.supabase, parcelaId)
+  if (recusaConciliada) return { ok: false, error: recusaConciliada }
 
   // Sem campo `data` (A-04, fica no default current_date do banco).
   const { data: inserido, error } = await sessao.supabase
