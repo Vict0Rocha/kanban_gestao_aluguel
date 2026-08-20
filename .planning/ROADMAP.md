@@ -139,12 +139,12 @@ Plans:
 **Why inserted**: Feedback do usuário depois de usar as Phases 6/6.1 em produção (2026-08-19). Três problemas concretos apareceram: (a) marcar um contrato como inativo não impedia parcelas futuras de continuarem visíveis e editáveis; (b) mudar as datas de um card não refletia no Financeiro, que ficava mostrando parcelas fora do período vigente; (c) excluir um card apaga silenciosamente todo o histórico financeiro via `on delete cascade`, sem nenhuma confirmação — risco real de perda de dado em produção.
 **Success Criteria** (what must be TRUE):
 
-  1. Uma única regra de visibilidade derivada, calculada na leitura, governa toda parcela: aparece se tiver qualquer lançamento (nunca some), ou se a competência estiver dentro do período atual do card **e** (contrato ativo **ou** competência ≤ mês atual)
-  2. Contrato marcado como inativo deixa de exibir parcelas de meses futuros; a do mês atual e as de meses passados continuam visíveis e operáveis; reativar devolve tudo, sem regenerar nada
-  3. Mudar `periodo_inicio`/`periodo_fim` de um card faz o Financeiro refletir o novo período na carga seguinte — parcelas que saíram do período somem, **exceto** as que já têm lançamento
-  4. Toda parcela que não está visível pela regra acima também é **recusada no servidor** para qualquer escrita (baixa, ajuste) — esconder na tela não é a trava, é só a consequência dela
-  5. Arquivar um contrato o remove de Board, Financeiro, Relatórios e alertas sem apagar nada; uma aba "Arquivados" lista os arquivados e permite desarquivar, devolvendo o contrato ao funcionamento normal
-  6. Excluir um contrato exige confirmação digitada (`excluir <id>`) e é **bloqueado no servidor** se existir qualquer lançamento financeiro ligado a ele — nesse caso o sistema oferece arquivar no lugar
+  1. ✓ Uma única regra de visibilidade derivada, calculada na leitura, governa toda parcela: aparece se tiver qualquer lançamento (nunca some), ou se a competência estiver dentro do período atual do card **e** (contrato ativo **ou** competência ≤ mês atual) — `avaliarVisibilidadeParcela` (`visibilidade.ts`), confirmado em produção com prova por SQL (06.2-04)
+  2. ✓ Contrato marcado como inativo deixa de exibir parcelas de meses futuros; a do mês atual e as de meses passados continuam visíveis e operáveis; reativar devolve tudo, sem regenerar nada — confirmado por SQL (mesmos ids de parcela antes/depois do ciclo inativar/reativar, 06.2-04)
+  3. ✓ Mudar `periodo_inicio`/`periodo_fim` de um card faz o Financeiro refletir o novo período na carga seguinte — parcelas que saíram do período somem, **exceto** as que já têm lançamento — confirmado em produção, incluindo o caso do lançamento vencendo a regra fora do período (06.2-04)
+  4. ✓ Toda parcela que não está visível pela regra acima também é **recusada no servidor** para qualquer escrita (baixa, ajuste) — esconder na tela não é a trava, é só a consequência dela — `exigirParcelaVisivel`, confirmado por SQL que uma tentativa recusada não grava nada (06.2-04)
+  5. ✓ Arquivar um contrato o remove de Board, Financeiro, Relatórios e alertas sem apagar nada; uma aba "Arquivados" lista os arquivados e permite desarquivar, devolvendo o contrato ao funcionamento normal — botão no card (06.2-06) + rota `/arquivados` (06.2-07), confirmado em produção com prova por SQL de que nada é apagado nem regenerado
+  6. ✓ Excluir um contrato exige confirmação digitada (`excluir <id>`) e é **bloqueado no servidor** se existir qualquer lançamento financeiro ligado a ele — nesse caso o sistema oferece arquivar no lugar — trava server-side + trigger de banco (06.2-05), diálogo de confirmação com variante bloqueada (06.2-06), confirmado em produção
 
 **Pilares cruzados**: o critério 4 é o que separa esta fase de um ajuste cosmético — a regra de visibilidade tem que existir em um único lugar, consumida tanto pela leitura quanto pela validação de escrita, senão as duas divergem com o tempo. O critério 6 corrige um risco que já existe hoje em produção (`cards → parcelas → parcela_lancamentos` em cascata). A trava de exclusão por "qualquer lançamento" já cobre automaticamente a conciliação da Phase 7, sem precisar de código novo depois.
 **Plans**: 7 plans
@@ -157,8 +157,8 @@ Plans:
 - [x] 06.2-03-PLAN.md — Aplicar a migração em produção (checkpoint:decision) e documentar em `docs/data-model.md`
 - [x] 06.2-04-PLAN.md — A regra única de visibilidade (`visibilidade.ts`), consumida pela leitura do Financeiro e pela trava de escrita de pagamento/ajuste
 - [x] 06.2-05-PLAN.md — Trava de exclusão no servidor, Server Actions de arquivar/desarquivar/contar pendências, auditoria de call sites de `cards`
-- [ ] 06.2-06-PLAN.md — Diálogos de arquivar/excluir no card do Board, fragmento no lugar do envoltório, botão de arquivar, board não-otimista
-- [ ] 06.2-07-PLAN.md — Rota `/arquivados` com desarquivamento, e a nota explicativa do Financeiro no filtro por ID
+- [x] 06.2-06-PLAN.md — Diálogos de arquivar/excluir no card do Board, fragmento no lugar do envoltório, botão de arquivar, board não-otimista
+- [x] 06.2-07-PLAN.md — Rota `/arquivados` com desarquivamento, e a nota explicativa do Financeiro no filtro por ID
 
 ### Phase 7: Conciliação e destrava rastreada
 
@@ -211,8 +211,8 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8
 | 5. Aba Financeiro com parcelas automáticas | 3/3 | Complete | 2026-08-17 |
 | 6. Baixa e ajustes de parcela | 2/2 | Complete | 2026-08-18 |
 | 6.1. Consulta financeira e geração por período (INSERTED) | 6/6 | Complete | 2026-08-18 |
-| 6.2. Ciclo de vida do contrato (INSERTED) | 0/7 | Not started | - |
+| 6.2. Ciclo de vida do contrato (INSERTED) | 7/7 | Complete | 2026-08-19 |
 | 7. Conciliação e destrava rastreada | 0/TBD | Not started | - |
 | 8. Relatórios financeiros | 0/TBD | Not started | - |
 
-**Cobertura de requisitos:** 33 de 33 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 1 = 33; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código.
+**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código.

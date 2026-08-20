@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 06.2
-current_phase_name: ciclo-de-vida-do-contrato
+current_phase: 7
+current_phase_name: conciliacao-e-destrava-rastreada
 status: executing
-stopped_at: Phase 6.2 plano 06 concluído (diálogos de arquivar/excluir no card)
-last_updated: "2026-08-19T23:45:00.000Z"
+stopped_at: Phase 6.2 completa (7/7 planos) — pronta para planejar a Phase 7
+last_updated: "2026-08-20T00:15:00.000Z"
 last_activity: 2026-08-19
-last_activity_desc: Phase 06.2 plano 06 (diálogos de arquivar/excluir) concluído e verificado em produção, avançar para 06.2-07
+last_activity_desc: Phase 06.2 concluída — todos os 6 critérios de sucesso e VIDA-01..06 completos, verificados em produção; dois bugs de fuso horário (Cuiabá vs UTC) encontrados e corrigidos no checkpoint final
 progress:
   total_phases: 7
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 23
-  completed_plans: 21
-  percent: 65
+  completed_plans: 23
+  percent: 71
 ---
 
 # Project State
@@ -24,14 +24,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 06.2 — ciclo-de-vida-do-contrato
+**Current focus:** Phase 7 — Conciliação e destrava rastreada (a planejar)
 
 ## Current Position
 
-Phase: 06.2 (ciclo-de-vida-do-contrato) — EXECUTING
-Plan: 7 of 7
-Status: Ready to execute
-Last activity: 2026-08-19 — plano 06.2-06 (diálogos de arquivar/excluir no card) concluído e verificado em produção
+Phase: 06.2 (ciclo-de-vida-do-contrato) — COMPLETE (7/7 planos)
+Phase: 7 (Conciliação e destrava rastreada) — NOT STARTED
+Status: Pronta para /gsd-plan-phase (ou discuss-phase) da Phase 7
+Last activity: 2026-08-19 — Phase 6.2 encerrada; VIDA-01..06 completos, todos os 6 critérios de sucesso confirmados em produção
 
 **Ordem de execução:** 4 → 5 → 6 → 7 → 8. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -79,6 +79,7 @@ Last activity: 2026-08-19 — plano 06.2-06 (diálogos de arquivar/excluir no ca
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-19: **Phase 6.2 encerrada.** Plano 06.2-07 (rota `/arquivados` + nota contextual do Financeiro) concluído, fechando o último critério de sucesso da fase. No checkpoint final, o usuário encontrou a data de arquivamento mostrando o dia seguinte — investigação revelou um bug sistêmico pré-existente (não introduzido pela Phase 6.2): "hoje" era calculado 4 vezes no código com `new Date().getFullYear()/getMonth()/getDate()` no servidor, que em produção (Vercel) roda em UTC, não no fuso de Cuiabá (UTC-4). Das 20h à meia-noite, hora de Cuiabá, isso fazia o Financeiro mostrar "vencendo hoje" com parcelas de amanhã, classificar vencida/a_vencer um dia adiantado, e podia recusar um lançamento legítimo do mês corrente na trava de escrita. Corrigido com `hojeEmCuiaba()`/`formatInstantDate()` (`web/src/lib/kanban/format.ts`), usando `Intl.DateTimeFormat` com `timeZone: "America/Cuiaba"` — consolidando as 4 reimplementações antigas. Reconfirmado pelo usuário em produção após o deploy. **Lição registrada:** qualquer cálculo futuro de "hoje" ou "agora" no servidor deve usar `hojeEmCuiaba()`, nunca os getters de fuso local do `Date` nativo
 - 2026-08-19: Plano 06.2-06 concluído — `ArquivarContratoDialog`/`ExcluirContratoDialog` (novos, irmãos do div ordenável do dnd-kit) trazem arquivar e excluir para o card do Board. Bug real de vazamento de evento do dnd-kit (já observado uma vez neste arquivo) testado explicitamente em produção e não se repetiu — digitar espaço e selecionar texto no campo de confirmação funcionam sem iniciar arraste. Board passou a aguardar o servidor em arquivar/excluir, mantendo arraste e toggle Ativo/Inativo otimistas. VIDA-06 completo; VIDA-05 aguarda o plano 06.2-07 (aba Arquivados, ainda não construída — usuário confirmou sua ausência, como esperado)
 - 2026-08-19: Plano 06.2-04 concluído — `avaliarVisibilidadeParcela` (`web/src/lib/kanban/visibilidade.ts`) é a única implementação da regra de visibilidade, consumida pela leitura (Financeiro) e pela escrita (`registrarPagamentoAction`/`ajustarParcelaAction`). Verificado em produção com prova por SQL: inativar/reativar não altera contagem nem ids de parcela; mudar período some da tela sem apagar do banco; lançamento fora do período/com contrato inativo continua aparecendo (override D-05); tentativa de escrita numa aba desatualizada foi recusada pelo servidor com zero lançamentos gravados. VIDA-01 a VIDA-04 completos
 - 2026-08-19: Plano 06.2-03 aplicado em produção (`aplicar-agora`) — `cards.arquivado_em` e o trigger `cards_impede_exclusao_com_lancamento` estão vivos, bloqueando exclusão de card/coluna com lançamento financeiro. Verificação pós-push completa (coluna, trigger, os três lados do backstop, policies, Board/Financeiro/Relatórios) contra produção real, com prova por SQL — não pela tela — de que dado com lançamento sobrevive a uma tentativa de exclusão recusada
@@ -124,6 +125,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-19T22:46:37.756Z
-Stopped at: Completed 06.2-05-PLAN.md
+Last session: 2026-08-20T00:15:00.000Z
+Stopped at: Phase 6.2 completa (7/7 planos, 6/6 critérios de sucesso). Próximo passo: planejar a Phase 7 (Conciliação e destrava rastreada)
 Resume file: None
