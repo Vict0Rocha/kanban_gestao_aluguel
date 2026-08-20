@@ -5,8 +5,8 @@ milestone_name: Módulo Financeiro
 current_phase: 7
 current_phase_name: conciliacao-e-destrava-rastreada
 status: executing
-stopped_at: Phase 7 contexto capturado
-last_updated: "2026-08-20T00:30:00.000Z"
+stopped_at: Phase 7 UI-SPEC aprovado
+last_updated: "2026-08-20T01:00:00.000Z"
 last_activity: 2026-08-19
 last_activity_desc: Phase 06.2 concluída — todos os 6 critérios de sucesso e VIDA-01..06 completos, verificados em produção; dois bugs de fuso horário (Cuiabá vs UTC) encontrados e corrigidos no checkpoint final
 progress:
@@ -125,6 +125,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-20T00:30:00.000Z
-Stopped at: Phase 7 contexto capturado (07-CONTEXT.md). Próximo passo: /gsd-plan-phase 7
-Resume file: .planning/phases/07-concilia-o-e-destrava-rastreada/07-CONTEXT.md
+Last session: 2026-08-20T01:00:00.000Z
+Stopped at: Phase 7 UI-SPEC aprovado (2 flags não-bloqueantes corrigidos pelo orquestrador). Próximo passo: /gsd-plan-phase 7
+Resume file: .planning/phases/07-concilia-o-e-destrava-rastreada/07-UI-SPEC.md
