@@ -2,13 +2,14 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { Banknote, History, Lock } from "lucide-react"
+import { Banknote, History, Lock, Unlock } from "lucide-react"
 
 import { conciliarParcela } from "@/lib/kanban/queries"
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
 import type { LinhaParcela } from "@/lib/kanban/parcelas"
 import { AjustarParcelaDialog } from "@/components/financeiro/ajustar-parcela-dialog"
 import { ConciliarFalhaToast } from "@/components/financeiro/conciliar-falha-toast"
+import { DestravarParcelaDialog } from "@/components/financeiro/destravar-parcela-dialog"
 import { IdPill } from "@/components/financeiro/id-pill"
 import { ParcelaHistoricoSheet } from "@/components/financeiro/parcela-historico-sheet"
 import { ParcelaSituacaoBadge } from "@/components/financeiro/parcela-situacao-badge"
@@ -43,7 +44,7 @@ function AcoesCell({
 }) {
   const router = useRouter()
   const [dialogoAberto, setDialogoAberto] = React.useState<
-    "pagamento" | "ajustar" | "historico" | null
+    "pagamento" | "ajustar" | "historico" | "destravar" | null
   >(null)
   const [conciliando, setConciliando] = React.useState(false)
 
@@ -65,40 +66,63 @@ function AcoesCell({
 
   return (
     <TableCell className="flex items-center gap-2">
-      <Button
-        variant="outline"
-        aria-label={`Registrar pagamento — ${linha.endereco}`}
-        onClick={() => setDialogoAberto("pagamento")}
-      >
-        <Banknote className="size-4" />
-        Pagamento
-      </Button>
-      <Button
-        variant="ghost"
-        aria-label={`Ajustar valor — ${linha.endereco}`}
-        onClick={() => setDialogoAberto("ajustar")}
-      >
-        Ajustar
-      </Button>
-      {linha.situacao === "paga" ? (
-        <Button
-          variant="ghost"
-          aria-label={`Conciliar parcela — ${linha.endereco}`}
-          disabled={conciliando}
-          onClick={handleConciliar}
-        >
-          <Lock className="size-4" />
-          {conciliando ? "Conciliando..." : "Conciliar"}
-        </Button>
-      ) : null}
-      <Button
-        variant="ghost"
-        size="icon"
-        aria-label={`Ver histórico de lançamentos — ${linha.endereco}`}
-        onClick={() => setDialogoAberto("historico")}
-      >
-        <History className="size-4" />
-      </Button>
+      {linha.situacao === "conciliada" ? (
+        <>
+          <Button
+            variant="outline"
+            aria-label={`Destravar parcela — ${linha.endereco}`}
+            onClick={() => setDialogoAberto("destravar")}
+          >
+            <Unlock className="size-4" />
+            Destravar
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={`Ver histórico de lançamentos — ${linha.endereco}`}
+            onClick={() => setDialogoAberto("historico")}
+          >
+            <History className="size-4" />
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button
+            variant="outline"
+            aria-label={`Registrar pagamento — ${linha.endereco}`}
+            onClick={() => setDialogoAberto("pagamento")}
+          >
+            <Banknote className="size-4" />
+            Pagamento
+          </Button>
+          <Button
+            variant="ghost"
+            aria-label={`Ajustar valor — ${linha.endereco}`}
+            onClick={() => setDialogoAberto("ajustar")}
+          >
+            Ajustar
+          </Button>
+          {linha.situacao === "paga" ? (
+            <Button
+              variant="ghost"
+              aria-label={`Conciliar parcela — ${linha.endereco}`}
+              disabled={conciliando}
+              onClick={handleConciliar}
+            >
+              <Lock className="size-4" />
+              {conciliando ? "Conciliando..." : "Conciliar"}
+            </Button>
+          ) : null}
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={`Ver histórico de lançamentos — ${linha.endereco}`}
+            onClick={() => setDialogoAberto("historico")}
+          >
+            <History className="size-4" />
+          </Button>
+        </>
+      )}
       <RegistrarPagamentoDialog
         parcelaId={linha.id}
         endereco={linha.endereco}
@@ -124,6 +148,14 @@ function AcoesCell({
         lancamentos={linha.lancamentos}
         open={dialogoAberto === "historico"}
         onOpenChange={(open) => setDialogoAberto(open ? "historico" : null)}
+      />
+      <DestravarParcelaDialog
+        parcelaId={linha.id}
+        endereco={linha.endereco}
+        competencia={linha.competencia}
+        valorPago={linha.valorPago}
+        open={dialogoAberto === "destravar"}
+        onOpenChange={(open) => setDialogoAberto(open ? "destravar" : null)}
       />
     </TableCell>
   )
