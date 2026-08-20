@@ -1,7 +1,8 @@
 ---
 phase: 9
 slug: integridade-de-datas-do-contrato-nas-parcelas
-status: draft
+status: approved
+reviewed_at: 2026-08-20
 shadcn_initialized: true
 preset: base-nova (baseColor neutral, cssVariables true, iconLibrary lucide)
 created: 2026-08-20
@@ -32,6 +33,8 @@ The D-08 cleanup of the 27 existing orphaned parcelas is a one-time SQL Editor s
 | Component library | Radix primitives via shadcn (`AlertDialog`, `Button`, `Input`, `Label`) — all already installed, none new for this phase |
 | Icon library | lucide-react (already in use — e.g. `TriangleAlert` in `arquivar-contrato-dialog.tsx`); this phase's dialog uses **no icon**, matching `excluir-contrato-dialog.tsx`'s plain-text precedent for an irreversible-delete confirmation |
 | Font | Body: Plus Jakarta Sans (`--font-body`) · Heading: Sora (`--font-heading-family`) — both already wired in `web/src/app/layout.tsx`, unchanged by this phase |
+
+**Focal point:** the destructive `"Confirmar e salvar"` button (`AlertDialogAction variant="destructive"`) is the dialog's single visual anchor — same convention already established by `excluir-contrato-dialog.tsx`. Title and description are plain-weight supporting text; nothing else in the dialog competes for attention.
 
 ---
 
@@ -139,11 +142,11 @@ No new shadcn components needed — `AlertDialog`, `AlertDialogAction`, `AlertDi
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS (FLAG resolved — focal-point statement added to Design System section)
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved — 2026-08-20
