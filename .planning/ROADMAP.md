@@ -173,12 +173,13 @@ Plans:
   4. Depois de destravada, a parcela volta a aceitar lançamentos, e a própria parcela mostra o histórico de destravas — quem destravou, quando e o motivo de cada uma
 
 **Pilares cruzados**: a obrigatoriedade do motivo é garantida pela CHECK constraint da Phase 4, não só pelo formulário; a recusa de alterar parcela conciliada usa a mesma sanitização de erro validada na Phase 6
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
 
 Plans:
 
-- [ ] 07-01: TBD
+- [ ] 07-01-PLAN.md — Conciliar em um clique (Server Action + botão + toast) e a trava de escrita server-side numa parcela conciliada
+- [ ] 07-02-PLAN.md — Destravar com motivo obrigatório (Server Action + diálogo) e o histórico de destravas em ParcelaHistoricoSheet
 
 ### Phase 8: Relatórios financeiros
 
