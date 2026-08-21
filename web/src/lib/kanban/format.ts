@@ -69,3 +69,24 @@ const instantDateFormatter = new Intl.DateTimeFormat("pt-BR", {
 export function formatInstantDate(value: string) {
   return instantDateFormatter.format(new Date(value))
 }
+
+const instantDateTimeFormatter = new Intl.DateTimeFormat("pt-BR", {
+  timeZone: "America/Cuiaba",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+})
+
+/**
+ * Igual a `formatInstantDate`, mas com data+hora juntos num único texto
+ * pt-BR (ex. "21/08/2026, 14:32") — usado pelo cabeçalho do PDF exportado
+ * ("Gerado em {data} às {hora}"), nunca por cálculo de "hoje" (isso continua
+ * sendo `hojeEmCuiaba()`). Mesma segurança de `new Date(value)` que
+ * `formatInstantDate` documenta: a string de entrada é um instante
+ * `timestamptz`/ISO com offset explícito, não uma data pura.
+ */
+export function formatInstantDateTime(value: string) {
+  return instantDateTimeFormatter.format(new Date(value))
+}
