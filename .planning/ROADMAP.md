@@ -272,9 +272,17 @@ Plans:
 
 ### Phase 12: Cancelamento de ajustes
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** O gestor consegue desfazer um acréscimo ou desconto lançado por engano, com o mesmo mecanismo de cancelamento já usado para pagamento (Phase 11) — apagar de verdade, sem permitir nenhuma alteração numa parcela conciliada
+**Requirements**: CANAJU-01, CANAJU-02, CANAJU-03, CANAJU-04 (trabalho pós-milestone — ver 12-CONTEXT.md)
 **Depends on:** Phase 11
+**Success Criteria** (what must be TRUE):
+
+  1. Existe um botão "Cancelar" ao lado de cada lançamento `tipo='acrescimo'` ou `tipo='desconto'` no histórico de lançamentos da parcela
+  2. Clicar "Cancelar" abre confirmação simples mostrando o valor e o tipo do ajuste; confirmar apaga de verdade aquele lançamento do banco
+  3. Depois de apagar, o status da parcela é recalculado a partir do que resta no livro-razão (nunca hardcoded)
+  4. Uma parcela conciliada nunca aceita cancelamento de ajuste nenhum
+  5. `tipo='destrava'` continua sem botão de cancelar (fora de escopo, D-01 de 12-CONTEXT.md)
+
 **Plans:** 0 plans
 
 Plans:

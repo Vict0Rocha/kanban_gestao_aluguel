@@ -106,6 +106,15 @@ Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuár
 - [x] **CANPAG-03**: Depois de apagar, o status da parcela é recalculado a partir do que resta no livro-razão (nunca hardcoded para "aberta") — pode voltar para "aberta" ou "parcial" dependendo do que sobrar
 - [x] **CANPAG-04**: Uma parcela conciliada nunca aceita cancelamento de lançamento nenhum — mesma trava já usada por Pagamento/Ajustar, aplicada no servidor
 
+### CANAJU — Cancelamento de ajustes (pós-milestone, Phase 12)
+
+Fora do conjunto de 39 requisitos da v2.0 — extensão pedida pelo usuário logo após a Phase 11 fechar: mesmo mecanismo de cancelamento, agora para lançamentos `tipo='acrescimo'` e `tipo='desconto'`. Decisões registradas em `.planning/phases/12-cancelamento-de-ajustes/12-CONTEXT.md`. `tipo='destrava'` fica deliberadamente fora (D-01 daquele documento).
+
+- [ ] **CANAJU-01**: Existe um botão "Cancelar" ao lado de cada lançamento `tipo='acrescimo'` ou `tipo='desconto'` no histórico de lançamentos da parcela (`ParcelaHistoricoSheet`) — mesmo padrão já usado para `tipo='pagamento'` (Phase 11)
+- [ ] **CANAJU-02**: Clicar "Cancelar" abre uma confirmação simples (sem motivo obrigatório) mostrando o valor e o tipo do ajuste; confirmar apaga de verdade aquele lançamento do banco
+- [ ] **CANAJU-03**: Depois de apagar, o status da parcela é recalculado a partir do que resta no livro-razão (nunca hardcoded)
+- [ ] **CANAJU-04**: Uma parcela conciliada nunca aceita cancelamento de ajuste nenhum — mesma trava já usada por Pagamento/Ajustar/Cancelar pagamento, aplicada no servidor
+
 ## Carried over from v1.0
 
 Requisito não concluído na v1.0, mantido visível para não se perder. **Não faz parte do escopo de fases da v2.0** — é uma ação de painel, não trabalho de código, adiada por escolha do usuário.
@@ -208,12 +217,16 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | CANPAG-02 | Phase 11 | Confirmado em produção |
 | CANPAG-03 | Phase 11 | Confirmado em produção |
 | CANPAG-04 | Phase 11 | Confirmado em produção |
+| CANAJU-01 | Phase 12 | Pendente |
+| CANAJU-02 | Phase 12 | Pendente |
+| CANAJU-03 | Phase 12 | Pendente |
+| CANAJU-04 | Phase 12 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
 - Mapped to phases: 39
 - Unmapped: 0
-- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05) e Phase 11 (CANPAG-01..04) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED` e `### CANPAG` acima
+- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04) e Phase 12 (CANAJU-01..04) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG` e `### CANAJU` acima
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 - VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 
