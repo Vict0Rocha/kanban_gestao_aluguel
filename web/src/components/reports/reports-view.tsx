@@ -38,10 +38,12 @@ export function FilterChip({
   active,
   children,
   onClick,
+  className,
 }: {
   active: boolean
   children: React.ReactNode
   onClick: () => void
+  className?: string
 }) {
   return (
     <button
@@ -52,7 +54,8 @@ export function FilterChip({
         "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
         active
           ? "border-primary bg-primary text-primary-foreground"
-          : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
+          : "border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground",
+        className
       )}
     >
       {children}
