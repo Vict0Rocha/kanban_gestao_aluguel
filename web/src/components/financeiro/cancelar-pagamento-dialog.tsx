@@ -76,9 +76,10 @@ export function CancelarPagamentoDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Cancelar este pagamento?</AlertDialogTitle>
           <AlertDialogDescription>
-            Pagamento de {formatCurrency(valor)} em {formatDate(data)}. O lançamento é
-            apagado e o status da parcela é recalculado a partir do que sobrar. Esta
-            ação não pode ser desfeita.
+            Pagamento de {formatCurrency(valor)}
+            {data ? ` em ${formatDate(data)}` : ""}. O lançamento é apagado e o
+            status da parcela é recalculado a partir do que sobrar. Esta ação
+            não pode ser desfeita.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
