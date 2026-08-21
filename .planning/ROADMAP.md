@@ -229,8 +229,8 @@ Plans:
 
 ### Phase 10: Relatório Financeiro dedicado
 
-**Goal:** O gestor filtra os contratos ao vivo numa página própria de Relatório Financeiro, vê a lista dos contratos que batem com o filtro, e exporta o resultado em PDF — sem abrir o painel suspenso da Phase 8 pra cada consulta
-**Requirements**: TBD (a definir em discuss-phase)
+**Goal:** O gestor filtra os contratos ao vivo numa página própria de Relatório Financeiro, vê a lista de parcelas que batem com o filtro, e exporta o resultado em PDF — sem abrir o painel suspenso da Phase 8 pra cada consulta
+**Requirements**: RELDED-01, RELDED-02, RELDED-03, RELDED-04, RELDED-05 (trabalho pós-milestone — ver 10-CONTEXT.md)
 **Depends on:** Phase 9
 **Plans:** 0 plans
 

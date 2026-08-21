@@ -87,6 +87,16 @@ Fora do conjunto de 39 requisitos da v2.0 — trabalho aberto por um bug real en
 - [x] **INTEG-04**: Um contrato sem nenhuma das duas datas (`periodo_inicio` E `periodo_fim` nulos) passa a gerar só a parcela do mês atual, não mais atual+próximo; um contrato com só `periodo_inicio` preenchido continua gerando atual+próximo, sem mudança. A mudança vale só para geração futura — nunca apaga retroativamente uma parcela de "próximo mês" já gerada antes desta fase
 - [x] **INTEG-05**: As parcelas órfãs já existentes em produção antes desta fase são removidas por um script SQL revisável pelo operador (não uma migração), que mostra a lista exata antes de qualquer exclusão
 
+### RELDED — Relatório Financeiro dedicado (pós-milestone, Phase 10)
+
+Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário na mesma conversa que abriu a Phase 9. Decisões registradas em `.planning/phases/10-relat-rio-financeiro-dedicado/10-CONTEXT.md`.
+
+- [ ] **RELDED-01**: Existe uma rota nova `/relatorios/financeiro`, alcançada por um botão "Relatório financeiro" dentro da `/relatorios` atual (mesma aba). A página atual (painel suspenso + cards da Phase 8) continua existindo sem mudança
+- [ ] **RELDED-02**: O painel de filtro (imóvel/proprietário/período/situação) é dinâmico — qualquer mudança recalcula os 4 cards e a lista imediatamente, sem precisar clicar em nada
+- [ ] **RELDED-03**: Abaixo dos cards, uma lista mostra uma linha por parcela filtrada (endereço, proprietário, competência, vencimento, situação, valor), sempre em sincronia com o filtro atual
+- [ ] **RELDED-04**: O botão "Gerar relatório" da Phase 8 vira "Exportar PDF" nesta página — não dispara mais a consulta (que já é ao vivo), só gera o PDF do estado atual da tela
+- [ ] **RELDED-05**: O PDF exportado contém os 4 totais, a lista completa de parcelas filtradas, e um cabeçalho com os filtros aplicados e a data de geração
+
 ## Carried over from v1.0
 
 Requisito não concluído na v1.0, mantido visível para não se perder. **Não faz parte do escopo de fases da v2.0** — é uma ação de painel, não trabalho de código, adiada por escolha do usuário.
@@ -180,12 +190,17 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | INTEG-03 | Phase 9 | Confirmado em produção |
 | INTEG-04 | Phase 9 | Confirmado em produção |
 | INTEG-05 | Phase 9 | Confirmado em produção |
+| RELDED-01 | Phase 10 | Pendente |
+| RELDED-02 | Phase 10 | Pendente |
+| RELDED-03 | Phase 10 | Pendente |
+| RELDED-04 | Phase 10 | Pendente |
+| RELDED-05 | Phase 10 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
 - Mapped to phases: 39
 - Unmapped: 0
-- Phase 9 (INTEG-01..05) é trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seção `### INTEG` acima
+- Phase 9 (INTEG-01..05) e Phase 10 (RELDED-01..05) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG` e `### RELDED` acima
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 - VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 
