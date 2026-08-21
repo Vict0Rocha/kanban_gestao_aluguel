@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 10
-current_phase_name: relat-rio-financeiro-dedicado
-status: complete
-stopped_at: Phase 10 completa — RELDED-01..05 confirmados em produção
+current_phase: 11
+current_phase_name: cancelamento-de-pagamento
+status: planning
+stopped_at: Phase 11 adicionada ao ROADMAP.md, discuss-phase ainda não iniciado
 last_updated: "2026-08-21T13:30:00.000Z"
 last_activity: 2026-08-21
 last_activity_desc: "Fase 10 encerrada. Plano 10-01 (rota /relatorios/financeiro, filtro ao vivo, tiles+lista, botão de entrada) e plano 10-02 (exportação em PDF via jsPDF/jspdf-autotable) mesclados em main e confirmados em produção pelo usuário: navegação, filtro ao vivo em todos os campos, limpar filtros, resultado vazio, PDF sem filtro/com filtro/vazio (cabeçalho, totais, lista, acentuação, rodapé), e /relatorios (Phase 8) intacta. Executor do plano 10-02 achou e corrigiu 2 divergências reais entre a API assumida no plano/RESEARCH.md e a API real dos pacotes instalados (showHead em vez de headerRows, doc.getNumberOfPages() em vez de doc.internal.getNumberOfPages())."
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Fase 10 completa. Todas as 10 fases do roadmap (v1.0 Phases 1-3 + v2.0 Phases 4-10) estão fechadas. Ideia registrada para uma fase futura: rastrear dinheiro recebido pela imobiliária (taxa de administração, primeiro aluguel, caução, taxas de gestão) — ver `10-CONTEXT.md` § Deferred.
+**Current focus:** Phase 11 — cancelamento-de-pagamento (recém-adicionada, discuss-phase pendente)
 
 ## Current Position
 
-Phase: 10 (relat-rio-financeiro-dedicado) — COMPLETE
-Status: Fase 10 fechada — RELDED-01..05 confirmados em produção
-Last activity: 2026-08-21 — Phase 10 encerrada
+Phase: 11 (cancelamento-de-pagamento) — PLANNING
+Status: Fase adicionada ao ROADMAP.md; discuss-phase pendente
+Last activity: 2026-08-21 — Phase 11 adicionada via /gsd-phase
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -127,7 +127,8 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - Phase 06.1 inserted after Phase 6: Consulta financeira e geração por período — feedback do usuário após testar Phase 6 em produção (URGENT)
 - Phase 06.2 inserted after Phase 6.1: Feedback do usuario apos usar Phases 6/6.1 em producao: ativo nao escondia parcelas futuras, mudanca de datas do card nao refletia no Financeiro, e excluir card apagava historico financeiro em cascata sem trava (URGENT)
 - Phase 9 added: Integridade de datas do contrato nas parcelas — feedback do usuário testando a Phase 8 em produção; encontrou parcelas órfãs quando a data de um contrato encolhe. Reverte deliberadamente D-03 (docs/data-model.md)
-- Phase 10 added: Relatório Financeiro dedicado — pedido do usuário na mesma conversa que abriu a Phase 9: página própria em vez do painel suspenso da Phase 8, filtro dinâmico (ao vivo), lista de contratos filtrados abaixo dos cards, exportação em PDF. Ainda não planejada (discuss-phase pendente)
+- Phase 10 added e encerrada: Relatório Financeiro dedicado — pedido do usuário na mesma conversa que abriu a Phase 9: página própria em vez do painel suspenso da Phase 8, filtro dinâmico (ao vivo), lista de contratos filtrados abaixo dos cards, exportação em PDF. RELDED-01..05 confirmados em produção
+- Phase 11 added: Cancelamento de pagamento — usuário pediu antes de seguir para a discussão da fase de dinheiro da imobiliária: hoje não existe forma de reverter uma parcela marcada como paga por engano. Restrição explícita do usuário: nenhuma alteração em parcela conciliada. Tensão a resolver no discuss-phase: "excluir" o pagamento (apagar a linha de `parcela_lancamentos`) conflita com o princípio de livro-razão append-only já estabelecido desde a Phase 4 (nunca apagar, só lançar) — o padrão já usado para o caso análogo de conciliada (Destravar, Phase 7) lança um evento novo em vez de apagar; ainda não planejada (discuss-phase pendente)
 
 ## Deferred Items
 
