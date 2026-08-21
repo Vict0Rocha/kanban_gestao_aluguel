@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 9
-current_phase_name: integridade-de-datas-do-contrato-nas-parcelas
-status: complete
-stopped_at: Phase 9 completa — INTEG-01..05 confirmados em produção, planos 09-01/09-02 mesclados em main
+current_phase: 10
+current_phase_name: relatorio-financeiro-dedicado
+status: planning
+stopped_at: Phase 10 adicionada ao ROADMAP.md, discuss-phase ainda não iniciado
 last_updated: "2026-08-21T00:30:00.000Z"
 last_activity: 2026-08-21
 last_activity_desc: "Fase 9 fechada. Plano 09-01 (poda ativa síncrona + confirmação) e plano 09-02 (limpeza das 27 órfãs pré-existentes) confirmados em produção e mesclados em main. Achado adicional pós-execução (D-09: remover periodo_fim sem substituir não podava nada) corrigido e reconfirmado em produção. ROADMAP.md/REQUIREMENTS.md atualizados, INTEG-01..05 fechados."
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Fase 9 completa. Próximo passo pendente: discutir/planejar a Phase 10 (página dedicada de Relatório Financeiro + PDF), ainda não adicionada ao ROADMAP.md.
+**Current focus:** Phase 10 — relatório-financeiro-dedicado (recém-adicionada ao ROADMAP.md, discuss-phase ainda não iniciado)
 
 ## Current Position
 
-Phase: 9 (integridade-de-datas-do-contrato-nas-parcelas) — COMPLETE
-Status: Fase 9 fechada — todos os planos mesclados em main, INTEG-01..05 confirmados em produção
-Last activity: 2026-08-21 — Fase 9 encerrada (planos 09-01 e 09-02 mesclados, ROADMAP.md/REQUIREMENTS.md atualizados)
+Phase: 10 (relatorio-financeiro-dedicado) — PLANNING
+Status: Fase adicionada ao ROADMAP.md; discuss-phase pendente
+Last activity: 2026-08-21 — Phase 10 adicionada via /gsd-phase
 
-**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9. A numeração continua da v1.0 (Phases 1-3), não reinicia.
+**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
 ## Performance Metrics
 
@@ -127,6 +127,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - Phase 06.1 inserted after Phase 6: Consulta financeira e geração por período — feedback do usuário após testar Phase 6 em produção (URGENT)
 - Phase 06.2 inserted after Phase 6.1: Feedback do usuario apos usar Phases 6/6.1 em producao: ativo nao escondia parcelas futuras, mudanca de datas do card nao refletia no Financeiro, e excluir card apagava historico financeiro em cascata sem trava (URGENT)
 - Phase 9 added: Integridade de datas do contrato nas parcelas — feedback do usuário testando a Phase 8 em produção; encontrou parcelas órfãs quando a data de um contrato encolhe. Reverte deliberadamente D-03 (docs/data-model.md)
+- Phase 10 added: Relatório Financeiro dedicado — pedido do usuário na mesma conversa que abriu a Phase 9: página própria em vez do painel suspenso da Phase 8, filtro dinâmico (ao vivo), lista de contratos filtrados abaixo dos cards, exportação em PDF. Ainda não planejada (discuss-phase pendente)
 
 ## Deferred Items
 

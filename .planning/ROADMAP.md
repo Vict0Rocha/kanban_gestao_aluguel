@@ -35,6 +35,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
 - [x] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
 - [x] **Phase 9: Integridade de datas do contrato nas parcelas** - Editar a data de um contrato apaga de verdade as parcelas órfãs que ficaram fora do novo período, em vez de deixá-las soltas no banco
+- [ ] **Phase 10: Relatório Financeiro dedicado** - Página própria de Relatório Financeiro com filtro dinâmico, lista de contratos filtrados e exportação em PDF
 
 ## Phase Details
 
@@ -226,10 +227,21 @@ Plans:
 - [x] 09-01-PLAN.md — Poda ativa síncrona em `updateCardAction` + pré-voo consultivo + confirmação no diálogo do card (D-01 a D-07)
 - [x] 09-02-PLAN.md — Limpeza das parcelas órfãs já existentes (script SQL revisável, D-08) + documentação da reversão de D-03
 
+### Phase 10: Relatório Financeiro dedicado
+
+**Goal:** O gestor filtra os contratos ao vivo numa página própria de Relatório Financeiro, vê a lista dos contratos que batem com o filtro, e exporta o resultado em PDF — sem abrir o painel suspenso da Phase 8 pra cada consulta
+**Requirements**: TBD (a definir em discuss-phase)
+**Depends on:** Phase 9
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 10 to break down)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
+Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -241,5 +253,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 7. Conciliação e destrava rastreada | 2/2 | Complete | 2026-08-20 |
 | 8. Relatórios financeiros | 1/1 | Complete | 2026-08-20 |
 | 9. Integridade de datas do contrato nas parcelas | 2/2 | Complete | 2026-08-21 |
+| 10. Relatório Financeiro dedicado | 0/0 | Planned | - |
 
-**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phase 9 é trabalho pós-milestone (bug encontrado na verificação final da Phase 8): INTEG-01 a INTEG-05, fora da contagem de 39 da v2.0, mapeados aos planos 09-01/09-02 — ver REQUIREMENTS.md § INTEG.
+**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9 e 10 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário na mesma conversa), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.
