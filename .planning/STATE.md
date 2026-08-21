@@ -3,18 +3,18 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 10
-current_phase_name: relatorio-financeiro-dedicado
-status: planning
-stopped_at: Phase 10 UI-SPEC approved
-last_updated: "2026-08-21T01:58:46.124Z"
+current_phase_name: relat-rio-financeiro-dedicado
+status: executed
+stopped_at: Phase 10 código completo (planos 10-01/10-02 mesclados) — aguardando verificação humana em produção
+last_updated: "2026-08-21T13:10:00.000Z"
 last_activity: 2026-08-21
-last_activity_desc: "Fase 9 fechada. Plano 09-01 (poda ativa síncrona + confirmação) e plano 09-02 (limpeza das 27 órfãs pré-existentes) confirmados em produção e mesclados em main. Achado adicional pós-execução (D-09: remover periodo_fim sem substituir não podava nada) corrigido e reconfirmado em produção. ROADMAP.md/REQUIREMENTS.md atualizados, INTEG-01..05 fechados."
+last_activity_desc: "Fase 10 executada. Plano 10-01 (rota /relatorios/financeiro, filtro ao vivo, tiles+lista, botão de entrada) e plano 10-02 (exportação em PDF via jsPDF/jspdf-autotable) mesclados em main. Executor do plano 10-02 achou e corrigiu 2 divergências reais entre a API assumida no plano/RESEARCH.md e a API real dos pacotes instalados (showHead em vez de headerRows, doc.getNumberOfPages() em vez de doc.internal.getNumberOfPages()). npm install rodado no checkout principal (só o worktree tinha as deps novas). npm run lint/build limpos. Falta verificação humana em produção (RELDED-01..05) antes de fechar a fase."
 progress:
-  total_phases: 9
+  total_phases: 10
   completed_phases: 8
-  total_plans: 27
-  completed_plans: 27
-  percent: 89
+  total_plans: 29
+  completed_plans: 29
+  percent: 90
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 10 — relatório-financeiro-dedicado (recém-adicionada ao ROADMAP.md, discuss-phase ainda não iniciado)
+**Current focus:** Phase 10 — código completo, aguardando verificação humana em produção (RELDED-01..05)
 
 ## Current Position
 
-Phase: 10 (relatorio-financeiro-dedicado) — PLANNING
-Status: Fase adicionada ao ROADMAP.md; discuss-phase pendente
-Last activity: 2026-08-21 — Phase 10 adicionada via /gsd-phase
+Phase: 10 (relat-rio-financeiro-dedicado) — EXECUTED (verificação humana pendente)
+Status: Planos 10-01/10-02 mesclados em main; falta testar em produção antes de fechar a fase
+Last activity: 2026-08-21 — Phase 10 executada (planos 10-01 e 10-02 mesclados)
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
