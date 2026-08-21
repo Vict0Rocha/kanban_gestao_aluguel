@@ -5,8 +5,8 @@ milestone_name: Módulo Financeiro
 current_phase: 11
 current_phase_name: cancelamento-de-pagamento
 status: planning
-stopped_at: Phase 11 context gathered
-last_updated: "2026-08-21T18:14:15.436Z"
+stopped_at: Phase 11 UI-SPEC approved
+last_updated: "2026-08-21T18:24:09.092Z"
 last_activity: 2026-08-21
 last_activity_desc: "Fase 10 encerrada. Plano 10-01 (rota /relatorios/financeiro, filtro ao vivo, tiles+lista, botão de entrada) e plano 10-02 (exportação em PDF via jsPDF/jspdf-autotable) mesclados em main e confirmados em produção pelo usuário: navegação, filtro ao vivo em todos os campos, limpar filtros, resultado vazio, PDF sem filtro/com filtro/vazio (cabeçalho, totais, lista, acentuação, rodapé), e /relatorios (Phase 8) intacta. Executor do plano 10-02 achou e corrigiu 2 divergências reais entre a API assumida no plano/RESEARCH.md e a API real dos pacotes instalados (showHead em vez de headerRows, doc.getNumberOfPages() em vez de doc.internal.getNumberOfPages())."
 progress:
@@ -143,6 +143,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-21T18:14:15.336Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/11-cancelamento-de-pagamento/11-CONTEXT.md
+Last session: 2026-08-21T18:24:09.048Z
+Stopped at: Phase 11 UI-SPEC approved
+Resume file: .planning/phases/11-cancelamento-de-pagamento/11-UI-SPEC.md
