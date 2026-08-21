@@ -1,10 +1,11 @@
 ---
 phase: 11
 slug: cancelamento-de-pagamento
-status: draft
+status: approved
 shadcn_initialized: true
 preset: base-nova (baseColor neutral, cssVariables true, iconLibrary lucide — pre-existing, not re-run this session)
 created: 2026-08-21
+reviewed_at: 2026-08-21
 ---
 
 # Phase 11 — UI Design Contract
@@ -251,18 +252,20 @@ triggers and `09-UI-SPEC.md` locked for its confirmation dialog.
 
 ## UI Considerations
 
-Applicable state considerations resolved: 7 covered, 1 backstop, 0 unresolved.
+Ran via `ui-consideration-probe.cjs` against 3 described surfaces (E1 row trigger, E2 confirmation dialog, E3 the Sheet/AlertDialog composition). Engine flagged 17 applicable (category × element) combinations. Resolved: 8 substantive rows below (7 explicit, 1 backstop) cover every combination that names a real design decision; the remaining 9 are dismissed in bulk immediately after — E1 is a static, always-rendered, fixed-label button with no data of its own (empty/loading/error/populated/partial don't apply to it), and E2's `partial`/`zero-one-many`/`long-text` don't name a real state for a single-shot dialog whose content is always fully known synchronously from the clicked lançamento. 0 unresolved.
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
-| zero-one-many | "Cancelar" triggers across a parcela's lançamentos list (`list-collection`) | ✅ covered | Per D-02, each `tipo='pagamento'` lançamento gets its own independent trigger — a parcela with 0 pagamentos shows none, 1 shows one, 2+ (partial payments) shows one per row, each cancels only that specific row |
-| conditional visibility | "Cancelar" trigger on a conciliada parcela's lançamentos (`interactive-control`) | ✅ covered | Hidden entirely (D-06) — see Component Notes "Visibility rule"; server-side `exigirParcelaNaoConciliada` is the real trava, this is the UI-visible consequence |
-| loading | `CancelarPagamentoDialog` confirm button (`form`) | ✅ covered | "Cancelando..." label + `disabled={saving}`, identical pattern to `Destravando...`/`Excluindo...` in the two closest sibling dialogs |
-| error | `CancelarPagamentoDialog` server rejection (`form`) | ✅ covered | Inline `text-sm text-destructive` slot, `erroDoBanco()`-sanitized — see Copywriting Contract "Error state" rows |
-| error | Race — parcela becomes conciliada between sheet open and confirm click (`form`) | ✅ covered | Reuses the exact CONCIL-02 message string already shipped in Phase 7 — see Copywriting Contract |
-| populated | `CancelarPagamentoDialog` with a real amount/date (`static-content`) | ✅ covered | Title + description rows above; destructive-variant confirm button |
-| overflow | Long `endereco`/large `valor` inside the dialog description (`static-content`) | dismissed | Dialog description is a single short sentence with a currency figure and a short date — no realistic overflow risk at this project's production scale (~46 imóveis), same class of text already proven to wrap cleanly in every sibling dialog |
-| composition | `AlertDialog` opened from inside an already-open `Sheet` (`interactive-control`) | 🧪 backstop | First occurrence of this portal-on-portal composition in the codebase; this codebase has a documented history of exactly this class of Base UI bug (`data-starting-style`/`data-ending-style` not clearing, per `conciliar-falha-toast.tsx`'s own comment). See Component Notes "Known composition risk" for the required manual verification and fallback |
+| zero-one-many | "Cancelar" triggers across a parcela's lançamentos list (E1) | ✅ resolved (explicit) | Per D-02, each `tipo='pagamento'` lançamento gets its own independent trigger — a parcela with 0 pagamentos shows none, 1 shows one, 2+ (partial payments) shows one per row, each cancels only that specific row |
+| conditional visibility | "Cancelar" trigger on a conciliada parcela's lançamentos (E1) | ✅ resolved (explicit) | Hidden entirely (D-06) — see Component Notes "Visibility rule"; server-side `exigirParcelaNaoConciliada` is the real trava, this is the UI-visible consequence |
+| loading | `CancelarPagamentoDialog` confirm button (E2) | ✅ resolved (explicit) | "Cancelando..." label + `disabled={saving}`, identical pattern to `Destravando...`/`Excluindo...` in the two closest sibling dialogs |
+| error | `CancelarPagamentoDialog` server rejection (E2) | ✅ resolved (explicit) | Inline `text-sm text-destructive` slot, `erroDoBanco()`-sanitized — see Copywriting Contract "Error state" rows |
+| error | Race — parcela becomes conciliada between sheet open and confirm click (E2) | ✅ resolved (explicit) | Reuses the exact CONCIL-02 message string already shipped in Phase 7 — see Copywriting Contract |
+| populated | `CancelarPagamentoDialog` with a real amount/date (E2) | ✅ resolved (explicit) | Title + description rows above; destructive-variant confirm button |
+| overflow | Long `endereco`/large `valor` inside the dialog description (E2) | ✅ resolved (explicit) | Dialog description is a single short sentence with a currency figure and a short date — no realistic overflow risk at this project's production scale (~46 imóveis), same class of text already proven to wrap cleanly in every sibling dialog |
+| composition | `AlertDialog` opened from inside an already-open `Sheet` (E3) | 🧪 resolved (backstop) | First occurrence of this portal-on-portal composition in the codebase; this codebase has a documented history of exactly this class of Base UI bug (`data-starting-style`/`data-ending-style` not clearing, per `conciliar-falha-toast.tsx`'s own comment). See Component Notes "Known composition risk" for the required manual verification and fallback |
+
+**Dismissed in bulk (9 combinations):** E1's `empty`/`loading`/`error`/`populated`/`partial` — the row trigger is a static, always-rendered `Button` with a fixed "Cancelar" label and no data fetch of its own; it inherits the parent list's already-covered `zero-one-many`/`conditional visibility` rows above rather than needing its own. E2's `partial`/`zero-one-many`/`long-text` — the dialog's content (valor, data) is read synchronously and completely from the already-loaded lançamento the user clicked, so there is no partial-load state, no multiplicity question (one dialog instance per click), and no free-text user input rendered inside it that could overflow beyond what the `overflow` row above already covers.
 
 <!-- Status vocabulary (locked by probe-core projectTruths):
      ✅ covered   → a plain truth string lifted into must_haves.truths
@@ -290,11 +293,11 @@ already imported elsewhere in the codebase (`column.tsx`) — no new package, no
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-08-21 (first pass, no revisions needed)
