@@ -390,9 +390,10 @@ async function podarParcelasOrfas(
     return erroDoBanco(error.code, "salvar o imóvel")
   }
 
+  const hojeISO = hojeEmCuiaba()
   const candidatas = (data ?? []) as unknown as ParcelaCandidataPoda[]
   const idsOrfas = candidatas
-    .filter((parcela) => parcelaOrfaApagavel(parcela, novoInicio, novoFim))
+    .filter((parcela) => parcelaOrfaApagavel(parcela, novoInicio, novoFim, hojeISO))
     .map((parcela) => parcela.id)
 
   if (idsOrfas.length === 0) return null
@@ -515,9 +516,10 @@ export async function contarParcelasOrfasAction(
     return { ok: false, error: erroDoBanco(error.code, "consultar as parcelas do imóvel") }
   }
 
+  const hojeISO = hojeEmCuiaba()
   const candidatas = (data ?? []) as unknown as ParcelaCandidataPoda[]
   const quantidade = candidatas.filter((parcela) =>
-    parcelaOrfaApagavel(parcela, novoInicio, novoFim)
+    parcelaOrfaApagavel(parcela, novoInicio, novoFim, hojeISO)
   ).length
 
   return { ok: true, data: { quantidade } }

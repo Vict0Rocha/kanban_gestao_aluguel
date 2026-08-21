@@ -39,6 +39,9 @@ Fora do escopo desta fase: a página dedicada de Relatório Financeiro com lista
 ### Claude's Discretion
 Nenhuma das 4 áreas foi selecionada para discussão — o usuário respondeu "sem preferência" no menu de seleção. D-04, D-05, D-06, D-07 e D-08 acima são todas decisões tomadas por mim (Claude), documentadas com o raciocínio para que o usuário possa corrigir facilmente ao revisar este arquivo antes do planejamento. D-01/D-02/D-03 vieram diretamente da conversa antes desta sessão formal de discussão (incluindo a consulta SQL que confirmou as 27 órfãs) e não foram reabertas.
 
+### Poda quando `periodo_fim` é removido (achado na verificação em produção, pós-execução)
+- **D-09:** `competenciaNoPeriodo` trata `periodoFim` nulo como "sem teto" — então remover só a data de fim de um contrato que já tinha parcelas futuras geradas não podava nada (nenhum teto = nada fica "acima do período"). O usuário testou esse cenário exato em produção e reportou que as parcelas futuras deveriam ser removidas também. Decisão explícita, escolhida entre duas opções apresentadas: a poda passa a usar um **teto efetivo** quando `periodo_fim` está vazio — o mesmo teto que `competenciasAlvoParaCard` já usa para GERAR parcelas nesse mesmo estado (D-06): atual+próximo com `periodo_inicio` ainda preenchido (prazo indeterminado), só atual quando as duas datas somem. Implementado em `tetoEfetivoDePoda` (`parcelas.ts`), usado por `parcelaOrfaApagavel` (agora recebe `hojeISO`). — **Reversibility:** one-way, mesmo risco de D-01 (parcela apagada não volta).
+
 </decisions>
 
 <canonical_refs>

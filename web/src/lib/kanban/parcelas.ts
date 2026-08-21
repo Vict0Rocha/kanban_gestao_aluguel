@@ -176,27 +176,47 @@ export type ParcelaCandidataPoda = {
 }
 
 /**
- * Critério de "órfã apagável" (D-01/D-02/D-03), única implementação — reusada
- * tanto pela poda síncrona dentro de `updateCardAction` (actions.ts) quanto
- * pelo pré-voo consultivo `contarParcelasOrfasAction`. `false` se
+ * D-09: teto efetivo de poda quando `periodoFim` fica vazio. `null` sem
+ * `periodoFim` não vira "sem teto" (o que faria a poda nunca cortar o
+ * futuro de um contrato que virou indeterminado) — vira o mesmo teto que
+ * `competenciasAlvoParaCard` já usa pra GERAR parcelas desse mesmo estado:
+ * atual+próximo com só `periodoInicio` (prazo indeterminado, D-06), só
+ * atual sem nenhuma das duas datas. Com `periodoFim` preenchido, o teto é
+ * ele mesmo — comportamento de período completo inalterado.
+ */
+export function tetoEfetivoDePoda(
+  periodoInicio: string | null,
+  periodoFim: string | null,
+  hojeISO: string
+): string | null {
+  if (periodoFim) return periodoFim
+  return periodoInicio ? competenciasAlvo(hojeISO)[1] : competenciasAlvo(hojeISO)[0]
+}
+
+/**
+ * Critério de "órfã apagável" (D-01/D-02/D-03/D-09), única implementação —
+ * reusada tanto pela poda síncrona dentro de `updateCardAction` (actions.ts)
+ * quanto pelo pré-voo consultivo `contarParcelasOrfasAction`. `false` se
  * `status !== "aberta"`; `false` se existir qualquer linha em
  * `parcela_lancamentos`. As duas checagens são redundantes na prática — todo
  * status diferente de `aberta` implica pelo menos um lançamento — mas ambas
  * são mantidas de propósito, mesma defesa em profundidade que D-02 exige.
- * Por fim, reusa `competenciaNoPeriodo` negada: nunca reimplementar a
- * comparação de datas. D-03 (a poda não distingue direção — encurtar o fim
- * ou adiantar o início podam igual) já está coberto aqui porque
- * `competenciaNoPeriodo` testa os dois lados do período pela mesma
- * comparação.
+ * Por fim, reusa `competenciaNoPeriodo` negada com o teto de `tetoEfetivoDePoda`
+ * (D-09) — nunca reimplementar a comparação de datas. D-03 (a poda não
+ * distingue direção — encurtar o fim ou adiantar o início podam igual) já
+ * está coberto aqui porque `competenciaNoPeriodo` testa os dois lados do
+ * período pela mesma comparação.
  */
 export function parcelaOrfaApagavel(
   parcela: Pick<ParcelaCandidataPoda, "competencia" | "status" | "parcela_lancamentos">,
   novoInicio: string | null,
-  novoFim: string | null
+  novoFim: string | null,
+  hojeISO: string
 ): boolean {
   if (parcela.status !== "aberta") return false
   if ((parcela.parcela_lancamentos?.length ?? 0) > 0) return false
-  return !competenciaNoPeriodo(parcela.competencia, novoInicio, novoFim)
+  const tetoEfetivo = tetoEfetivoDePoda(novoInicio, novoFim, hojeISO)
+  return !competenciaNoPeriodo(parcela.competencia, novoInicio, tetoEfetivo)
 }
 
 export type ParcelaFaltante = {
