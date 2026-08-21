@@ -34,7 +34,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 6.2: Ciclo de vida do contrato** (INSERTED) - Visibilidade derivada do estado do card, arquivar/desarquivar, e exclusão travada por movimentação financeira
 - [x] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
 - [x] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
-- [ ] **Phase 9: Integridade de datas do contrato nas parcelas** - Editar a data de um contrato apaga de verdade as parcelas órfãs que ficaram fora do novo período, em vez de deixá-las soltas no banco
+- [x] **Phase 9: Integridade de datas do contrato nas parcelas** - Editar a data de um contrato apaga de verdade as parcelas órfãs que ficaram fora do novo período, em vez de deixá-las soltas no banco
 
 ## Phase Details
 
@@ -211,18 +211,20 @@ Plans:
 **Depends on:** Phase 8
 **Success Criteria** (what must be TRUE):
 
-  1. Editar `periodo_inicio`/`periodo_fim` de um card com parcelas já geradas apaga de verdade as que ficaram fora do novo período, e só as que nunca tiveram pagamento nem lançamento (`status='aberta'` E zero `parcela_lancamentos`) — nas duas direções (encurtar o fim ou adiantar o início)
-  2. A poda roda dentro do mesmo salvamento do card, só quando `periodo_inicio`/`periodo_fim` realmente mudam de valor, com uma confirmação explícita mostrando a contagem antes de qualquer exclusão acontecer
-  3. Contrato sem nenhuma das duas datas passa a gerar só a parcela do mês atual, sem afetar retroativamente o que já foi gerado antes desta fase
-  4. As parcelas órfãs já existentes em produção antes desta fase foram removidas por um script SQL revisável, e `docs/data-model.md` documenta a reversão de D-03
+  1. ✓ Editar `periodo_inicio`/`periodo_fim` de um card com parcelas já geradas apaga de verdade as que ficaram fora do novo período, e só as que nunca tiveram pagamento nem lançamento (`status='aberta'` E zero `parcela_lancamentos`) — nas duas direções (encurtar o fim ou adiantar o início) — confirmado em produção, com prova por SQL Editor de que a linha some do banco
+  2. ✓ A poda roda dentro do mesmo salvamento do card, só quando `periodo_inicio`/`periodo_fim` realmente mudam de valor, com uma confirmação explícita mostrando a contagem antes de qualquer exclusão acontecer — confirmado em produção; editar um campo sem data não abre confirmação nova
+  3. ✓ Contrato sem nenhuma das duas datas passa a gerar só a parcela do mês atual, sem afetar retroativamente o que já foi gerado antes desta fase — confirmado em produção
+  4. ✓ As parcelas órfãs já existentes em produção antes desta fase foram removidas por um script SQL revisável, e `docs/data-model.md` documenta a reversão de D-03 — 27/27 linhas batendo entre BLOCO 1 e BLOCO 2, BLOCO 3 confirmou zero órfãs restantes
 
 **Pilares cruzados**: esta fase reverte deliberadamente D-03 (Phase 6.2, `docs/data-model.md`) — a regra de visibilidade (`avaliarVisibilidadeParcela`) continua exatamente como está para todo o resto (arquivado, inativo-mês-futuro); só o subconjunto "fora do período + zero lançamento" passa de "esconder" para "apagar de verdade". A policy de RLS de `parcelas` (`for all ... using is_team_member()`, Phase 4) já cobre `DELETE`, sem migração nova
+
+**Correção pós-verificação (D-09):** o usuário encontrou, ao testar em produção, que remover só `periodo_fim` de um card com parcelas futuras já geradas não podava nada — `competenciaNoPeriodo` tratava `periodo_fim` nulo como "sem teto". Corrigido fora de um plano formal (mudança contida, mesmo critério D-02 reaproveitado): a poda passou a usar um teto efetivo (`tetoEfetivoDePoda`) quando `periodo_fim` está vazio — o mesmo teto que a geração já usa para esse estado (D-06): atual+próximo com `periodo_inicio` preenchido, só atual sem nenhuma das duas datas. `npm run lint`/`build` limpos; reconfirmado em produção pelo usuário.
 **Plans**: 2 plans
 
 Plans:
 
-- [ ] 09-01-PLAN.md — Poda ativa síncrona em `updateCardAction` + pré-voo consultivo + confirmação no diálogo do card (D-01 a D-07)
-- [ ] 09-02-PLAN.md — Limpeza das parcelas órfãs já existentes (script SQL revisável, D-08) + documentação da reversão de D-03
+- [x] 09-01-PLAN.md — Poda ativa síncrona em `updateCardAction` + pré-voo consultivo + confirmação no diálogo do card (D-01 a D-07)
+- [x] 09-02-PLAN.md — Limpeza das parcelas órfãs já existentes (script SQL revisável, D-08) + documentação da reversão de D-03
 
 ## Progress
 
@@ -238,6 +240,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 6.2. Ciclo de vida do contrato (INSERTED) | 7/7 | Complete | 2026-08-19 |
 | 7. Conciliação e destrava rastreada | 2/2 | Complete | 2026-08-20 |
 | 8. Relatórios financeiros | 1/1 | Complete | 2026-08-20 |
-| 9. Integridade de datas do contrato nas parcelas | 0/2 | Planned | - |
+| 9. Integridade de datas do contrato nas parcelas | 2/2 | Complete | 2026-08-21 |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phase 9 é trabalho pós-milestone (bug encontrado na verificação final da Phase 8): INTEG-01 a INTEG-05, fora da contagem de 39 da v2.0, mapeados aos planos 09-01/09-02 — ver REQUIREMENTS.md § INTEG.

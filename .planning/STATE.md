@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 8
-current_phase_name: relatorios-financeiros
+current_phase: 9
+current_phase_name: integridade-de-datas-do-contrato-nas-parcelas
 status: complete
-stopped_at: Phase 9 UI-SPEC approved
-last_updated: "2026-08-20T18:15:26.679Z"
-last_activity: 2026-08-20
-last_activity_desc: "Plano 08-01 executado (worktree agent-a21e4bc9c4e5a64a0). Relatório financeiro de 4 categorias entregue em /relatorios, npm run lint/build verdes, todas as asserções de grep do plano passaram. Módulo Financeiro v2.0: falta só a verificação humana em produção dos dois blocos human-check do plano 08-01 para fechar a milestone."
+stopped_at: Phase 9 completa — INTEG-01..05 confirmados em produção, planos 09-01/09-02 mesclados em main
+last_updated: "2026-08-21T00:30:00.000Z"
+last_activity: 2026-08-21
+last_activity_desc: "Fase 9 fechada. Plano 09-01 (poda ativa síncrona + confirmação) e plano 09-02 (limpeza das 27 órfãs pré-existentes) confirmados em produção e mesclados em main. Achado adicional pós-execução (D-09: remover periodo_fim sem substituir não podava nada) corrigido e reconfirmado em produção. ROADMAP.md/REQUIREMENTS.md atualizados, INTEG-01..05 fechados."
 progress:
   total_phases: 8
   completed_phases: 8
-  total_plans: 25
-  completed_plans: 25
+  total_plans: 27
+  completed_plans: 27
   percent: 100
 ---
 
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Módulo Financeiro v2.0 **completo**. Dois problemas encontrados na verificação final de produção abrem trabalho novo: Phase 9 (integridade de datas do contrato nas parcelas) em discussão; Phase 10 (página dedicada de Relatório Financeiro + PDF) planejada em seguida.
+**Current focus:** Fase 9 completa. Próximo passo pendente: discutir/planejar a Phase 10 (página dedicada de Relatório Financeiro + PDF), ainda não adicionada ao ROADMAP.md.
 
 ## Current Position
 
-Phase: 8 (Relatórios financeiros) — COMPLETE (1/1 plano, 4/4 critérios de sucesso, confirmados em produção pelo usuário)
-Status: Módulo Financeiro v2.0 (Phases 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8) fechado.
-Last activity: 2026-08-20 — Verificação humana final da Phase 8 confirmou os 4 critérios, mas revelou dois problemas reais em produção (ver Decisions): (a) editar a data de um contrato não remove parcelas futuras que ficaram fora do novo período — corrigido o sintoma de visibilidade desde a Phase 6.2, mas os Relatórios (D-05) não filtram por período e por isso vazavam parcelas órfãs; a correção definitiva (apagar as órfãs) vira Phase 9; (b) "Gerar relatório" numa aba deixada aberta não refletia dados mudados em outro lugar — corrigido no ato (não é um plano formal, mudança contida): `buscarParcelasRelatorioAction` busca dados frescos a cada clique em vez de reusar a prop da carga inicial da página.
+Phase: 9 (integridade-de-datas-do-contrato-nas-parcelas) — COMPLETE
+Status: Fase 9 fechada — todos os planos mesclados em main, INTEG-01..05 confirmados em produção
+Last activity: 2026-08-21 — Fase 9 encerrada (planos 09-01 e 09-02 mesclados, ROADMAP.md/REQUIREMENTS.md atualizados)
 
-**Ordem de execução:** 4 → 5 → 6 → 7 → 8. A numeração continua da v1.0 (Phases 1-3), não reinicia.
+**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
 ## Performance Metrics
 
@@ -59,6 +59,7 @@ Last activity: 2026-08-20 — Verificação humana final da Phase 8 confirmou os
 | 6 — Baixa e ajustes de parcela | 0/TBD | — | — |
 | 7 — Conciliação e destrava rastreada | 2/2 | 2 (~11min) | ~11min |
 | 8 — Relatórios financeiros | 1/1 | 15min | 15min |
+| 9 — Integridade de datas do contrato nas parcelas | 2/2 | 2 (~50min) | ~25min |
 
 **Recent Trend:**
 
@@ -81,6 +82,7 @@ Last activity: 2026-08-20 — Verificação humana final da Phase 8 confirmou os
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-21: **Fase 9 encerrada — INTEG-01..05 confirmados em produção.** Plano 09-01 (poda ativa síncrona em `updateCardAction`, pré-voo consultivo, confirmação no diálogo do card) e plano 09-02 (limpeza das 27 parcelas órfãs pré-existentes via `supabase/limpeza_parcelas_orfas.sql`) mesclados em `main`. BLOCO 2 apagou exatamente as 27 linhas mostradas no BLOCO 1 (contratos de teste #54 "outro" e #59 "A"), BLOCO 3 confirmou zero órfãs restantes e `parcelas_total_depois = 357`. **Achado adicional pós-execução (D-09):** o usuário testou remover só `periodo_fim` de um contrato com parcelas futuras já geradas e nada foi podado — `competenciaNoPeriodo` tratava `periodo_fim` nulo como "sem teto". Corrigido com `tetoEfetivoDePoda` (`parcelas.ts`): quando `periodo_fim` fica vazio, a poda usa o mesmo teto que a geração já usa para esse estado (D-06) — atual+próximo com `periodo_inicio` preenchido, só atual sem nenhuma das duas datas. Reconfirmado em produção pelo usuário. Também descoberto durante a verificação: os 16 commits desta sessão (incluindo toda a Fase 9) nunca tinham sido enviados a `origin/main` — o deploy de produção rodava código antigo, o que explicava os primeiros testes "sem fricção nenhuma". `git push` resolveu.
 - 2026-08-20: **Módulo Financeiro v2.0 (Phases 4-8) encerrado.** Os 4 critérios da Phase 8 confirmados pelo usuário em produção, incluindo o caso de D-05 (contrato inativo entrando nos totais, verificado com 27 linhas reais de um caso de teste). Coverage: 39/39 requisitos da v2.0. A verificação final revelou dois problemas que abrem trabalho novo pós-milestone (ver abaixo) em vez de bloquear o fechamento — nenhum dos dois invalida os critérios de sucesso da Phase 8 em si.
 - 2026-08-20: **Bug real encontrado: editar a data de um contrato não limpa as parcelas futuras que ficam fora do novo período.** Exemplo do usuário: contrato de 12 meses gera 12 parcelas; corrigir para 6 meses não apaga as 6 parcelas futuras já geradas, que continuam existindo no banco. `updateCardAction` (`actions.ts:345`) só grava `cards`, nunca toca `parcelas`. O Financeiro já esconde essas parcelas (regra de visibilidade da Phase 6.2, D-03: "esconder, nunca apagar"), mas os Relatórios (Phase 8, D-05) buscam todas as parcelas sem filtro de período — por isso as órfãs vazavam ali. Confirmado em produção: query de leitura achou 27 parcelas órfãs em 2 contratos de teste. **Decisão do usuário:** ao contrário de D-03 (que só esconde), a nova regra deve **apagar de verdade** as parcelas futuras órfãs (só as sem pagamento/lançamento — protegidas continuam intocáveis), para não acumular dado morto no banco. Isso reverte D-03 deliberadamente; vira Phase 9, com discussão formal por reverter uma decisão já documentada e por envolver exclusão de dado em produção. Also: "sem data no contrato" deve gerar só a parcela do mês atual (hoje gera atual+próximo) — ajuste pequeno, mesma fase.
 - 2026-08-20: **Bug real corrigido: "Gerar relatório" numa aba aberta há tempo não reflete mudanças feitas em outro lugar** (só F5 completo atualizava). Causa: `RelatorioFinanceiro` reusava os `parcelas` recebidos como prop da carga inicial da página. Corrigido fora de plano formal (mudança contida, sem risco de dado): nova Server Action `buscarParcelasRelatorioAction` (`actions.ts:1129`) é a única fonte da consulta, chamada tanto pela carga inicial de `relatorios/page.tsx` quanto por cada clique em "Gerar relatório" — sempre busca dado fresco. `relatorios/page.tsx` não faz mais a query de parcelas diretamente; `RelatorioFinanceiro`/`FiltroRelatorioFinanceiro` perderam as props `parcelas`/`erro`/`todayISO` (agora auto-contido). `tsc --noEmit` limpo. Verificação funcional em produção pendente de confirmação do usuário (não consegui testar via navegador — login exige senha real, e não devo digitar credenciais).
@@ -117,8 +119,8 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - **SEC-02 depende do usuário.** Leaked Password Protection é toggle no painel do Supabase; usuário optou por adiar. Fora do escopo de fases da v2.0.
 - **Sem suíte automatizada.** Toda verificação da v2.0 é lint + build + teste manual no navegador (e SQL Editor do Supabase na Phase 4). Os critérios de sucesso do roadmap foram escritos para serem conferíveis à mão por causa disso.
 - **Produção com dados reais.** ~46 imóveis em uso; a migração da Phase 4 precisa ser aditiva e retrocompatível — nada de coluna apagada, nada de `ativo` nulo.
-- **Correção da aba desatualizada (`buscarParcelasRelatorioAction`) sem confirmação funcional em produção.** Typecheck limpo, mas não testado no navegador — não consegui logar (credenciais reais, não devo digitar senha). Ação sugerida: usuário testa o cenário de duas abas descrito na conversa.
-- **27 parcelas órfãs já existem em produção (2 contratos de teste, "A" e "outro").** Levantadas por SQL antes da Phase 9 ser desenhada. A Phase 9 precisa decidir se a limpeza pontual desses casos existentes faz parte do mesmo plano de execução ou é um passo separado.
+- ~~Correção da aba desatualizada (`buscarParcelasRelatorioAction`) sem confirmação funcional em produção~~ — resolvido, em uso contínuo em produção desde então sem novos relatos.
+- ~~27 parcelas órfãs já existem em produção (2 contratos de teste, "A" e "outro")~~ — resolvido pelo plano 09-02, BLOCO 3 confirmou zero órfãs restantes (2026-08-21).
 
 ### Roadmap Evolution
 
@@ -139,6 +141,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-20T18:15:26.649Z
-Stopped at: Phase 9 UI-SPEC approved
-Resume file: .planning/phases/09-integridade-de-datas-do-contrato-nas-parcelas/09-UI-SPEC.md
+Last session: 2026-08-21T00:30:00.000Z
+Stopped at: Fase 9 completa, mesclada em main. Próximo passo: discutir/planejar a Phase 10 (página dedicada de Relatório Financeiro + PDF) quando o usuário quiser seguir.
+Resume file: .planning/ROADMAP.md
