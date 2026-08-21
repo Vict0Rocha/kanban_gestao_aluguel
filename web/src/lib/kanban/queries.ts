@@ -3,6 +3,7 @@ import type { AlertStatus, AlertType } from "./alerts"
 import {
   ajustarParcelaAction,
   arquivarCardAction,
+  cancelarPagamentoAction,
   cardTemLancamentoAction,
   conciliarParcelaAction,
   contarParcelasEmAbertoAction,
@@ -137,4 +138,8 @@ export async function conciliarParcela(parcelaId: string) {
 
 export async function destravarParcela(parcelaId: string, motivo: string) {
   return unwrap(destravarParcelaAction(parcelaId, motivo))
+}
+
+export async function cancelarPagamento(parcelaId: string, lancamentoId: string) {
+  return unwrap(cancelarPagamentoAction(parcelaId, lancamentoId))
 }
