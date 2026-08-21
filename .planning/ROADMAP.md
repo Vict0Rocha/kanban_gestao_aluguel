@@ -250,8 +250,8 @@ Plans:
 
 ### Phase 11: Cancelamento de pagamento
 
-**Goal:** [To be planned — discuss-phase pendente]
-**Requirements**: TBD
+**Goal:** O gestor consegue desfazer um pagamento marcado por engano — cancelar apaga o lançamento e a parcela volta automaticamente para aberta/parcial, sem nenhuma alteração permitida numa parcela conciliada
+**Requirements**: CANPAG-01, CANPAG-02, CANPAG-03, CANPAG-04 (trabalho pós-milestone — ver 11-CONTEXT.md)
 **Depends on:** Phase 10
 **Plans:** 0 plans
 
