@@ -5,8 +5,8 @@ milestone_name: Módulo Financeiro
 current_phase: 10
 current_phase_name: relatorio-financeiro-dedicado
 status: planning
-stopped_at: Phase 10 context gathered
-last_updated: "2026-08-21T01:22:05.978Z"
+stopped_at: Phase 10 UI-SPEC approved
+last_updated: "2026-08-21T01:58:46.124Z"
 last_activity: 2026-08-21
 last_activity_desc: "Fase 9 fechada. Plano 09-01 (poda ativa síncrona + confirmação) e plano 09-02 (limpeza das 27 órfãs pré-existentes) confirmados em produção e mesclados em main. Achado adicional pós-execução (D-09: remover periodo_fim sem substituir não podava nada) corrigido e reconfirmado em produção. ROADMAP.md/REQUIREMENTS.md atualizados, INTEG-01..05 fechados."
 progress:
@@ -142,6 +142,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-21T01:22:05.882Z
-Stopped at: Phase 10 context gathered
-Resume file: .planning/phases/10-relat-rio-financeiro-dedicado/10-CONTEXT.md
+Last session: 2026-08-21T01:58:46.040Z
+Stopped at: Phase 10 UI-SPEC approved
+Resume file: .planning/phases/10-relat-rio-financeiro-dedicado/10-UI-SPEC.md
