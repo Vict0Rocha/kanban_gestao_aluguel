@@ -232,11 +232,12 @@ Plans:
 **Goal:** O gestor filtra os contratos ao vivo numa página própria de Relatório Financeiro, vê a lista de parcelas que batem com o filtro, e exporta o resultado em PDF — sem abrir o painel suspenso da Phase 8 pra cada consulta
 **Requirements**: RELDED-01, RELDED-02, RELDED-03, RELDED-04, RELDED-05 (trabalho pós-milestone — ver 10-CONTEXT.md)
 **Depends on:** Phase 9
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 10 to break down)
+- [ ] 10-01-PLAN.md — Rota `/relatorios/financeiro` ponta a ponta: filtro ao vivo, 4 tiles + lista de parcelas, botão de entrada em `/relatorios` (RELDED-01, RELDED-02, RELDED-03)
+- [ ] 10-02-PLAN.md — Exportação em PDF: "Exportar PDF" empacota tiles + lista já filtrados num documento autônomo com cabeçalho, resumo, lista e rodapé (RELDED-04, RELDED-05)
 
 ## Progress
 
@@ -253,6 +254,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 7. Conciliação e destrava rastreada | 2/2 | Complete | 2026-08-20 |
 | 8. Relatórios financeiros | 1/1 | Complete | 2026-08-20 |
 | 9. Integridade de datas do contrato nas parcelas | 2/2 | Complete | 2026-08-21 |
-| 10. Relatório Financeiro dedicado | 0/0 | Planned | - |
+| 10. Relatório Financeiro dedicado | 0/2 | Planned | - |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9 e 10 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário na mesma conversa), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.
