@@ -37,6 +37,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 9: Integridade de datas do contrato nas parcelas** - Editar a data de um contrato apaga de verdade as parcelas órfãs que ficaram fora do novo período, em vez de deixá-las soltas no banco
 - [x] **Phase 10: Relatório Financeiro dedicado** - Página própria de Relatório Financeiro com filtro dinâmico, lista de contratos filtrados e exportação em PDF
 - [x] **Phase 11: Cancelamento de pagamento** - Reverter uma parcela marcada como paga por engano, sem permitir nenhuma alteração numa parcela conciliada
+- [ ] **Phase 12: Cancelamento de ajustes** - Cancelar acréscimo e desconto, mesmo padrão já usado para pagamento
 
 ## Phase Details
 
@@ -269,10 +270,21 @@ Plans:
 
 - [x] 11-01-PLAN.md — Cancelar pagamento ponta a ponta (Server Action, diálogo, trava de conciliada) + documentação da exceção ao livro-razão append-only
 
+### Phase 12: Cancelamento de ajustes
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 11
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 12 to break down)
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11
+Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -286,5 +298,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 9. Integridade de datas do contrato nas parcelas | 2/2 | Complete | 2026-08-21 |
 | 10. Relatório Financeiro dedicado | 2/2 | Complete | 2026-08-21 |
 | 11. Cancelamento de pagamento | 1/1 | Complete | 2026-08-21 |
+| 12. Cancelamento de ajustes | 0 plans | Not planned | - |
 
-**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10 e 11 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.
+**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11 e 12 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário; Phase 12: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.
