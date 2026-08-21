@@ -91,11 +91,11 @@ Fora do conjunto de 39 requisitos da v2.0 — trabalho aberto por um bug real en
 
 Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário na mesma conversa que abriu a Phase 9. Decisões registradas em `.planning/phases/10-relat-rio-financeiro-dedicado/10-CONTEXT.md`.
 
-- [ ] **RELDED-01**: Existe uma rota nova `/relatorios/financeiro`, alcançada por um botão "Relatório financeiro" dentro da `/relatorios` atual (mesma aba). A página atual (painel suspenso + cards da Phase 8) continua existindo sem mudança
-- [ ] **RELDED-02**: O painel de filtro (imóvel/proprietário/período/situação) é dinâmico — qualquer mudança recalcula os 4 cards e a lista imediatamente, sem precisar clicar em nada
-- [ ] **RELDED-03**: Abaixo dos cards, uma lista mostra uma linha por parcela filtrada (endereço, proprietário, competência, vencimento, situação, valor), sempre em sincronia com o filtro atual
-- [ ] **RELDED-04**: O botão "Gerar relatório" da Phase 8 vira "Exportar PDF" nesta página — não dispara mais a consulta (que já é ao vivo), só gera o PDF do estado atual da tela
-- [ ] **RELDED-05**: O PDF exportado contém os 4 totais, a lista completa de parcelas filtradas, e um cabeçalho com os filtros aplicados e a data de geração
+- [x] **RELDED-01**: Existe uma rota nova `/relatorios/financeiro`, alcançada por um botão "Relatório financeiro" dentro da `/relatorios` atual (mesma aba). A página atual (painel suspenso + cards da Phase 8) continua existindo sem mudança
+- [x] **RELDED-02**: O painel de filtro (imóvel/proprietário/período/situação) é dinâmico — qualquer mudança recalcula os 4 cards e a lista imediatamente, sem precisar clicar em nada
+- [x] **RELDED-03**: Abaixo dos cards, uma lista mostra uma linha por parcela filtrada (endereço, proprietário, competência, vencimento, situação, valor), sempre em sincronia com o filtro atual
+- [x] **RELDED-04**: O botão "Gerar relatório" da Phase 8 vira "Exportar PDF" nesta página — não dispara mais a consulta (que já é ao vivo), só gera o PDF do estado atual da tela
+- [x] **RELDED-05**: O PDF exportado contém os 4 totais, a lista completa de parcelas filtradas, e um cabeçalho com os filtros aplicados e a data de geração
 
 ## Carried over from v1.0
 
@@ -190,11 +190,11 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | INTEG-03 | Phase 9 | Confirmado em produção |
 | INTEG-04 | Phase 9 | Confirmado em produção |
 | INTEG-05 | Phase 9 | Confirmado em produção |
-| RELDED-01 | Phase 10 | Pendente |
-| RELDED-02 | Phase 10 | Pendente |
-| RELDED-03 | Phase 10 | Pendente |
-| RELDED-04 | Phase 10 | Pendente |
-| RELDED-05 | Phase 10 | Pendente |
+| RELDED-01 | Phase 10 | Confirmado em produção |
+| RELDED-02 | Phase 10 | Confirmado em produção |
+| RELDED-03 | Phase 10 | Confirmado em produção |
+| RELDED-04 | Phase 10 | Confirmado em produção |
+| RELDED-05 | Phase 10 | Confirmado em produção |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5

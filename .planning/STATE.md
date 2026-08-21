@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 10
 current_phase_name: relat-rio-financeiro-dedicado
-status: executed
-stopped_at: Phase 10 código completo (planos 10-01/10-02 mesclados) — aguardando verificação humana em produção
-last_updated: "2026-08-21T13:10:00.000Z"
+status: complete
+stopped_at: Phase 10 completa — RELDED-01..05 confirmados em produção
+last_updated: "2026-08-21T13:30:00.000Z"
 last_activity: 2026-08-21
-last_activity_desc: "Fase 10 executada. Plano 10-01 (rota /relatorios/financeiro, filtro ao vivo, tiles+lista, botão de entrada) e plano 10-02 (exportação em PDF via jsPDF/jspdf-autotable) mesclados em main. Executor do plano 10-02 achou e corrigiu 2 divergências reais entre a API assumida no plano/RESEARCH.md e a API real dos pacotes instalados (showHead em vez de headerRows, doc.getNumberOfPages() em vez de doc.internal.getNumberOfPages()). npm install rodado no checkout principal (só o worktree tinha as deps novas). npm run lint/build limpos. Falta verificação humana em produção (RELDED-01..05) antes de fechar a fase."
+last_activity_desc: "Fase 10 encerrada. Plano 10-01 (rota /relatorios/financeiro, filtro ao vivo, tiles+lista, botão de entrada) e plano 10-02 (exportação em PDF via jsPDF/jspdf-autotable) mesclados em main e confirmados em produção pelo usuário: navegação, filtro ao vivo em todos os campos, limpar filtros, resultado vazio, PDF sem filtro/com filtro/vazio (cabeçalho, totais, lista, acentuação, rodapé), e /relatorios (Phase 8) intacta. Executor do plano 10-02 achou e corrigiu 2 divergências reais entre a API assumida no plano/RESEARCH.md e a API real dos pacotes instalados (showHead em vez de headerRows, doc.getNumberOfPages() em vez de doc.internal.getNumberOfPages())."
 progress:
   total_phases: 10
-  completed_phases: 8
+  completed_phases: 10
   total_plans: 29
   completed_plans: 29
-  percent: 90
+  percent: 100
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 10 — código completo, aguardando verificação humana em produção (RELDED-01..05)
+**Current focus:** Fase 10 completa. Todas as 10 fases do roadmap (v1.0 Phases 1-3 + v2.0 Phases 4-10) estão fechadas. Ideia registrada para uma fase futura: rastrear dinheiro recebido pela imobiliária (taxa de administração, primeiro aluguel, caução, taxas de gestão) — ver `10-CONTEXT.md` § Deferred.
 
 ## Current Position
 
-Phase: 10 (relat-rio-financeiro-dedicado) — EXECUTED (verificação humana pendente)
-Status: Planos 10-01/10-02 mesclados em main; falta testar em produção antes de fechar a fase
-Last activity: 2026-08-21 — Phase 10 executada (planos 10-01 e 10-02 mesclados)
+Phase: 10 (relat-rio-financeiro-dedicado) — COMPLETE
+Status: Fase 10 fechada — RELDED-01..05 confirmados em produção
+Last activity: 2026-08-21 — Phase 10 encerrada
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -142,6 +142,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-21T01:58:46.040Z
-Stopped at: Phase 10 UI-SPEC approved
-Resume file: .planning/phases/10-relat-rio-financeiro-dedicado/10-UI-SPEC.md
+Last session: 2026-08-21T13:30:00.000Z
+Stopped at: Fase 10 completa — todo o roadmap atual fechado. Próximo passo (quando o usuário quiser): discutir a fase futura de dinheiro recebido pela imobiliária (ver `10-CONTEXT.md` § Deferred).
+Resume file: .planning/ROADMAP.md

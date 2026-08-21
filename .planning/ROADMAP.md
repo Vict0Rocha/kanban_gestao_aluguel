@@ -35,7 +35,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 7: Conciliação e destrava rastreada** - Parcela conferida fica travada contra edição acidental; destravar sempre deixa rastro de quem, quando e por quê
 - [x] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
 - [x] **Phase 9: Integridade de datas do contrato nas parcelas** - Editar a data de um contrato apaga de verdade as parcelas órfãs que ficaram fora do novo período, em vez de deixá-las soltas no banco
-- [ ] **Phase 10: Relatório Financeiro dedicado** - Página própria de Relatório Financeiro com filtro dinâmico, lista de contratos filtrados e exportação em PDF
+- [x] **Phase 10: Relatório Financeiro dedicado** - Página própria de Relatório Financeiro com filtro dinâmico, lista de contratos filtrados e exportação em PDF
 
 ## Phase Details
 
@@ -234,11 +234,11 @@ Plans:
 **Depends on:** Phase 9
 **Success Criteria** (what must be TRUE):
 
-  1. Existe uma rota `/relatorios/financeiro`, alcançada por um botão "Relatório financeiro" em `/relatorios` (mesma aba) — código completo, verificação em produção pendente
-  2. O painel de filtro é dinâmico — qualquer mudança recalcula os 4 tiles e a lista imediatamente, sem clicar em nada — código completo, verificação em produção pendente
-  3. Abaixo dos tiles, uma lista mostra uma linha por parcela filtrada, sempre em sincronia com o filtro atual — código completo, verificação em produção pendente
-  4. O botão "Gerar relatório" da Phase 8 vira "Exportar PDF" nesta página — não dispara mais consulta, só empacota o que já está na tela — código completo, verificação em produção pendente
-  5. O PDF exportado contém os 4 totais, a lista completa filtrada, e um cabeçalho com os filtros aplicados e a data de geração — código completo, verificação em produção pendente
+  1. ✓ Existe uma rota `/relatorios/financeiro`, alcançada por um botão "Relatório financeiro" em `/relatorios` (mesma aba) — confirmado em produção
+  2. ✓ O painel de filtro é dinâmico — qualquer mudança recalcula os 4 tiles e a lista imediatamente, sem clicar em nada — confirmado em produção
+  3. ✓ Abaixo dos tiles, uma lista mostra uma linha por parcela filtrada, sempre em sincronia com o filtro atual — confirmado em produção
+  4. ✓ O botão "Gerar relatório" da Phase 8 vira "Exportar PDF" nesta página — não dispara mais consulta, só empacota o que já está na tela — confirmado em produção
+  5. ✓ O PDF exportado contém os 4 totais, a lista completa filtrada, e um cabeçalho com os filtros aplicados e a data de geração — confirmado em produção (filtrado, sem filtro e resultado vazio, todos testados)
 
 **Plans:** 2/2 plans executed
 
@@ -262,6 +262,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 7. Conciliação e destrava rastreada | 2/2 | Complete | 2026-08-20 |
 | 8. Relatórios financeiros | 1/1 | Complete | 2026-08-20 |
 | 9. Integridade de datas do contrato nas parcelas | 2/2 | Complete | 2026-08-21 |
-| 10. Relatório Financeiro dedicado | 2/2 | Executed (verificação humana pendente) | - |
+| 10. Relatório Financeiro dedicado | 2/2 | Complete | 2026-08-21 |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9 e 10 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário na mesma conversa), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.
