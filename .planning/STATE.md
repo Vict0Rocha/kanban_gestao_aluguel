@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 11
 current_phase_name: cancelamento-de-pagamento
-status: planning
-stopped_at: Phase 11 UI-SPEC approved
-last_updated: "2026-08-21T18:24:09.092Z"
+status: executed
+stopped_at: Phase 11 código completo (plano 11-01 mesclado) — aguardando verificação humana em produção
+last_updated: "2026-08-21T19:10:00.000Z"
 last_activity: 2026-08-21
-last_activity_desc: "Fase 10 encerrada. Plano 10-01 (rota /relatorios/financeiro, filtro ao vivo, tiles+lista, botão de entrada) e plano 10-02 (exportação em PDF via jsPDF/jspdf-autotable) mesclados em main e confirmados em produção pelo usuário: navegação, filtro ao vivo em todos os campos, limpar filtros, resultado vazio, PDF sem filtro/com filtro/vazio (cabeçalho, totais, lista, acentuação, rodapé), e /relatorios (Phase 8) intacta. Executor do plano 10-02 achou e corrigiu 2 divergências reais entre a API assumida no plano/RESEARCH.md e a API real dos pacotes instalados (showHead em vez de headerRows, doc.getNumberOfPages() em vez de doc.internal.getNumberOfPages())."
+last_activity_desc: "Fase 11 executada. Plano 11-01 (cancelarPagamentoAction com DELETE triplo-condicionado, CancelarPagamentoDialog, botão no histórico de lançamentos, trava de conciliada, documentação da 2ª exceção ao livro-razão append-only) mesclado em main. npm run lint/build limpos, verificados de forma independente. Falta verificação humana em produção: comportamento do botão/diálogo, recálculo de status, trava de conciliada, e principalmente a composição AlertDialog dentro de Sheet já aberto (inédita neste projeto, com histórico de bug de animação na mesma classe de composição)."
 progress:
-  total_phases: 10
+  total_phases: 11
   completed_phases: 9
-  total_plans: 29
-  completed_plans: 29
-  percent: 90
+  total_plans: 30
+  completed_plans: 30
+  percent: 82
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 11 — cancelamento-de-pagamento (recém-adicionada, discuss-phase pendente)
+**Current focus:** Phase 11 — código completo, aguardando verificação humana em produção (CANPAG-01..04, especialmente a composição AlertDialog+Sheet)
 
 ## Current Position
 
-Phase: 11 (cancelamento-de-pagamento) — PLANNING
-Status: Fase adicionada ao ROADMAP.md; discuss-phase pendente
-Last activity: 2026-08-21 — Phase 11 adicionada via /gsd-phase
+Phase: 11 (cancelamento-de-pagamento) — EXECUTED (verificação humana pendente)
+Status: Plano 11-01 mesclado em main; falta testar em produção antes de fechar a fase
+Last activity: 2026-08-21 — Phase 11 executada (plano 11-01 mesclado)
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
