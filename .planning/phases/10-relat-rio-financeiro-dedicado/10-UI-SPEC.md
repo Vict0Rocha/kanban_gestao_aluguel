@@ -1,10 +1,11 @@
 ---
 phase: 10
 slug: relatorio-financeiro-dedicado
-status: draft
+status: approved
 shadcn_initialized: true
 preset: base-nova (baseColor neutral, iconLibrary lucide, rsc true)
 created: 2026-08-21
+reviewed_at: 2026-08-21
 ---
 
 # Phase 10 — UI Design Contract
@@ -208,20 +209,25 @@ Do not introduce colors outside this set. The PDF is a monochrome-leaning docume
 
 ## UI Considerations
 
-Applicable state considerations resolved: 7 covered, 3 backstop, 0 unresolved.
+Ran via `ui-consideration-probe.cjs` against 12 described surfaces (E1–E12, one per element in the Copywriting/Layout contracts above). Engine flagged 77 applicable (category × element) combinations. Resolved: 13 substantive rows below (10 explicit, 3 backstop) cover every combination that names a real design decision; the remaining 64 are dismissed in bulk immediately after, grouped by the static-control elements they belong to, since none of them names a state that surface can actually be in. 0 unresolved.
 
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
-| empty (zero-result) | Parcela list (on-screen) | ✅ covered | Renders "Nenhuma parcela encontrada para os filtros aplicados." documented in Copywriting Contract — single message for both the filtered and (edge-case) totally-empty states, since this page has no separate "today" default to distinguish from |
-| empty (zero-result) | Parcela list (PDF export) | ✅ covered | PDF Export §5 — still generates the document with the four totals legitimately at 0/R$ 0,00 and the same empty-list copy, never blocks export or leaves a silent blank area |
-| loading | Initial page data fetch | 🧪 backstop | No copy specified for the brief interval before the server-fetched data resolves into the client component; planner should default to the same loading affordance already used elsewhere for this app's data-bearing panels (e.g. a skeleton matching the tile-grid shape, or the panel simply not rendering until the Server Component's fetch resolves — this route is server-rendered, so a client-visible loading state may not even be reachable in the common case; only relevant if the planner chooses a client-side fetch instead) |
-| loading | "Exportar PDF" action | ✅ covered | "Exportando..." (disabled) documented in Copywriting Contract, same pattern family as existing Server Action buttons in this codebase |
-| error | Initial page data fetch failure | ✅ covered | "Não foi possível carregar o relatório agora. Tente novamente." documented in Copywriting Contract |
-| error | "Exportar PDF" failure | ✅ covered | "Não foi possível exportar o PDF. Tente novamente." documented in Copywriting Contract, inline dismissible note near the button, never a raw library/browser error |
-| long-text | Imóvel/Proprietário values in the new list (on-screen and PDF) | 🧪 backstop | No truncation rule specified — reuses the same "let it wrap, don't ellipsis" convention already implicit in `ParcelasTable`'s Imóvel/Proprietário cells (no `truncate` class present there); planner should follow that precedent rather than introduce ellipsis truncation in only this one new table |
-| zero-one-many | Situação chip multi-select | ✅ covered | Empty set = "Todas" (no filter), verbatim reuse of Phase 8's `toggle()`/`STATUS_OPTIONS` semantics |
-| overflow | Filtered result set spanning many parcelas (list length, PDF pagination) | ✅ covered | On-screen: the list is a plain scrolling table, no pagination invented (D-04/D-03 ask for "a lista completa," matches the Financeiro tab's own no-pagination precedent at current ~350-parcela scale). PDF: §4 requires the table header to repeat on every page for exactly this reason |
-| overflow | Filter panel field row on narrow viewports | 🧪 backstop | No explicit breakpoint behavior specified beyond what Phase 8 already established for the identical field grid; planner should follow `FiltroRelatorioFinanceiro`'s existing responsive behavior verbatim, not introduce a new breakpoint scheme for what is structurally the same panel |
+| empty (zero-result) | Parcela list (on-screen, E11) | ✅ resolved (explicit) | Renders "Nenhuma parcela encontrada para os filtros aplicados." documented in Copywriting Contract — single message for both the filtered and (edge-case) totally-empty states, since this page has no separate "today" default to distinguish from |
+| empty (zero-result) | Parcela list (PDF export, E12) | ✅ resolved (explicit) | PDF Export §5 — still generates the document with the four totals legitimately at 0/R$ 0,00 and the same empty-list copy, never blocks export or leaves a silent blank area |
+| empty (zero-result) | Four-category tile grid (E10) | ✅ resolved (explicit) | Always rendered, no separate empty variant — a filter matching nothing legitimately shows all four tiles at "0" / R$ 0,00, same numbers the list's empty state corresponds to; not a distinct visual state from "populated with small numbers" |
+| loading | Initial page data fetch (E10/E11 — the tile grid and list share one data source) | 🧪 resolved (backstop) | No copy specified for the brief interval before the server-fetched data resolves into the client component; planner should default to the same loading affordance already used elsewhere for this app's data-bearing panels (e.g. a skeleton matching the tile-grid shape, or the panel simply not rendering until the Server Component's fetch resolves — this route is server-rendered, so a client-visible loading state may not even be reachable in the common case; only relevant if the planner chooses a client-side fetch instead) |
+| loading | "Exportar PDF" action (E9) | ✅ resolved (explicit) | "Exportando..." (disabled) documented in Copywriting Contract, same pattern family as existing Server Action buttons in this codebase |
+| loading | Exported PDF document itself (E12) | ✅ resolved (explicit) | The PDF has no loading state of its own — it is only generated (via E9's "Exportando...") after the on-screen data has already resolved; there is no partial/streaming PDF render in scope |
+| error | Initial page data fetch failure (E10/E11) | ✅ resolved (explicit) | "Não foi possível carregar o relatório agora. Tente novamente." documented in Copywriting Contract |
+| error | "Exportar PDF" failure (E9/E12) | ✅ resolved (explicit) | "Não foi possível exportar o PDF. Tente novamente." documented in Copywriting Contract, inline dismissible note near the button, never a raw library/browser error |
+| long-text | Imóvel/Proprietário values in the list (E11, on-screen and PDF) | 🧪 resolved (backstop) | No truncation rule specified — reuses the same "let it wrap, don't ellipsis" convention already implicit in `ParcelasTable`'s Imóvel/Proprietário cells (no `truncate` class present there); planner should follow that precedent rather than introduce ellipsis truncation in only this one new table |
+| zero-one-many | Situação chip multi-select (E6) | ✅ resolved (explicit) | Empty set = "Todas" (no filter), verbatim reuse of Phase 8's `toggle()`/`STATUS_OPTIONS` semantics |
+| zero-one-many | Parcela list row count (E10/E11/E12: 0 / 1 / many parcelas) | ✅ resolved (explicit) | 0 → the empty-state row above. 1 → the table/PDF render a single row exactly like any other, no singular/plural copy variant needed (the result counter already handles "1 de N parcelas" via the existing `{filtradas} de {total}` template, no special-cased grammar). Many → §4/§6 no-pagination, scrolling table on-screen and repeating PDF header, both already specified |
+| overflow | Filtered result set spanning many parcelas (list length, PDF pagination) (E11/E12) | ✅ resolved (explicit) | On-screen: the list is a plain scrolling table, no pagination invented (D-04/D-03 ask for "a lista completa," matches the Financeiro tab's own no-pagination precedent at current ~350-parcela scale). PDF: §4 requires the table header to repeat on every page for exactly this reason |
+| overflow | Filter panel field row on narrow viewports (E5) | 🧪 resolved (backstop) | No explicit breakpoint behavior specified beyond what Phase 8 already established for the identical field grid; planner should follow `FiltroRelatorioFinanceiro`'s existing responsive behavior verbatim, not introduce a new breakpoint scheme for what is structurally the same panel |
+
+**Dismissed in bulk (64 combinations across E1–E9, minus the rows above that already cover E5/E6/E9 specifically):** E1 (entry-point button), E2 (back link), E3 (page header), E4 (filter panel trigger), E7 (live result counter), and E8 ("Limpar filtros" button) are static, always-rendered controls with no data fetch, no async state, and no content long enough to overflow or wrap — each is a fixed short string plus a fixed icon (E7's counter is derived synchronously from the same in-memory filter pass as the tiles/list, not its own data source, so it inherits E10/E11's loading/error resolution above rather than needing its own). The engine's `empty`/`loading`/`error`/`populated`/`partial`/`overflow`/`long-text` probes on these six elements don't name a state that element can actually be in — dismissed, reason: "static control, no independent data lifecycle." E5's `empty`/`loading`/`error`/`populated`/`partial` (as opposed to its `overflow`/`long-text`/`zero-one-many`, resolved above) are dismissed the same way — the three filter inputs are always rendered, controlled, client-only form fields with no fetch of their own.
 
 ---
 
@@ -237,11 +243,11 @@ No third-party shadcn registries declared or needed. **Note for the planner:** w
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS (after 2 revisions — collapsed to exactly 2 weights, 400/600)
+- [x] Dimension 5 Spacing: PASS (after 2 revisions — zero off-grid exceptions declared; two shared-component defaults neutralized via additive `className` overrides, §8)
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-08-21
