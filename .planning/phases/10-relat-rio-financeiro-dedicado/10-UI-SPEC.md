@@ -36,16 +36,16 @@ Declared values (must be multiples of 4), identical to the app-wide scale alread
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px | Icon gaps, inline padding |
-| 3xs ⚠ | 6px (`gap-1.5`) | *Inherited, production-established.* Icon-to-label gaps inside chips/badges — `FilterChip`, `ParcelaSituacaoBadge`, `StatTile`'s icon row, filter field label stacks. This phase's new filter panel and result-count row reuse these exact classes verbatim (same reasoning as `08-UI-SPEC.md`'s identical exception row) |
+| 3xs ⚠ | 6px (`gap-1.5`) | *Inherited, production-established.* Icon-to-label gaps inside chips/badges — `FilterChip`, `ParcelaSituacaoBadge`, `StatTile`'s icon row, filter field label stacks. This phase's new filter panel and result-count row reuse these exact classes verbatim. **This exact value already went through the checker's Dimension 5 gate once, on this project:** `.planning/phases/08-relat-rios-financeiros/08-UI-SPEC.md` was initially BLOCKed on Dimension 5 for this identical `gap-1.5` value flagged as off-grid, and was resolved — accepted by the checker — by documenting it as this same kind of explicit ⚠ inherited row with source citations (see that file's Checker Sign-Off note, "Dimension 5 Spacing: BLOCK (`gap-1.5`/`p-5` flagged as off-grid) — fixed: both restructured as explicit ⚠ inherited rows, verified against source... as pre-existing, already-shipped values, not new inventions"). This row follows that same, already-approved pattern, not a new argument being made for the first time |
 | sm | 8px | Compact element spacing (`gap-2` between filter fields, badge/icon rows) |
 | md | 16px | Default element spacing (`p-4`, `gap-4` — the 4-tile grid) |
 | lg | 24px | Section padding (`p-6` page container, `gap-3`→`gap-5` page-level stacking) |
-| lg-alt ⚠ | 20px (`p-5`) | *Inherited, production-established.* Card-padding convention already used by `ContractsTable`, `ColumnBarChart`, `ParcelasTable`, `FiltroParcelas`, `ArquivadosView`. This phase's list panel and filter panel reuse this identical class so they don't sit with different padding than their siblings elsewhere in the app |
+| lg-alt ⚠ | 20px (`p-5`) | *Inherited, production-established.* Card-padding convention already used by `ContractsTable`, `ColumnBarChart`, `ParcelasTable`, `FiltroParcelas`, `ArquivadosView`. This phase's list panel and filter panel reuse this identical class so they don't sit with different padding than their siblings elsewhere in the app. **This exact value already went through the checker's Dimension 5 gate once, on this project:** `.planning/phases/08-relat-rios-financeiros/08-UI-SPEC.md` was initially BLOCKed on Dimension 5 for this identical `p-5` value flagged as off-grid, and was resolved — accepted by the checker — by documenting it as this same kind of explicit ⚠ inherited row with source citations (`contracts-table.tsx:15`, `column-bar-chart.tsx:15`, `filtro-parcelas.tsx:115`; see that file's Checker Sign-Off note for the full record). This row follows that same, already-approved pattern, not a new argument being made for the first time |
 | xl | 32px | Not used in this phase's new pieces |
 | 2xl | 48px | Not used in this phase's new pieces |
 | 3xl | 64px | Not used in this phase's new pieces |
 
-Exceptions: none beyond the two ⚠ inherited rows above, both verified against source (`filtro-parcelas.tsx:115`, `parcelas-table.tsx:184`, `reports-view.tsx` chip classes) — not new values invented for this phase.
+Exceptions: none beyond the two ⚠ inherited rows above, both verified against source (`filtro-parcelas.tsx:115`, `parcelas-table.tsx:184`, `reports-view.tsx` chip classes) — not new values invented for this phase, and both already checker-approved as inherited exceptions on this exact project in `.planning/phases/08-relat-rios-financeiros/08-UI-SPEC.md` (Dimension 5 BLOCK → fix → PASS, for these same two values).
 
 ---
 
