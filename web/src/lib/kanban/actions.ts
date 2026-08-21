@@ -1274,6 +1274,64 @@ export async function destravarParcelaAction(
   return { ok: true, data: undefined }
 }
 
+/**
+ * CANPAG-01..04: desfaz um pagamento marcado por engano — D-01 (11-CONTEXT.md)
+ * apaga de verdade a linha em `parcela_lancamentos`, reversão deliberada do
+ * livro-razão append-only que o resto deste arquivo segue (mesmo trade-off já
+ * confirmado pelo usuário, sem checkpoint novo). Cada lançamento
+ * `tipo='pagamento'` tem seu próprio botão (D-02), então o DELETE é
+ * condicionado ao `id` daquele lançamento específico, nunca a todos os
+ * pagamentos da parcela de uma vez.
+ *
+ * A trava de corrida real (D-06/race safety) é o próprio DELETE condicionado
+ * aos três `.eq()` — id do lançamento, parcela_id e tipo pagamento — mesmo
+ * formato do `.eq("status","paga")` de `conciliarParcelaAction`, nunca uma
+ * leitura seguida de escrita separada. A tripla condição também impede
+ * cancelar por engano um lançamento `acrescimo`/`desconto`/`destrava` caso um
+ * chamador passe o id errado.
+ */
+export async function cancelarPagamentoAction(
+  parcelaId: string,
+  lancamentoId: string
+): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(parcelaId, "Parcela") ?? id(lancamentoId, "Lançamento")
+  if (invalido) return { ok: false, error: invalido }
+
+  // D-06: mesma trava que registrarPagamentoAction/ajustarParcelaAction já
+  // usam, reuso verbatim — nenhuma parcela conciliada aceita cancelamento de
+  // lançamento nenhum.
+  const recusaConciliada = await exigirParcelaNaoConciliada(sessao.supabase, parcelaId)
+  if (recusaConciliada) return { ok: false, error: recusaConciliada }
+
+  const { data, error } = await sessao.supabase
+    .from("parcela_lancamentos")
+    .delete()
+    .eq("id", lancamentoId)
+    .eq("parcela_id", parcelaId)
+    .eq("tipo", "pagamento")
+    .select("id")
+
+  if (error) {
+    console.error("cancelarPagamento", error)
+    return { ok: false, error: erroDoBanco(error.code, "cancelar o pagamento") }
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: semLinhas("cancelar o pagamento") }
+  }
+
+  // D-03: a única decisão de status desta função. Relê TODOS os lançamentos
+  // restantes e regrava — o resultado pode legitimamente pousar em aberta ou
+  // parcial, dependendo do que sobrar no livro-razão; esta função nunca
+  // grava um valor de status por conta própria.
+  const erroStatus = await recalcularEGravarStatus(sessao.supabase, parcelaId)
+  if (erroStatus) return { ok: false, error: erroStatus }
+
+  return { ok: true, data: undefined }
+}
+
 // ------------------------------------------------------------------
 // Relatório financeiro
 // ------------------------------------------------------------------

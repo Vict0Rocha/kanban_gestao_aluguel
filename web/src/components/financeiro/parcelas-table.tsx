@@ -146,6 +146,8 @@ function AcoesCell({
         competencia={linha.competencia}
         vencimento={linha.vencimento}
         lancamentos={linha.lancamentos}
+        parcelaId={linha.id}
+        parcelaConciliada={linha.situacao === "conciliada"}
         open={dialogoAberto === "historico"}
         onOpenChange={(open) => setDialogoAberto(open ? "historico" : null)}
       />
