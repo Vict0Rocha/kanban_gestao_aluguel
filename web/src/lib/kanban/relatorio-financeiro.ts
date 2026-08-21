@@ -17,6 +17,7 @@ export type SituacaoRelatorio = "paga" | "a_vencer" | "vencida" | "conciliada"
  * carrega, porque esta fase deliberadamente não filtra por eles (D-05).
  */
 export type ParcelaRelatorio = {
+  id: string
   competencia: string
   vencimento: string
   valor_original: number
@@ -56,7 +57,7 @@ export function filtroRelatorioVazio(): FiltroRelatorioValores {
 }
 
 /** Campo vazio nunca filtra — mesmo `ilike`/substring de `FiltroParcelas`. */
-function passaFiltroTexto(valor: string, filtro: string): boolean {
+export function passaFiltroTexto(valor: string, filtro: string): boolean {
   const alvo = filtro.trim().toLowerCase()
   if (!alvo) return true
   return valor.toLowerCase().includes(alvo)
@@ -68,7 +69,7 @@ function passaFiltroTexto(valor: string, filtro: string): boolean {
  * "YYYY-MM" é ignorado silenciosamente (mesma regra de `financeiro/page.tsx`
  * para o parâmetro `periodo` malformado), nunca derruba o relatório.
  */
-function passaFiltroPeriodo(competencia: string, periodo: string): boolean {
+export function passaFiltroPeriodo(competencia: string, periodo: string): boolean {
   if (!/^\d{4}-\d{2}$/.test(periodo)) return true
   return competencia.startsWith(periodo)
 }

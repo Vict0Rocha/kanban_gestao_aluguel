@@ -1303,7 +1303,7 @@ export async function buscarParcelasRelatorioAction(): Promise<
   const { data, error } = await sessao.supabase
     .from("parcelas")
     .select(
-      "competencia, vencimento, valor_original, status, cards(endereco, proprietario), parcela_lancamentos(tipo, valor)"
+      "id, competencia, vencimento, valor_original, status, cards(endereco, proprietario), parcela_lancamentos(tipo, valor)"
     )
 
   if (error) {

@@ -44,11 +44,23 @@ const SITUACAO = {
   },
 } as const
 
-export function ParcelaSituacaoBadge({ situacao }: { situacao: Situacao }) {
-  const { icon: Icon, label, className } = SITUACAO[situacao]
+export function ParcelaSituacaoBadge({
+  situacao,
+  className,
+}: {
+  situacao: Situacao
+  className?: string
+}) {
+  const { icon: Icon, label, className: toneClassName } = SITUACAO[situacao]
 
   return (
-    <span className={cn("inline-flex items-center gap-1.5 text-xs font-semibold", className)}>
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 text-xs font-semibold",
+        toneClassName,
+        className
+      )}
+    >
       <Icon className="size-3.5 shrink-0" />
       {label}
     </span>

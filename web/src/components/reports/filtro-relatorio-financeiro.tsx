@@ -1,6 +1,8 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
+import { ArrowUpRight } from "lucide-react"
 import { Filter, X } from "lucide-react"
 
 import {
@@ -75,6 +77,15 @@ export function FiltroRelatorioFinanceiro({
             relatório.
           </p>
         </div>
+        <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          render={<Link href="/relatorios/financeiro" />}
+        >
+          <ArrowUpRight className="size-3.5" />
+          Relatório financeiro
+        </Button>
         <CollapsibleTrigger
           render={
             <Button variant="outline" size="sm">
@@ -87,6 +98,7 @@ export function FiltroRelatorioFinanceiro({
             </Button>
           }
         />
+        </div>
       </div>
 
       <CollapsiblePanel>
