@@ -36,7 +36,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 8: Relatórios financeiros** - Pagas, a vencer, vencidas e conciliadas, com filtros combináveis por imóvel, proprietário e período
 - [x] **Phase 9: Integridade de datas do contrato nas parcelas** - Editar a data de um contrato apaga de verdade as parcelas órfãs que ficaram fora do novo período, em vez de deixá-las soltas no banco
 - [x] **Phase 10: Relatório Financeiro dedicado** - Página própria de Relatório Financeiro com filtro dinâmico, lista de contratos filtrados e exportação em PDF
-- [ ] **Phase 11: Cancelamento de pagamento** - Reverter uma parcela marcada como paga por engano, sem permitir nenhuma alteração numa parcela conciliada
+- [x] **Phase 11: Cancelamento de pagamento** - Reverter uma parcela marcada como paga por engano, sem permitir nenhuma alteração numa parcela conciliada
 
 ## Phase Details
 
@@ -255,11 +255,13 @@ Plans:
 **Depends on:** Phase 10
 **Success Criteria** (what must be TRUE):
 
-  1. Existe um botão "Cancelar" ao lado de cada lançamento tipo='pagamento' no histórico de lançamentos da parcela — código completo, verificação em produção pendente
-  2. Clicar "Cancelar" abre confirmação simples mostrando o valor; confirmar apaga de verdade aquele lançamento do banco — código completo, verificação em produção pendente
-  3. Depois de apagar, o status da parcela é recalculado a partir do que resta no livro-razão (nunca hardcoded) — código completo, verificação em produção pendente
-  4. Uma parcela conciliada nunca aceita cancelamento de lançamento nenhum — código completo, verificação em produção pendente
-  5. A composição AlertDialog+Sheet (inédita neste projeto) não quebra visualmente — verificação em produção pendente
+  1. ✓ Existe um botão "Cancelar" ao lado de cada lançamento tipo='pagamento' no histórico de lançamentos da parcela — confirmado em produção
+  2. ✓ Clicar "Cancelar" abre confirmação simples mostrando o valor; confirmar apaga de verdade aquele lançamento do banco — confirmado em produção
+  3. ✓ Depois de apagar, o status da parcela é recalculado a partir do que resta no livro-razão (nunca hardcoded) — confirmado em produção
+  4. ✓ Uma parcela conciliada nunca aceita cancelamento de lançamento nenhum — confirmado em produção
+  5. ✓ A composição AlertDialog+Sheet (inédita neste projeto) não quebra visualmente — confirmado em produção
+
+**Correção pós-verificação:** o usuário encontrou, ao testar em produção, que aplicar qualquer filtro no Financeiro (fazendo pelo menos uma linha de parcela renderizar) derrubava a tela com `RangeError: Invalid time value`. Causa: `CancelarPagamentoDialog` fica sempre montado dentro de `ParcelaHistoricoSheet` (mesmo padrão dos outros diálogos de ação) e usava `cancelando?.data ?? ""` como valor padrão enquanto nenhum lançamento está selecionado — `formatDate("")` monta uma `Date` inválida, e `Intl.DateTimeFormat.format()` lança essa exceção assim que qualquer parcela é renderizada. A visão padrão "vencendo hoje" mascarava o bug quando vazia; qualquer filtro que trouxesse resultado expunha. Corrigido fora de um plano formal (mudança contida, sem risco de dado): a frase só chama `formatDate(data)` quando `data` não é vazio. `npm run lint`/`build` limpos, reconfirmado em produção pelo usuário.
 
 **Plans:** 1/1 plan executed
 
@@ -283,6 +285,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 8. Relatórios financeiros | 1/1 | Complete | 2026-08-20 |
 | 9. Integridade de datas do contrato nas parcelas | 2/2 | Complete | 2026-08-21 |
 | 10. Relatório Financeiro dedicado | 2/2 | Complete | 2026-08-21 |
-| 11. Cancelamento de pagamento | 1/1 | Executed (verificação humana pendente) | - |
+| 11. Cancelamento de pagamento | 1/1 | Complete | 2026-08-21 |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10 e 11 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.

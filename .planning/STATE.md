@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 11
 current_phase_name: cancelamento-de-pagamento
-status: executed
-stopped_at: Phase 11 código completo (plano 11-01 mesclado) — aguardando verificação humana em produção
-last_updated: "2026-08-21T19:10:00.000Z"
+status: complete
+stopped_at: Phase 11 encerrada — CANPAG-01..04 confirmados em produção
+last_updated: "2026-08-21T20:00:00.000Z"
 last_activity: 2026-08-21
-last_activity_desc: "Fase 11 executada. Plano 11-01 (cancelarPagamentoAction com DELETE triplo-condicionado, CancelarPagamentoDialog, botão no histórico de lançamentos, trava de conciliada, documentação da 2ª exceção ao livro-razão append-only) mesclado em main. npm run lint/build limpos, verificados de forma independente. Falta verificação humana em produção: comportamento do botão/diálogo, recálculo de status, trava de conciliada, e principalmente a composição AlertDialog dentro de Sheet já aberto (inédita neste projeto, com histórico de bug de animação na mesma classe de composição)."
+last_activity_desc: "Fase 11 encerrada. Usuário confirmou CANPAG-01..04 em produção, incluindo a composição AlertDialog dentro de Sheet já aberto sem quebra visual. No caminho, achou um bug real: aplicar qualquer filtro no Financeiro que trouxesse ao menos uma parcela derrubava a tela com RangeError: Invalid time value. Causa: CancelarPagamentoDialog fica sempre montado e usava cancelando?.data ?? \"\" como fallback — formatDate(\"\") monta Date inválida. Corrigido fora de plano formal (cancelar-pagamento-dialog.tsx só chama formatDate quando data não é vazio), commit 284e52b, lint/build limpos, reconfirmado pelo usuário."
 progress:
   total_phases: 11
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 30
   completed_plans: 30
-  percent: 82
+  percent: 91
 ---
 
 # Project State
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 11 — código completo, aguardando verificação humana em produção (CANPAG-01..04, especialmente a composição AlertDialog+Sheet)
+**Current focus:** Todas as 11 fases planejadas (v2.0 + pós-milestone) encerradas. Ideia adiada pendente de discussão: dinheiro que a própria imobiliária recebe (taxa de administração, primeiro aluguel, caução, taxas de gestão) — ver 10-CONTEXT.md/11-CONTEXT.md § deferred.
 
 ## Current Position
 
-Phase: 11 (cancelamento-de-pagamento) — EXECUTED (verificação humana pendente)
-Status: Plano 11-01 mesclado em main; falta testar em produção antes de fechar a fase
-Last activity: 2026-08-21 — Phase 11 executada (plano 11-01 mesclado)
+Phase: 11 (cancelamento-de-pagamento) — COMPLETE
+Status: CANPAG-01..04 confirmados em produção; um bug real encontrado no caminho (RangeError ao filtrar Financeiro) já corrigido e reconfirmado
+Last activity: 2026-08-21 — Phase 11 encerrada
 
-**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10. A numeração continua da v1.0 (Phases 1-3), não reinicia.
+**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
 ## Performance Metrics
 
@@ -82,6 +82,7 @@ Last activity: 2026-08-21 — Phase 11 executada (plano 11-01 mesclado)
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-21: **Fase 11 encerrada — CANPAG-01..04 confirmados em produção**, incluindo o ponto de maior risco (composição `AlertDialog` dentro de `Sheet` já aberto, inédita neste projeto) sem quebra visual. Ao testar, o usuário encontrou um bug real: aplicar qualquer filtro no Financeiro que trouxesse ao menos uma parcela derrubava a tela inteira com `RangeError: Invalid time value` (Error Boundary "Algo deu errado ao carregar esta tela"). Causa raiz: `CancelarPagamentoDialog` (novo nesta fase) fica sempre montado dentro de `ParcelaHistoricoSheet` — mesmo padrão dos outros diálogos de ação — e usava `cancelando?.data ?? ""` como fallback enquanto nenhum lançamento está selecionado; `formatDate("")` monta uma `Date` inválida e `Intl.DateTimeFormat.format()` lança a exceção assim que qualquer linha de parcela renderiza. A visão padrão "vencendo hoje" mascarava o bug quando vazia. Corrigido fora de um plano formal (`cancelar-pagamento-dialog.tsx`: `formatDate(data)` só é chamado quando `data` não é vazio), commit `284e52b`, `npm run lint`/`build` limpos, reconfirmado pelo usuário. Com isso encerram as 11 fases planejadas do projeto (v2.0 + trabalho pós-milestone).
 - 2026-08-21: **Fase 9 encerrada — INTEG-01..05 confirmados em produção.** Plano 09-01 (poda ativa síncrona em `updateCardAction`, pré-voo consultivo, confirmação no diálogo do card) e plano 09-02 (limpeza das 27 parcelas órfãs pré-existentes via `supabase/limpeza_parcelas_orfas.sql`) mesclados em `main`. BLOCO 2 apagou exatamente as 27 linhas mostradas no BLOCO 1 (contratos de teste #54 "outro" e #59 "A"), BLOCO 3 confirmou zero órfãs restantes e `parcelas_total_depois = 357`. **Achado adicional pós-execução (D-09):** o usuário testou remover só `periodo_fim` de um contrato com parcelas futuras já geradas e nada foi podado — `competenciaNoPeriodo` tratava `periodo_fim` nulo como "sem teto". Corrigido com `tetoEfetivoDePoda` (`parcelas.ts`): quando `periodo_fim` fica vazio, a poda usa o mesmo teto que a geração já usa para esse estado (D-06) — atual+próximo com `periodo_inicio` preenchido, só atual sem nenhuma das duas datas. Reconfirmado em produção pelo usuário. Também descoberto durante a verificação: os 16 commits desta sessão (incluindo toda a Fase 9) nunca tinham sido enviados a `origin/main` — o deploy de produção rodava código antigo, o que explicava os primeiros testes "sem fricção nenhuma". `git push` resolveu.
 - 2026-08-20: **Módulo Financeiro v2.0 (Phases 4-8) encerrado.** Os 4 critérios da Phase 8 confirmados pelo usuário em produção, incluindo o caso de D-05 (contrato inativo entrando nos totais, verificado com 27 linhas reais de um caso de teste). Coverage: 39/39 requisitos da v2.0. A verificação final revelou dois problemas que abrem trabalho novo pós-milestone (ver abaixo) em vez de bloquear o fechamento — nenhum dos dois invalida os critérios de sucesso da Phase 8 em si.
 - 2026-08-20: **Bug real encontrado: editar a data de um contrato não limpa as parcelas futuras que ficam fora do novo período.** Exemplo do usuário: contrato de 12 meses gera 12 parcelas; corrigir para 6 meses não apaga as 6 parcelas futuras já geradas, que continuam existindo no banco. `updateCardAction` (`actions.ts:345`) só grava `cards`, nunca toca `parcelas`. O Financeiro já esconde essas parcelas (regra de visibilidade da Phase 6.2, D-03: "esconder, nunca apagar"), mas os Relatórios (Phase 8, D-05) buscam todas as parcelas sem filtro de período — por isso as órfãs vazavam ali. Confirmado em produção: query de leitura achou 27 parcelas órfãs em 2 contratos de teste. **Decisão do usuário:** ao contrário de D-03 (que só esconde), a nova regra deve **apagar de verdade** as parcelas futuras órfãs (só as sem pagamento/lançamento — protegidas continuam intocáveis), para não acumular dado morto no banco. Isso reverte D-03 deliberadamente; vira Phase 9, com discussão formal por reverter uma decisão já documentada e por envolver exclusão de dado em produção. Also: "sem data no contrato" deve gerar só a parcela do mês atual (hoje gera atual+próximo) — ajuste pequeno, mesma fase.
@@ -128,7 +129,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - Phase 06.2 inserted after Phase 6.1: Feedback do usuario apos usar Phases 6/6.1 em producao: ativo nao escondia parcelas futuras, mudanca de datas do card nao refletia no Financeiro, e excluir card apagava historico financeiro em cascata sem trava (URGENT)
 - Phase 9 added: Integridade de datas do contrato nas parcelas — feedback do usuário testando a Phase 8 em produção; encontrou parcelas órfãs quando a data de um contrato encolhe. Reverte deliberadamente D-03 (docs/data-model.md)
 - Phase 10 added e encerrada: Relatório Financeiro dedicado — pedido do usuário na mesma conversa que abriu a Phase 9: página própria em vez do painel suspenso da Phase 8, filtro dinâmico (ao vivo), lista de contratos filtrados abaixo dos cards, exportação em PDF. RELDED-01..05 confirmados em produção
-- Phase 11 added: Cancelamento de pagamento — usuário pediu antes de seguir para a discussão da fase de dinheiro da imobiliária: hoje não existe forma de reverter uma parcela marcada como paga por engano. Restrição explícita do usuário: nenhuma alteração em parcela conciliada. Tensão a resolver no discuss-phase: "excluir" o pagamento (apagar a linha de `parcela_lancamentos`) conflita com o princípio de livro-razão append-only já estabelecido desde a Phase 4 (nunca apagar, só lançar) — o padrão já usado para o caso análogo de conciliada (Destravar, Phase 7) lança um evento novo em vez de apagar; ainda não planejada (discuss-phase pendente)
+- Phase 11 added e encerrada: Cancelamento de pagamento — usuário pediu antes de seguir para a discussão da fase de dinheiro da imobiliária: hoje não existe forma de reverter uma parcela marcada como paga por engano. Restrição explícita do usuário: nenhuma alteração em parcela conciliada. Tensão resolvida no discuss-phase: "excluir" o pagamento (apagar a linha de `parcela_lancamentos`) conflita com o princípio de livro-razão append-only já estabelecido desde a Phase 4 (nunca apagar, só lançar) — o usuário optou deliberadamente por apagar de verdade, contra a recomendação de lançar um estorno (segunda exceção deliberada ao append-only, depois da Phase 9). CANPAG-01..04 confirmados em produção; um bug real de RangeError encontrado e corrigido no caminho (ver Decisions)
 
 ## Deferred Items
 
@@ -143,6 +144,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-21T18:24:09.048Z
-Stopped at: Phase 11 UI-SPEC approved
-Resume file: .planning/phases/11-cancelamento-de-pagamento/11-UI-SPEC.md
+Last session: 2026-08-21T20:00:00.000Z
+Stopped at: Phase 11 encerrada — todas as 11 fases planejadas concluídas. Próximo passo é discutir a ideia adiada sobre dinheiro da imobiliária (taxa de administração, primeiro aluguel, caução, taxas de gestão) quando o usuário quiser retomar.
+Resume file: .planning/REQUIREMENTS.md

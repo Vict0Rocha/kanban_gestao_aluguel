@@ -101,10 +101,10 @@ Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuár
 
 Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário. Reverte deliberadamente o princípio append-only do livro-razão (`docs/data-model.md`) para lançamentos `tipo='pagamento'` — decisão registrada em `.planning/phases/11-cancelamento-de-pagamento/11-CONTEXT.md`.
 
-- [ ] **CANPAG-01**: Existe um botão "Cancelar" ao lado de cada lançamento `tipo='pagamento'` no histórico de lançamentos da parcela (`ParcelaHistoricoSheet`)
-- [ ] **CANPAG-02**: Clicar "Cancelar" abre uma confirmação simples (sem motivo obrigatório) mostrando o valor do pagamento; confirmar apaga de verdade aquele lançamento do banco
-- [ ] **CANPAG-03**: Depois de apagar, o status da parcela é recalculado a partir do que resta no livro-razão (nunca hardcoded para "aberta") — pode voltar para "aberta" ou "parcial" dependendo do que sobrar
-- [ ] **CANPAG-04**: Uma parcela conciliada nunca aceita cancelamento de lançamento nenhum — mesma trava já usada por Pagamento/Ajustar, aplicada no servidor
+- [x] **CANPAG-01**: Existe um botão "Cancelar" ao lado de cada lançamento `tipo='pagamento'` no histórico de lançamentos da parcela (`ParcelaHistoricoSheet`)
+- [x] **CANPAG-02**: Clicar "Cancelar" abre uma confirmação simples (sem motivo obrigatório) mostrando o valor do pagamento; confirmar apaga de verdade aquele lançamento do banco
+- [x] **CANPAG-03**: Depois de apagar, o status da parcela é recalculado a partir do que resta no livro-razão (nunca hardcoded para "aberta") — pode voltar para "aberta" ou "parcial" dependendo do que sobrar
+- [x] **CANPAG-04**: Uma parcela conciliada nunca aceita cancelamento de lançamento nenhum — mesma trava já usada por Pagamento/Ajustar, aplicada no servidor
 
 ## Carried over from v1.0
 
@@ -204,10 +204,10 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | RELDED-03 | Phase 10 | Confirmado em produção |
 | RELDED-04 | Phase 10 | Confirmado em produção |
 | RELDED-05 | Phase 10 | Confirmado em produção |
-| CANPAG-01 | Phase 11 | Pendente |
-| CANPAG-02 | Phase 11 | Pendente |
-| CANPAG-03 | Phase 11 | Pendente |
-| CANPAG-04 | Phase 11 | Pendente |
+| CANPAG-01 | Phase 11 | Confirmado em produção |
+| CANPAG-02 | Phase 11 | Confirmado em produção |
+| CANPAG-03 | Phase 11 | Confirmado em produção |
+| CANPAG-04 | Phase 11 | Confirmado em produção |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
