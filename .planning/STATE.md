@@ -5,16 +5,16 @@ milestone_name: Módulo Financeiro
 current_phase: 11
 current_phase_name: cancelamento-de-pagamento
 status: planning
-stopped_at: Phase 11 adicionada ao ROADMAP.md, discuss-phase ainda não iniciado
-last_updated: "2026-08-21T13:30:00.000Z"
+stopped_at: Phase 11 context gathered
+last_updated: "2026-08-21T18:14:15.436Z"
 last_activity: 2026-08-21
 last_activity_desc: "Fase 10 encerrada. Plano 10-01 (rota /relatorios/financeiro, filtro ao vivo, tiles+lista, botão de entrada) e plano 10-02 (exportação em PDF via jsPDF/jspdf-autotable) mesclados em main e confirmados em produção pelo usuário: navegação, filtro ao vivo em todos os campos, limpar filtros, resultado vazio, PDF sem filtro/com filtro/vazio (cabeçalho, totais, lista, acentuação, rodapé), e /relatorios (Phase 8) intacta. Executor do plano 10-02 achou e corrigiu 2 divergências reais entre a API assumida no plano/RESEARCH.md e a API real dos pacotes instalados (showHead em vez de headerRows, doc.getNumberOfPages() em vez de doc.internal.getNumberOfPages())."
 progress:
   total_phases: 10
-  completed_phases: 10
+  completed_phases: 9
   total_plans: 29
   completed_plans: 29
-  percent: 100
+  percent: 90
 ---
 
 # Project State
@@ -143,6 +143,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-21T13:30:00.000Z
-Stopped at: Fase 10 completa — todo o roadmap atual fechado. Próximo passo (quando o usuário quiser): discutir a fase futura de dinheiro recebido pela imobiliária (ver `10-CONTEXT.md` § Deferred).
-Resume file: .planning/ROADMAP.md
+Last session: 2026-08-21T18:14:15.336Z
+Stopped at: Phase 11 context gathered
+Resume file: .planning/phases/11-cancelamento-de-pagamento/11-CONTEXT.md
