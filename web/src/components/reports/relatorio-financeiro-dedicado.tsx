@@ -1,7 +1,16 @@
 "use client"
 
 import * as React from "react"
-import { AlertCircle, CheckCircle2, Clock, Filter, Lock, X, type LucideIcon } from "lucide-react"
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  FileDown,
+  Filter,
+  Lock,
+  X,
+  type LucideIcon,
+} from "lucide-react"
 
 import { formatCurrency } from "@/lib/kanban/format"
 import { situacaoDaParcela } from "@/lib/kanban/parcelas"
@@ -14,6 +23,7 @@ import {
   type ParcelaRelatorio,
   type SituacaoRelatorio,
 } from "@/lib/kanban/relatorio-financeiro"
+import { exportarRelatorioFinanceiroPDF } from "@/components/reports/relatorio-financeiro-pdf"
 import { StatTile } from "@/components/reports/stat-tile"
 import { FiltroRelatorioFinanceiroLive } from "@/components/reports/filtro-relatorio-financeiro-live"
 import { RelatorioFinanceiroLista } from "@/components/reports/relatorio-financeiro-lista"
@@ -46,6 +56,10 @@ export function RelatorioFinanceiroDedicado({
   const [filtro, setFiltro] = React.useState<FiltroRelatorioValores>(
     filtroRelatorioVazio()
   )
+  const [exportando, setExportando] = React.useState(false)
+  const [erroExportacao, setErroExportacao] = React.useState<string | null>(
+    null
+  )
 
   const categorias = React.useMemo(
     () => calcularRelatorioFinanceiro(parcelas, filtro, hojeISO),
@@ -76,6 +90,26 @@ export function RelatorioFinanceiroDedicado({
       )
   }, [parcelas, filtro, hojeISO])
 
+  // RESEARCH.md Pitfall #5: só recebe `linhasFiltradas`/`categorias` já
+  // filtrados — nunca `parcelas` bruto, estruturalmente impossível de montar
+  // o PDF com dado que não é o que está na tela.
+  async function handleExportarPDF() {
+    setExportando(true)
+    setErroExportacao(null)
+    try {
+      await exportarRelatorioFinanceiroPDF(
+        linhasFiltradas,
+        categorias,
+        filtro,
+        hojeISO
+      )
+    } catch {
+      setErroExportacao("Não foi possível exportar o PDF. Tente novamente.")
+    } finally {
+      setExportando(false)
+    }
+  }
+
   return (
     <Collapsible open={aberto} onOpenChange={setAberto}>
       <div className="flex flex-col gap-4">
@@ -96,8 +130,42 @@ export function RelatorioFinanceiroDedicado({
                 </Button>
               }
             />
+            <Button
+              variant="default"
+              onClick={handleExportarPDF}
+              disabled={exportando}
+            >
+              <FileDown className="size-3.5" />
+              {exportando ? "Exportando..." : "Exportar PDF"}
+            </Button>
           </div>
         </div>
+
+        {erroExportacao ? (
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-card p-3"
+          >
+            <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                {erroExportacao}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Tente novamente.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setErroExportacao(null)}
+              aria-label="Fechar aviso"
+              className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+        ) : null}
 
         <CollapsiblePanel>
           <FiltroRelatorioFinanceiroLive campos={filtro} onChange={setFiltro} />
