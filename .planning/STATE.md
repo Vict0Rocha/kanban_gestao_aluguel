@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 12
 current_phase_name: cancelamento-de-ajustes
-status: planned
-stopped_at: Phase 12 planned — plano 12-01 criado, pronto para execução
-last_updated: "2026-08-22T02:10:00.000Z"
+status: executed
+stopped_at: Plano 12-01 executado — CANAJU-01..04 implementados, falta verificação humana em produção
+last_updated: "2026-08-22T01:59:00.000Z"
 last_activity: 2026-08-21
-last_activity_desc: "Fase 11 encerrada (CANPAG-01..04 confirmados em produção, bug de RangeError corrigido). Usuário pediu extensão imediata: cancelar também acréscimo e desconto, mesmo padrão. Fase 12 aberta, discuss-phase concluído (D-01 destrava fora de escopo, D-08 diálogo generalizado), UI-SPEC aprovado 6/6, e plano 12-01 criado (pattern-mapper + planner): 1 plano, 2 tasks (tracer widen+rename + doc), renomeando cancelarPagamentoAction/CancelarPagamentoDialog para cancelarLancamentoAction/CancelarLancamentoDialog (decisão do planner, escopo confirmado por grep — 4 arquivos)."
+last_activity_desc: "Plano 12-01 executado: cancelarPagamentoAction/cancelarPagamento/CancelarPagamentoDialog renomeados para cancelarLancamentoAction/cancelarLancamento/CancelarLancamentoDialog (git mv preservou histórico) e o DELETE ampliado de .eq(\"tipo\",\"pagamento\") para .in(\"tipo\",[\"pagamento\",\"acrescimo\",\"desconto\"]), nunca alcançando destrava (D-01). TIPO exportado de lancamento-tipo-label.tsx (D-08), diálogo generalizado lendo TIPO[tipo].label, gatilho de ParcelaHistoricoSheet ampliado para os três tipos. docs/data-model.md documenta o escopo ampliado da mesma segunda exceção (não terceira) ao livro-razão append-only. npm run lint/build verdes, todas as asserções de fonte do plano confirmadas. Commits: fbadec8 (Task 1), b65ca01 (Task 2). Falta verificação humana em produção (composição Sheet+AlertDialog para acréscimo/desconto, nunca exercitada antes desta fase)."
 progress:
   total_phases: 12
-  completed_phases: 10
-  total_plans: 31
-  completed_plans: 30
-  percent: 83
+  completed_phases: 11
+  total_plans: 32
+  completed_plans: 32
+  percent: 100
 ---
 
 # Project State
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-08-16)
 
 ## Current Position
 
-Phase: 12 (cancelamento-de-ajustes) — UI-SPEC APPROVED
-Status: 12-UI-SPEC.md aprovado (6/6 dimensões); falta o plano antes de executar
-Last activity: 2026-08-21 — Phase 12 UI-SPEC aprovado
+Phase: 12 (cancelamento-de-ajustes) — PLAN 12-01 EXECUTED
+Status: 12-01-SUMMARY.md criado, CANAJU-01..04 implementados; falta verificação humana em produção
+Last activity: 2026-08-21 — Plano 12-01 executado (fbadec8, b65ca01)
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -75,6 +75,7 @@ Last activity: 2026-08-21 — Phase 12 UI-SPEC aprovado
 | Phase 07-concilia-o-e-destrava-rastreada P01 | ~10min | 2 tasks | 4 files |
 | Phase 07-concilia-o-e-destrava-rastreada P02 | ~12min | 3 tasks | 5 files |
 | Phase 08-relat-rios-financeiros P01 | 15min | 2 tasks | 5 files |
+| Phase 12-cancelamento-de-ajustes P01 | ~20min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,7 @@ Last activity: 2026-08-21 — Phase 12 UI-SPEC aprovado
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-21: **Plano 12-01 executado** (worktree isolado, `agent-a31c29673760fe38e`). `cancelarPagamentoAction`/`cancelarPagamento`/`CancelarPagamentoDialog`/`cancelar-pagamento-dialog.tsx` renomeados para `cancelarLancamentoAction`/`cancelarLancamento`/`CancelarLancamentoDialog`/`cancelar-lancamento-dialog.tsx` (arquivo movido via `git mv`, histórico preservado). DELETE ampliado de `.eq("tipo","pagamento")` para `.in("tipo",["pagamento","acrescimo","desconto"])` — allowlist explícito, nunca alcança `destrava` (D-01, 12-CONTEXT.md), seguido de `recalcularEGravarStatus` sem nenhum status hardcoded. `TIPO` exportado de `lancamento-tipo-label.tsx` (D-08), diálogo generalizado lê `TIPO[tipo].label` para título/descrição/botão, preservando byte-a-byte o guard `{data ? ... : ""}` do bug `284e52b`. `ParcelaHistoricoSheet` amplia o gatilho para `["pagamento","acrescimo","desconto"].includes(lancamento.tipo)` e passa a prop `tipo` ao diálogo. `docs/data-model.md` atualizado: mesma "segunda exceção" (nunca terceira) ao livro-razão append-only, agora citando os três tipos e nomeando `destrava` como permanentemente excluído. `npm run lint`/`npm run build` verdes (worktree precisou de `npm install` próprio — não compartilha `node_modules` com o checkout principal), todas as asserções de fonte do `<verify>` do plano confirmadas manualmente. Commits: `fbadec8` (Task 1), `b65ca01` (Task 2). **Human-check pendente em produção** (ver Blockers) — composição Sheet+AlertDialog nunca exercitada a partir de acréscimo/desconto antes desta fase.
 - 2026-08-21: **Fase 11 encerrada — CANPAG-01..04 confirmados em produção**, incluindo o ponto de maior risco (composição `AlertDialog` dentro de `Sheet` já aberto, inédita neste projeto) sem quebra visual. Ao testar, o usuário encontrou um bug real: aplicar qualquer filtro no Financeiro que trouxesse ao menos uma parcela derrubava a tela inteira com `RangeError: Invalid time value` (Error Boundary "Algo deu errado ao carregar esta tela"). Causa raiz: `CancelarPagamentoDialog` (novo nesta fase) fica sempre montado dentro de `ParcelaHistoricoSheet` — mesmo padrão dos outros diálogos de ação — e usava `cancelando?.data ?? ""` como fallback enquanto nenhum lançamento está selecionado; `formatDate("")` monta uma `Date` inválida e `Intl.DateTimeFormat.format()` lança a exceção assim que qualquer linha de parcela renderiza. A visão padrão "vencendo hoje" mascarava o bug quando vazia. Corrigido fora de um plano formal (`cancelar-pagamento-dialog.tsx`: `formatDate(data)` só é chamado quando `data` não é vazio), commit `284e52b`, `npm run lint`/`build` limpos, reconfirmado pelo usuário. Com isso encerram as 11 fases planejadas do projeto (v2.0 + trabalho pós-milestone).
 - 2026-08-21: **Fase 9 encerrada — INTEG-01..05 confirmados em produção.** Plano 09-01 (poda ativa síncrona em `updateCardAction`, pré-voo consultivo, confirmação no diálogo do card) e plano 09-02 (limpeza das 27 parcelas órfãs pré-existentes via `supabase/limpeza_parcelas_orfas.sql`) mesclados em `main`. BLOCO 2 apagou exatamente as 27 linhas mostradas no BLOCO 1 (contratos de teste #54 "outro" e #59 "A"), BLOCO 3 confirmou zero órfãs restantes e `parcelas_total_depois = 357`. **Achado adicional pós-execução (D-09):** o usuário testou remover só `periodo_fim` de um contrato com parcelas futuras já geradas e nada foi podado — `competenciaNoPeriodo` tratava `periodo_fim` nulo como "sem teto". Corrigido com `tetoEfetivoDePoda` (`parcelas.ts`): quando `periodo_fim` fica vazio, a poda usa o mesmo teto que a geração já usa para esse estado (D-06) — atual+próximo com `periodo_inicio` preenchido, só atual sem nenhuma das duas datas. Reconfirmado em produção pelo usuário. Também descoberto durante a verificação: os 16 commits desta sessão (incluindo toda a Fase 9) nunca tinham sido enviados a `origin/main` — o deploy de produção rodava código antigo, o que explicava os primeiros testes "sem fricção nenhuma". `git push` resolveu.
 - 2026-08-20: **Módulo Financeiro v2.0 (Phases 4-8) encerrado.** Os 4 critérios da Phase 8 confirmados pelo usuário em produção, incluindo o caso de D-05 (contrato inativo entrando nos totais, verificado com 27 linhas reais de um caso de teste). Coverage: 39/39 requisitos da v2.0. A verificação final revelou dois problemas que abrem trabalho novo pós-milestone (ver abaixo) em vez de bloquear o fechamento — nenhum dos dois invalida os critérios de sucesso da Phase 8 em si.
@@ -115,6 +117,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
 ### Blockers/Concerns
 
+- **Plano 12-01 aguarda verificação humana em produção.** Testar o botão "Cancelar" para um lançamento `acrescimo` e um `desconto` em `ParcelaHistoricoSheet` (composição `AlertDialog` dentro de `Sheet`, alcançada agora a partir de três linhas em vez de uma), confirmar que `tipo='destrava'` nunca mostra o botão e que uma parcela conciliada não aceita cancelamento de nenhum tipo. Ver 12-01-PLAN.md `<verify><human-check>`.
 - **ROBUST-02 não verificado com login real.** O código está escrito, lintado e buildado, e segue o mesmo padrão de outras queries já funcionando no mesmo Server Component — mas o navegador embutido usado para verificação ficou instável (mesmo problema já visto durante o diagnóstico do Turnstile) e não foi possível confirmar visualmente que a tela de "acesso pendente" aparece corretamente para um usuário fora da allowlist. **Ação sugerida:** o usuário confirma manualmente, ou testa com uma conta de teste removida da allowlist. **Relevante para a v2.0:** a Phase 4 precisa provar que o RLS das tabelas novas barra quem está fora da allowlist — é uma boa oportunidade para fechar esta verificação junto.
 - **`.planning/codebase/CONCERNS.md` tem taxa de acerto baixa.** 3 de 3 achados de segurança verificados até agora eram falsos positivos. Tratar o restante como hipótese, não fato.
 - **SEC-02 depende do usuário.** Leaked Password Protection é toggle no painel do Supabase; usuário optou por adiar. Fora do escopo de fases da v2.0.
@@ -145,6 +148,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-22T00:28:37.634Z
-Stopped at: Phase 12 UI-SPEC approved
-Resume file: .planning/phases/12-cancelamento-de-ajustes/12-UI-SPEC.md
+Last session: 2026-08-22T01:59:00.000Z
+Stopped at: Plano 12-01 executado — falta verificação humana em produção
+Resume file: .planning/phases/12-cancelamento-de-ajustes/12-01-SUMMARY.md

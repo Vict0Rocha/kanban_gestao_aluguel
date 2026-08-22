@@ -283,11 +283,11 @@ Plans:
   4. Uma parcela conciliada nunca aceita cancelamento de ajuste nenhum
   5. `tipo='destrava'` continua sem botão de cancelar (fora de escopo, D-01 de 12-CONTEXT.md)
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans executed
 
 Plans:
 
-- [ ] 12-01-PLAN.md — Cancelar acréscimo/desconto ponta a ponta (widen + rename da Server Action/diálogo da Phase 11) + atualização de docs/data-model.md
+- [x] 12-01-PLAN.md — Cancelar acréscimo/desconto ponta a ponta (widen + rename da Server Action/diálogo da Phase 11) + atualização de docs/data-model.md
 
 ## Progress
 
@@ -306,6 +306,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 9. Integridade de datas do contrato nas parcelas | 2/2 | Complete | 2026-08-21 |
 | 10. Relatório Financeiro dedicado | 2/2 | Complete | 2026-08-21 |
 | 11. Cancelamento de pagamento | 1/1 | Complete | 2026-08-21 |
-| 12. Cancelamento de ajustes | 0/1 | Planned | - |
+| 12. Cancelamento de ajustes | 1/1 | In Progress|  |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11 e 12 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário; Phase 12: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.
