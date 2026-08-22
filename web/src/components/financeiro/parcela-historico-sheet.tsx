@@ -5,7 +5,7 @@ import { Trash2 } from "lucide-react"
 
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
 import type { LancamentoDetalhado } from "@/lib/kanban/parcelas"
-import { CancelarPagamentoDialog } from "@/components/financeiro/cancelar-pagamento-dialog"
+import { CancelarLancamentoDialog } from "@/components/financeiro/cancelar-lancamento-dialog"
 import { LancamentoTipoLabel } from "@/components/financeiro/lancamento-tipo-label"
 import { Button } from "@/components/ui/button"
 import {
@@ -104,7 +104,7 @@ export function ParcelaHistoricoSheet({
                         {lancamento.motivo}
                       </p>
                     )}
-                    {lancamento.tipo === "pagamento" && !parcelaConciliada && (
+                    {["pagamento", "acrescimo", "desconto"].includes(lancamento.tipo) && !parcelaConciliada && (
                       <div className="flex justify-end">
                         <Button
                           variant="ghost"
@@ -123,9 +123,10 @@ export function ParcelaHistoricoSheet({
           )}
         </div>
       </SheetContent>
-      <CancelarPagamentoDialog
+      <CancelarLancamentoDialog
         parcelaId={parcelaId}
         lancamentoId={cancelando?.id ?? ""}
+        tipo={(cancelando?.tipo ?? "pagamento") as "pagamento" | "acrescimo" | "desconto"}
         valor={cancelando?.valor ?? 0}
         data={cancelando?.data ?? ""}
         open={cancelando !== null}

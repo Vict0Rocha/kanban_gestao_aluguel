@@ -1275,22 +1275,23 @@ export async function destravarParcelaAction(
 }
 
 /**
- * CANPAG-01..04: desfaz um pagamento marcado por engano — D-01 (11-CONTEXT.md)
- * apaga de verdade a linha em `parcela_lancamentos`, reversão deliberada do
- * livro-razão append-only que o resto deste arquivo segue (mesmo trade-off já
- * confirmado pelo usuário, sem checkpoint novo). Cada lançamento
- * `tipo='pagamento'` tem seu próprio botão (D-02), então o DELETE é
+ * CANAJU-01..04: desfaz um acréscimo, desconto ou pagamento marcado por
+ * engano — D-01 (11-CONTEXT.md)/D-02 (12-CONTEXT.md) apaga de verdade a linha
+ * em `parcela_lancamentos`, reversão deliberada do livro-razão append-only
+ * que o resto deste arquivo segue (mesmo trade-off já confirmado pelo
+ * usuário, sem checkpoint novo). Cada lançamento (`pagamento`/`acrescimo`/
+ * `desconto`) tem seu próprio botão (D-02, 11-CONTEXT.md), então o DELETE é
  * condicionado ao `id` daquele lançamento específico, nunca a todos os
- * pagamentos da parcela de uma vez.
+ * lançamentos da parcela de uma vez.
  *
  * A trava de corrida real (D-06/race safety) é o próprio DELETE condicionado
- * aos três `.eq()` — id do lançamento, parcela_id e tipo pagamento — mesmo
- * formato do `.eq("status","paga")` de `conciliarParcelaAction`, nunca uma
- * leitura seguida de escrita separada. A tripla condição também impede
- * cancelar por engano um lançamento `acrescimo`/`desconto`/`destrava` caso um
- * chamador passe o id errado.
+ * aos três `.eq()`/`.in()` — id do lançamento, parcela_id e o allowlist de
+ * tipo — mesmo formato do `.eq("status","paga")` de `conciliarParcelaAction`,
+ * nunca uma leitura seguida de escrita separada. O allowlist de três tipos
+ * também impede cancelar por engano um lançamento `destrava` — D-01
+ * (12-CONTEXT.md), CONCIL-04 continua intocado.
  */
-export async function cancelarPagamentoAction(
+export async function cancelarLancamentoAction(
   parcelaId: string,
   lancamentoId: string
 ): Promise<ActionResult> {
@@ -1311,15 +1312,15 @@ export async function cancelarPagamentoAction(
     .delete()
     .eq("id", lancamentoId)
     .eq("parcela_id", parcelaId)
-    .eq("tipo", "pagamento")
+    .in("tipo", ["pagamento", "acrescimo", "desconto"])
     .select("id")
 
   if (error) {
-    console.error("cancelarPagamento", error)
-    return { ok: false, error: erroDoBanco(error.code, "cancelar o pagamento") }
+    console.error("cancelarLancamento", error)
+    return { ok: false, error: erroDoBanco(error.code, "cancelar o lançamento") }
   }
   if (!data || data.length === 0) {
-    return { ok: false, error: semLinhas("cancelar o pagamento") }
+    return { ok: false, error: semLinhas("cancelar o lançamento") }
   }
 
   // D-03: a única decisão de status desta função. Relê TODOS os lançamentos
