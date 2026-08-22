@@ -4,15 +4,15 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 12
 current_phase_name: cancelamento-de-ajustes
-status: ui-spec-approved
-stopped_at: Phase 12 UI-SPEC approved
-last_updated: "2026-08-22T00:28:37.757Z"
+status: planned
+stopped_at: Phase 12 planned — plano 12-01 criado, pronto para execução
+last_updated: "2026-08-22T02:10:00.000Z"
 last_activity: 2026-08-21
-last_activity_desc: "Fase 11 encerrada (CANPAG-01..04 confirmados em produção, bug de RangeError corrigido). Usuário pediu extensão imediata: cancelar também acréscimo e desconto, mesmo padrão. Fase 12 aberta, discuss-phase concluído (D-01 destrava fora de escopo, D-08 diálogo generalizado) e UI-SPEC aprovado 6/6 (checker + probe real rodado manualmente, 15/15 combinações endereçadas: 6 dispensadas, 8 explícitas, 1 backstop)."
+last_activity_desc: "Fase 11 encerrada (CANPAG-01..04 confirmados em produção, bug de RangeError corrigido). Usuário pediu extensão imediata: cancelar também acréscimo e desconto, mesmo padrão. Fase 12 aberta, discuss-phase concluído (D-01 destrava fora de escopo, D-08 diálogo generalizado), UI-SPEC aprovado 6/6, e plano 12-01 criado (pattern-mapper + planner): 1 plano, 2 tasks (tracer widen+rename + doc), renomeando cancelarPagamentoAction/CancelarPagamentoDialog para cancelarLancamentoAction/CancelarLancamentoDialog (decisão do planner, escopo confirmado por grep — 4 arquivos)."
 progress:
   total_phases: 12
   completed_phases: 10
-  total_plans: 30
+  total_plans: 31
   completed_plans: 30
   percent: 83
 ---
