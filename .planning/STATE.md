@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 13
-current_phase_name: dinheiro-da-imobiliaria
-status: not-started
-stopped_at: Phase 13 adicionada — discuss-phase pendente
-last_updated: "2026-08-22T03:00:00.000Z"
+current_phase_name: dinheiro-da-imobili-ria
+status: context-gathered
+stopped_at: Phase 13 context gathered — pronto para UI-SPEC/plano
+last_updated: "2026-08-22T14:10:00.000Z"
 last_activity: 2026-08-22
-last_activity_desc: "Fase 12 encerrada (CANAJU-01..04 confirmados em produção). Usuário retomou a ideia adiada sobre dinheiro recebido pela própria imobiliária (taxa de administração, primeiro aluguel, caução, taxas de gestão) — Phase 13 adicionada ao roadmap, discuss-phase ainda não rodado."
+last_activity_desc: "Fase 12 encerrada (CANAJU-01..04 confirmados em produção). Usuário retomou a ideia adiada sobre dinheiro recebido pela própria imobiliária. Phase 13 adicionada ao roadmap e discuss-phase concluído: taxa de administração (10% default) e comissão de primeiro aluguel (50% default, substitui a administração no mês 1, não soma) configuráveis por contrato numa tela separada; taxa gerada automaticamente no diálogo de pagamento mas totalmente editável; estruturalmente isolada de parcela_lancamentos para nunca afetar valorDevido/valorPago/status (aditivo, D-04); caução com ciclo completo (recebido/devolvido/usado); sem retroativo; entregável central é um relatório de reconciliação contra o extrato bancário."
 progress:
   total_phases: 13
   completed_phases: 12
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Todas as 12 fases planejadas (v2.0 + pós-milestone) encerradas. Ideia adiada pendente de discussão: dinheiro que a própria imobiliária recebe (taxa de administração, primeiro aluguel, caução, taxas de gestão) — ver 10-CONTEXT.md/11-CONTEXT.md § deferred.
+**Current focus:** Fase 13 (Dinheiro da imobiliária) — contexto reunido, pronta para UI-SPEC/plano.
 
 ## Current Position
 
-Phase: 12 (cancelamento-de-ajustes) — COMPLETE
-Status: CANAJU-01..04 confirmados em produção
-Last activity: 2026-08-22 — Phase 12 encerrada
+Phase: 13 (dinheiro-da-imobili-ria) — CONTEXT GATHERED
+Status: 13-CONTEXT.md escrito e commitado; falta UI-SPEC e plano antes de executar
+Last activity: 2026-08-22 — Phase 13 discuss-phase concluído
 
-**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12. A numeração continua da v1.0 (Phases 1-3), não reinicia.
+**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
 ## Performance Metrics
 
@@ -133,7 +133,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - Phase 06.2 inserted after Phase 6.1: Feedback do usuario apos usar Phases 6/6.1 em producao: ativo nao escondia parcelas futuras, mudanca de datas do card nao refletia no Financeiro, e excluir card apagava historico financeiro em cascata sem trava (URGENT)
 - Phase 9 added: Integridade de datas do contrato nas parcelas — feedback do usuário testando a Phase 8 em produção; encontrou parcelas órfãs quando a data de um contrato encolhe. Reverte deliberadamente D-03 (docs/data-model.md)
 - Phase 10 added e encerrada: Relatório Financeiro dedicado — pedido do usuário na mesma conversa que abriu a Phase 9: página própria em vez do painel suspenso da Phase 8, filtro dinâmico (ao vivo), lista de contratos filtrados abaixo dos cards, exportação em PDF. RELDED-01..05 confirmados em produção
-- Phase 13 added: Dinheiro da imobiliária — ideia adiada nas Phases 10/11, retomada pelo usuário depois da Fase 12 fechar. Ainda não discutida (discuss-phase pendente)
+- Phase 13 added, discuss-phase concluído: Dinheiro da imobiliária — ideia adiada nas Phases 10/11, retomada pelo usuário depois da Fase 12 fechar. Capacidade nova de modelo de dados (quem é o beneficiário: proprietário vs imobiliária), estritamente aditiva — não altera nenhuma tela existente. Decisões-chave: taxa de administração (10% default, por contrato) e comissão de primeiro aluguel (50% default, **substitui** a administração no mês 1, não soma) configuráveis numa tela própria; taxa gerada automaticamente no diálogo "Registrar pagamento" mas com valor livre editável (cobre exceções/imprevistos); estruturalmente isolada de `parcela_lancamentos` para nunca entrar no cálculo de status/valor da parcela; caução com ciclo completo (recebido/devolvido/usado); sem retroativo (baixas de teste serão canceladas pelo usuário); entregável central é um relatório de reconciliação contra o extrato bancário — usuário já avisou que vai querer refinar esse relatório depois. Falta UI-SPEC e plano
 - Phase 12 added e encerrada: Cancelamento de ajustes — usuário pediu logo após a Fase 11 fechar: mesma funcionalidade de cancelar, agora para lançamentos `tipo='acrescimo'` e `tipo='desconto'`, "mesma maneira que foi feito para os pagamentos". Motivação explícita do usuário: "tudo que é adicionado para uma parcela precisa ter a opção de excluir" — confrontado especificamente com o caso de `tipo='destrava'`, confirmou que fica fora de escopo (D-01 de 12-CONTEXT.md: destrava é auditoria, não valor lançado por engano; apagá-lo enfraqueceria CONCIL-04). Também decidiu generalizar `CancelarPagamentoDialog` num componente único para os três tipos (D-08), em vez de duplicar. CANAJU-01..04 confirmados em produção
 - Phase 11 added e encerrada: Cancelamento de pagamento — usuário pediu antes de seguir para a discussão da fase de dinheiro da imobiliária: hoje não existe forma de reverter uma parcela marcada como paga por engano. Restrição explícita do usuário: nenhuma alteração em parcela conciliada. Tensão resolvida no discuss-phase: "excluir" o pagamento (apagar a linha de `parcela_lancamentos`) conflita com o princípio de livro-razão append-only já estabelecido desde a Phase 4 (nunca apagar, só lançar) — o usuário optou deliberadamente por apagar de verdade, contra a recomendação de lançar um estorno (segunda exceção deliberada ao append-only, depois da Phase 9). CANPAG-01..04 confirmados em produção; um bug real de RangeError encontrado e corrigido no caminho (ver Decisions)
 
@@ -150,6 +150,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-22T01:59:00.000Z
-Stopped at: Plano 12-01 executado — falta verificação humana em produção
-Resume file: .planning/phases/12-cancelamento-de-ajustes/12-01-SUMMARY.md
+Last session: 2026-08-22T13:50:48.870Z
+Stopped at: Phase 13 context gathered
+Resume file: .planning/phases/13-dinheiro-da-imobili-ria/13-CONTEXT.md
