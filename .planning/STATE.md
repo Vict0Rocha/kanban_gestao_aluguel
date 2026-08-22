@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 12
-current_phase_name: cancelamento-de-ajustes
-status: complete
-stopped_at: Phase 12 encerrada — CANAJU-01..04 confirmados em produção
-last_updated: "2026-08-22T02:40:00.000Z"
+current_phase: 13
+current_phase_name: dinheiro-da-imobiliaria
+status: not-started
+stopped_at: Phase 13 adicionada — discuss-phase pendente
+last_updated: "2026-08-22T03:00:00.000Z"
 last_activity: 2026-08-22
-last_activity_desc: "Fase 12 encerrada. Usuário testou em produção e confirmou CANAJU-01..04: botão 'Cancelar' funcionando para acréscimo e desconto, composição Sheet+AlertDialog sem quebra visual a partir dessas duas linhas novas, destrava e parcela conciliada nunca mostram o botão. ROADMAP.md/REQUIREMENTS.md/STATE.md atualizados para 'confirmado em produção'. Com isso encerram as 12 fases planejadas do projeto (v2.0 + trabalho pós-milestone)."
+last_activity_desc: "Fase 12 encerrada (CANAJU-01..04 confirmados em produção). Usuário retomou a ideia adiada sobre dinheiro recebido pela própria imobiliária (taxa de administração, primeiro aluguel, caução, taxas de gestão) — Phase 13 adicionada ao roadmap, discuss-phase ainda não rodado."
 progress:
-  total_phases: 12
+  total_phases: 13
   completed_phases: 12
   total_plans: 32
   completed_plans: 32
-  percent: 100
+  percent: 92
 ---
 
 # Project State
@@ -133,7 +133,8 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - Phase 06.2 inserted after Phase 6.1: Feedback do usuario apos usar Phases 6/6.1 em producao: ativo nao escondia parcelas futuras, mudanca de datas do card nao refletia no Financeiro, e excluir card apagava historico financeiro em cascata sem trava (URGENT)
 - Phase 9 added: Integridade de datas do contrato nas parcelas — feedback do usuário testando a Phase 8 em produção; encontrou parcelas órfãs quando a data de um contrato encolhe. Reverte deliberadamente D-03 (docs/data-model.md)
 - Phase 10 added e encerrada: Relatório Financeiro dedicado — pedido do usuário na mesma conversa que abriu a Phase 9: página própria em vez do painel suspenso da Phase 8, filtro dinâmico (ao vivo), lista de contratos filtrados abaixo dos cards, exportação em PDF. RELDED-01..05 confirmados em produção
-- Phase 12 added, discuss-phase concluído: Cancelamento de ajustes — usuário pediu logo após a Fase 11 fechar: mesma funcionalidade de cancelar, agora para lançamentos `tipo='acrescimo'` e `tipo='desconto'`, "mesma maneira que foi feito para os pagamentos". Motivação explícita do usuário: "tudo que é adicionado para uma parcela precisa ter a opção de excluir" — confrontado especificamente com o caso de `tipo='destrava'`, confirmou que fica fora de escopo (D-01 de 12-CONTEXT.md: destrava é auditoria, não valor lançado por engano; apagá-lo enfraqueceria CONCIL-04). Também decidiu generalizar `CancelarPagamentoDialog` num componente único para os três tipos (D-08), em vez de duplicar. Falta UI-SPEC e plano
+- Phase 13 added: Dinheiro da imobiliária — ideia adiada nas Phases 10/11, retomada pelo usuário depois da Fase 12 fechar. Ainda não discutida (discuss-phase pendente)
+- Phase 12 added e encerrada: Cancelamento de ajustes — usuário pediu logo após a Fase 11 fechar: mesma funcionalidade de cancelar, agora para lançamentos `tipo='acrescimo'` e `tipo='desconto'`, "mesma maneira que foi feito para os pagamentos". Motivação explícita do usuário: "tudo que é adicionado para uma parcela precisa ter a opção de excluir" — confrontado especificamente com o caso de `tipo='destrava'`, confirmou que fica fora de escopo (D-01 de 12-CONTEXT.md: destrava é auditoria, não valor lançado por engano; apagá-lo enfraqueceria CONCIL-04). Também decidiu generalizar `CancelarPagamentoDialog` num componente único para os três tipos (D-08), em vez de duplicar. CANAJU-01..04 confirmados em produção
 - Phase 11 added e encerrada: Cancelamento de pagamento — usuário pediu antes de seguir para a discussão da fase de dinheiro da imobiliária: hoje não existe forma de reverter uma parcela marcada como paga por engano. Restrição explícita do usuário: nenhuma alteração em parcela conciliada. Tensão resolvida no discuss-phase: "excluir" o pagamento (apagar a linha de `parcela_lancamentos`) conflita com o princípio de livro-razão append-only já estabelecido desde a Phase 4 (nunca apagar, só lançar) — o usuário optou deliberadamente por apagar de verdade, contra a recomendação de lançar um estorno (segunda exceção deliberada ao append-only, depois da Phase 9). CANPAG-01..04 confirmados em produção; um bug real de RangeError encontrado e corrigido no caminho (ver Decisions)
 
 ## Deferred Items
