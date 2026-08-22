@@ -8,7 +8,7 @@ import type { LancamentoDetalhado } from "@/lib/kanban/parcelas"
  * `destrava` só fica alcançável a partir da Phase 7, mas o componente nasce
  * pronto para os 4 estados agora, mesmo precedente de futuro-proofing.
  */
-const TIPO = {
+export const TIPO = {
   pagamento: {
     icon: Banknote,
     label: "Pagamento",

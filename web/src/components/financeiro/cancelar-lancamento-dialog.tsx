@@ -4,7 +4,9 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
-import { cancelarPagamento } from "@/lib/kanban/queries"
+import type { LancamentoDetalhado } from "@/lib/kanban/parcelas"
+import { cancelarLancamento } from "@/lib/kanban/queries"
+import { TIPO } from "@/components/financeiro/lancamento-tipo-label"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,14 +19,17 @@ import {
 } from "@/components/ui/alert-dialog"
 
 /**
- * D-01 (11-CONTEXT.md): confirmação simples antes de um DELETE de verdade em
- * `parcela_lancamentos` — sem campo de motivo (D-04), cópia estrutural do
- * branch destrutivo de ExcluirContratoDialog, sem a fase de pré-voo e sem
- * `Input`/`Label` de confirmação digitada.
+ * D-02 (12-CONTEXT.md, herdado de D-01 11-CONTEXT.md): confirmação simples
+ * antes de um DELETE de verdade em `parcela_lancamentos` — sem campo de
+ * motivo (D-05, 12-CONTEXT.md), cópia estrutural do branch destrutivo de
+ * ExcluirContratoDialog, sem a fase de pré-voo e sem `Input`/`Label` de
+ * confirmação digitada. Generalizado (D-08, 12-CONTEXT.md) para os três tipos
+ * elegíveis via `TIPO[tipo].label`, um componente só em vez de três cópias.
  */
-export function CancelarPagamentoDialog({
+export function CancelarLancamentoDialog({
   parcelaId,
   lancamentoId,
+  tipo,
   valor,
   data,
   open,
@@ -32,6 +37,7 @@ export function CancelarPagamentoDialog({
 }: {
   parcelaId: string
   lancamentoId: string
+  tipo: Extract<LancamentoDetalhado["tipo"], "pagamento" | "acrescimo" | "desconto">
   valor: number
   data: string
   open: boolean
@@ -40,6 +46,8 @@ export function CancelarPagamentoDialog({
   const router = useRouter()
   const [saving, setSaving] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+
+  const rotulo = TIPO[tipo].label.toLowerCase()
 
   // Resincroniza a cada abertura — mesmo truque de ExcluirContratoDialog/
   // DestravarParcelaDialog: sem isso, o erro/estado de um lançamento
@@ -57,14 +65,14 @@ export function CancelarPagamentoDialog({
     setSaving(true)
     setError(null)
     try {
-      await cancelarPagamento(parcelaId, lancamentoId)
+      await cancelarLancamento(parcelaId, lancamentoId)
       onOpenChange(false)
       router.refresh()
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : "Não foi possível cancelar o pagamento. Tente novamente."
+          : `Não foi possível cancelar o ${rotulo}. Tente novamente.`
       )
       setSaving(false)
     }
@@ -74,9 +82,9 @@ export function CancelarPagamentoDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Cancelar este pagamento?</AlertDialogTitle>
+          <AlertDialogTitle>Cancelar este {rotulo}?</AlertDialogTitle>
           <AlertDialogDescription>
-            Pagamento de {formatCurrency(valor)}
+            {TIPO[tipo].label} de {formatCurrency(valor)}
             {data ? ` em ${formatDate(data)}` : ""}. O lançamento é apagado e o
             status da parcela é recalculado a partir do que sobrar. Esta ação
             não pode ser desfeita.
@@ -94,7 +102,7 @@ export function CancelarPagamentoDialog({
               void handleConfirm()
             }}
           >
-            {saving ? "Cancelando..." : "Cancelar pagamento"}
+            {saving ? "Cancelando..." : `Cancelar ${rotulo}`}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
