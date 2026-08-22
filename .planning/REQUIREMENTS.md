@@ -110,10 +110,10 @@ Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuár
 
 Fora do conjunto de 39 requisitos da v2.0 — extensão pedida pelo usuário logo após a Phase 11 fechar: mesmo mecanismo de cancelamento, agora para lançamentos `tipo='acrescimo'` e `tipo='desconto'`. Decisões registradas em `.planning/phases/12-cancelamento-de-ajustes/12-CONTEXT.md`. `tipo='destrava'` fica deliberadamente fora (D-01 daquele documento).
 
-- [ ] **CANAJU-01**: Existe um botão "Cancelar" ao lado de cada lançamento `tipo='acrescimo'` ou `tipo='desconto'` no histórico de lançamentos da parcela (`ParcelaHistoricoSheet`) — mesmo padrão já usado para `tipo='pagamento'` (Phase 11) — código completo, verificação em produção pendente
-- [ ] **CANAJU-02**: Clicar "Cancelar" abre uma confirmação simples (sem motivo obrigatório) mostrando o valor e o tipo do ajuste; confirmar apaga de verdade aquele lançamento do banco — código completo, verificação em produção pendente
-- [ ] **CANAJU-03**: Depois de apagar, o status da parcela é recalculado a partir do que resta no livro-razão (nunca hardcoded) — código completo, verificação em produção pendente
-- [ ] **CANAJU-04**: Uma parcela conciliada nunca aceita cancelamento de ajuste nenhum — mesma trava já usada por Pagamento/Ajustar/Cancelar pagamento, aplicada no servidor — código completo, verificação em produção pendente
+- [x] **CANAJU-01**: Existe um botão "Cancelar" ao lado de cada lançamento `tipo='acrescimo'` ou `tipo='desconto'` no histórico de lançamentos da parcela (`ParcelaHistoricoSheet`) — mesmo padrão já usado para `tipo='pagamento'` (Phase 11) — confirmado em produção
+- [x] **CANAJU-02**: Clicar "Cancelar" abre uma confirmação simples (sem motivo obrigatório) mostrando o valor e o tipo do ajuste; confirmar apaga de verdade aquele lançamento do banco — confirmado em produção
+- [x] **CANAJU-03**: Depois de apagar, o status da parcela é recalculado a partir do que resta no livro-razão (nunca hardcoded) — confirmado em produção
+- [x] **CANAJU-04**: Uma parcela conciliada nunca aceita cancelamento de ajuste nenhum — mesma trava já usada por Pagamento/Ajustar/Cancelar pagamento, aplicada no servidor — confirmado em produção
 
 ## Carried over from v1.0
 
@@ -217,10 +217,10 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | CANPAG-02 | Phase 11 | Confirmado em produção |
 | CANPAG-03 | Phase 11 | Confirmado em produção |
 | CANPAG-04 | Phase 11 | Confirmado em produção |
-| CANAJU-01 | Phase 12 | Pendente (código completo, verificação humana) |
-| CANAJU-02 | Phase 12 | Pendente (código completo, verificação humana) |
-| CANAJU-03 | Phase 12 | Pendente (código completo, verificação humana) |
-| CANAJU-04 | Phase 12 | Pendente (código completo, verificação humana) |
+| CANAJU-01 | Phase 12 | Confirmado em produção |
+| CANAJU-02 | Phase 12 | Confirmado em produção |
+| CANAJU-03 | Phase 12 | Confirmado em produção |
+| CANAJU-04 | Phase 12 | Confirmado em produção |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5

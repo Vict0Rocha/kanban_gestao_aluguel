@@ -277,11 +277,11 @@ Plans:
 **Depends on:** Phase 11
 **Success Criteria** (what must be TRUE):
 
-  1. Existe um botão "Cancelar" ao lado de cada lançamento `tipo='acrescimo'` ou `tipo='desconto'` no histórico de lançamentos da parcela
-  2. Clicar "Cancelar" abre confirmação simples mostrando o valor e o tipo do ajuste; confirmar apaga de verdade aquele lançamento do banco
-  3. Depois de apagar, o status da parcela é recalculado a partir do que resta no livro-razão (nunca hardcoded)
-  4. Uma parcela conciliada nunca aceita cancelamento de ajuste nenhum
-  5. `tipo='destrava'` continua sem botão de cancelar (fora de escopo, D-01 de 12-CONTEXT.md)
+  1. ✓ Existe um botão "Cancelar" ao lado de cada lançamento `tipo='acrescimo'` ou `tipo='desconto'` no histórico de lançamentos da parcela — confirmado em produção
+  2. ✓ Clicar "Cancelar" abre confirmação simples mostrando o valor e o tipo do ajuste; confirmar apaga de verdade aquele lançamento do banco — confirmado em produção
+  3. ✓ Depois de apagar, o status da parcela é recalculado a partir do que resta no livro-razão (nunca hardcoded) — confirmado em produção
+  4. ✓ Uma parcela conciliada nunca aceita cancelamento de ajuste nenhum — confirmado em produção
+  5. ✓ `tipo='destrava'` continua sem botão de cancelar (fora de escopo, D-01 de 12-CONTEXT.md) — confirmado em produção
 
 **Plans:** 1/1 plans executed
 
@@ -306,6 +306,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 9. Integridade de datas do contrato nas parcelas | 2/2 | Complete | 2026-08-21 |
 | 10. Relatório Financeiro dedicado | 2/2 | Complete | 2026-08-21 |
 | 11. Cancelamento de pagamento | 1/1 | Complete | 2026-08-21 |
-| 12. Cancelamento de ajustes | 1/1 | Executed (verificação humana pendente) | - |
+| 12. Cancelamento de ajustes | 1/1 | Complete | 2026-08-22 |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11 e 12 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário; Phase 12: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.
