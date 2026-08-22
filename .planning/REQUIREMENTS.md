@@ -115,6 +115,16 @@ Fora do conjunto de 39 requisitos da v2.0 — extensão pedida pelo usuário log
 - [x] **CANAJU-03**: Depois de apagar, o status da parcela é recalculado a partir do que resta no livro-razão (nunca hardcoded) — confirmado em produção
 - [x] **CANAJU-04**: Uma parcela conciliada nunca aceita cancelamento de ajuste nenhum — mesma trava já usada por Pagamento/Ajustar/Cancelar pagamento, aplicada no servidor — confirmado em produção
 
+### IMOB — Dinheiro da imobiliária (pós-milestone, Phase 13)
+
+Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário, adiada desde a Phase 10 e retomada depois da Phase 12 fechar. Decisões registradas em `.planning/phases/13-dinheiro-da-imobili-ria/13-CONTEXT.md`. Estritamente aditiva: nenhum requisito abaixo altera o comportamento de FINUI/CONSULTA/FINREL/RELDED já existentes.
+
+- [ ] **IMOB-01**: Cada contrato tem um percentual de administração e um percentual de comissão de primeiro aluguel configuráveis, com defaults 10%/50%, numa tela de configuração financeira separada do modal de edição do card
+- [ ] **IMOB-02**: Ao registrar um pagamento, o diálogo mostra e permite editar um valor de taxa da imobiliária, pré-calculado pelo percentual do contrato (usando o percentual de primeiro aluguel quando a parcela é a de competência mais antiga do contrato, senão o percentual de administração normal) — editável para qualquer valor, não travado a ser derivado do percentual
+- [ ] **IMOB-03**: O valor da taxa registrado nunca afeta o cálculo de `valorDevido`/`valorPago`/status da parcela — nenhuma tela existente (Financeiro, Relatórios, Relatório Financeiro dedicado) muda de comportamento
+- [ ] **IMOB-04**: Existe uma forma de registrar o recebimento da caução de um contrato, e depois devolvê-la ou registrar seu uso, como ações separadas ligadas ao contrato, com histórico de cada evento (nunca uma edição)
+- [ ] **IMOB-05**: Existe um relatório/área mostrando o total recebido pela imobiliária (taxas de administração + comissão de primeiro aluguel + movimento de caução) num período, para conferência contra o extrato bancário
+
 ## Carried over from v1.0
 
 Requisito não concluído na v1.0, mantido visível para não se perder. **Não faz parte do escopo de fases da v2.0** — é uma ação de painel, não trabalho de código, adiada por escolha do usuário.
@@ -221,12 +231,17 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | CANAJU-02 | Phase 12 | Confirmado em produção |
 | CANAJU-03 | Phase 12 | Confirmado em produção |
 | CANAJU-04 | Phase 12 | Confirmado em produção |
+| IMOB-01 | Phase 13 | Pendente |
+| IMOB-02 | Phase 13 | Pendente |
+| IMOB-03 | Phase 13 | Pendente |
+| IMOB-04 | Phase 13 | Pendente |
+| IMOB-05 | Phase 13 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
 - Mapped to phases: 39
 - Unmapped: 0
-- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04) e Phase 12 (CANAJU-01..04) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG` e `### CANAJU` acima
+- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04) e Phase 13 (IMOB-01..05) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU` e `### IMOB` acima
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 - VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 

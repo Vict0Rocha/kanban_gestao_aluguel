@@ -292,9 +292,17 @@ Plans:
 
 ### Phase 13: Dinheiro da imobiliária
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** O gestor controla o dinheiro que a própria imobiliária recebe (taxa de administração, comissão de primeiro aluguel, caução), separado da gestão do valor bruto do aluguel, para conferir contra o extrato bancário — sem alterar nenhuma tela existente
+**Requirements**: IMOB-01, IMOB-02, IMOB-03, IMOB-04, IMOB-05 (trabalho pós-milestone — ver 13-CONTEXT.md)
 **Depends on:** Phase 12
+**Success Criteria** (what must be TRUE):
+
+  1. Cada contrato tem percentual de administração e percentual de comissão de primeiro aluguel configuráveis (defaults 10%/50%), numa tela de configuração financeira própria
+  2. Registrar um pagamento mostra e permite editar um valor sugerido de taxa da imobiliária, calculado pelo percentual certo (primeiro aluguel na parcela de competência mais antiga, administração normal nas demais)
+  3. O valor da taxa nunca entra no cálculo de status/valor devido/pago da parcela — Financeiro, Relatórios e Relatório Financeiro dedicado continuam idênticos
+  4. Existe registro de caução com ciclo completo (recebido, devolvido, usado) como ação separada ligada ao contrato
+  5. Existe um relatório/área mostrando o total recebido pela imobiliária num período, para bater com o extrato bancário
+
 **Plans:** 0 plans
 
 Plans:
