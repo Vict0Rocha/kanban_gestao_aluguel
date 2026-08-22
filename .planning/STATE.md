@@ -4,11 +4,11 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 12
 current_phase_name: cancelamento-de-ajustes
-status: context-gathered
-stopped_at: Phase 12 context gathered — pronto para UI-SPEC/plano
-last_updated: "2026-08-21T21:46:44.303Z"
+status: ui-spec-approved
+stopped_at: Phase 12 UI-SPEC approved
+last_updated: "2026-08-22T00:28:37.757Z"
 last_activity: 2026-08-21
-last_activity_desc: "Fase 11 encerrada (CANPAG-01..04 confirmados em produção, bug de RangeError corrigido). Usuário pediu extensão imediata: cancelar também acréscimo e desconto, mesmo padrão. Fase 12 aberta e discuss-phase concluído — CONTEXT.md registra D-01 (destrava fica fora de escopo, decisão explícita) e D-08 (generalizar o diálogo de confirmação em vez de duplicar)."
+last_activity_desc: "Fase 11 encerrada (CANPAG-01..04 confirmados em produção, bug de RangeError corrigido). Usuário pediu extensão imediata: cancelar também acréscimo e desconto, mesmo padrão. Fase 12 aberta, discuss-phase concluído (D-01 destrava fora de escopo, D-08 diálogo generalizado) e UI-SPEC aprovado 6/6 (checker + probe real rodado manualmente, 15/15 combinações endereçadas: 6 dispensadas, 8 explícitas, 1 backstop)."
 progress:
   total_phases: 12
   completed_phases: 10
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Fase 12 (Cancelamento de ajustes) — contexto reunido, pronta para UI-SPEC/plano. Ideia adiada pendente de discussão: dinheiro que a própria imobiliária recebe (taxa de administração, primeiro aluguel, caução, taxas de gestão) — ver 10-CONTEXT.md/11-CONTEXT.md § deferred.
+**Current focus:** Fase 12 (Cancelamento de ajustes) — UI-SPEC aprovado, pronta para o plano. Ideia adiada pendente de discussão: dinheiro que a própria imobiliária recebe (taxa de administração, primeiro aluguel, caução, taxas de gestão) — ver 10-CONTEXT.md/11-CONTEXT.md § deferred.
 
 ## Current Position
 
-Phase: 12 (cancelamento-de-ajustes) — CONTEXT GATHERED
-Status: 12-CONTEXT.md escrito e commitado; falta UI-SPEC e plano antes de executar
-Last activity: 2026-08-21 — Phase 12 discuss-phase concluído
+Phase: 12 (cancelamento-de-ajustes) — UI-SPEC APPROVED
+Status: 12-UI-SPEC.md aprovado (6/6 dimensões); falta o plano antes de executar
+Last activity: 2026-08-21 — Phase 12 UI-SPEC aprovado
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -145,6 +145,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-21T21:46:44.198Z
-Stopped at: Phase 12 context gathered
-Resume file: .planning/phases/12-cancelamento-de-ajustes/12-CONTEXT.md
+Last session: 2026-08-22T00:28:37.634Z
+Stopped at: Phase 12 UI-SPEC approved
+Resume file: .planning/phases/12-cancelamento-de-ajustes/12-UI-SPEC.md
