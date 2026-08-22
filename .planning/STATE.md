@@ -11,10 +11,10 @@ last_activity: 2026-08-21
 last_activity_desc: "Plano 12-01 executado: cancelarPagamentoAction/cancelarPagamento/CancelarPagamentoDialog renomeados para cancelarLancamentoAction/cancelarLancamento/CancelarLancamentoDialog (git mv preservou histórico) e o DELETE ampliado de .eq(\"tipo\",\"pagamento\") para .in(\"tipo\",[\"pagamento\",\"acrescimo\",\"desconto\"]), nunca alcançando destrava (D-01). TIPO exportado de lancamento-tipo-label.tsx (D-08), diálogo generalizado lendo TIPO[tipo].label, gatilho de ParcelaHistoricoSheet ampliado para os três tipos. docs/data-model.md documenta o escopo ampliado da mesma segunda exceção (não terceira) ao livro-razão append-only. npm run lint/build verdes, todas as asserções de fonte do plano confirmadas. Commits: fbadec8 (Task 1), b65ca01 (Task 2). Falta verificação humana em produção (composição Sheet+AlertDialog para acréscimo/desconto, nunca exercitada antes desta fase)."
 progress:
   total_phases: 12
-  completed_phases: 11
+  completed_phases: 10
   total_plans: 32
   completed_plans: 32
-  percent: 100
+  percent: 83
 ---
 
 # Project State
@@ -24,7 +24,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Fase 12 (Cancelamento de ajustes) — UI-SPEC aprovado, pronta para o plano. Ideia adiada pendente de discussão: dinheiro que a própria imobiliária recebe (taxa de administração, primeiro aluguel, caução, taxas de gestão) — ver 10-CONTEXT.md/11-CONTEXT.md § deferred.
+**Current focus:** Fase 12 (Cancelamento de ajustes) — plano 12-01 executado e mesclado em produção, aguardando verificação humana (composição Sheet+AlertDialog para acréscimo/desconto). Ideia adiada pendente de discussão: dinheiro que a própria imobiliária recebe (taxa de administração, primeiro aluguel, caução, taxas de gestão) — ver 10-CONTEXT.md/11-CONTEXT.md § deferred.
 
 ## Current Position
 
