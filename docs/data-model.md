@@ -13,6 +13,9 @@ erDiagram
     PARCELAS ||--o{ PARCELA_LANCAMENTOS : registra
     PROFILES ||--o{ PARCELAS : concilia
     PROFILES ||--o{ PARCELA_LANCAMENTOS : lanca
+    CARDS ||--o{ TAXAS_IMOBILIARIA : recebe
+    PARCELAS ||--o{ TAXAS_IMOBILIARIA : gera
+    CARDS ||--o{ CAUCAO_EVENTOS : registra
 
     PROFILES {
         uuid id PK
@@ -45,6 +48,8 @@ erDiagram
         text observacoes
         boolean ativo
         timestamptz arquivado_em
+        numeric percentual_administracao
+        numeric percentual_comissao_primeiro_aluguel
     }
     ALERTS {
         uuid id PK
@@ -78,6 +83,27 @@ erDiagram
         text email PK
         timestamptz added_at
     }
+    TAXAS_IMOBILIARIA {
+        uuid id PK
+        uuid parcela_id FK
+        uuid card_id FK
+        text origem
+        numeric valor
+        date data
+        text observacao
+        uuid criado_por FK
+        timestamptz criado_em
+    }
+    CAUCAO_EVENTOS {
+        uuid id PK
+        uuid card_id FK
+        text tipo
+        numeric valor
+        date data
+        text observacao
+        uuid criado_por FK
+        timestamptz criado_em
+    }
 ```
 
 `allowed_members` aparece solta de propósito: ela não se liga a nenhuma outra
@@ -89,11 +115,13 @@ o e-mail do JWT — ver [RLS por allowlist](#decisões-de-design).
 - **profiles** — espelha `auth.users` do Supabase; criado automaticamente no cadastro (trigger `handle_new_user`).
 - **boards** — o quadro kanban. Existe como tabela própria (em vez de fixo no código) para não travar o sistema caso um dia surja a necessidade de separar por carteira/região — mas hoje só existe um board (`seed.sql` já cria o padrão).
 - **columns** — colunas do board, nome livre e `position` para reordenar.
-- **cards** — cada card é uma casa/imóvel. Campos obrigatórios: `proprietario`, `valor`, `endereco`. Opcionais: `inquilino`, `telefone` (usado para o botão de acionar/WhatsApp na etapa 7), `periodo_inicio`/`periodo_fim` (período do aluguel), `observacoes`. `numero` é o identificador sequencial legível (`#1`, `#2`, `#3`…), exibido no card do Board e usado como filtro exato na consulta do Financeiro — ver [identificador sequencial por sequence](#decisões-de-design) para o porquê de não ser um `uuid` nem um número recalculado na leitura. `arquivado_em` é nulo enquanto o contrato está em operação normal; preenchido, guarda a data/hora do arquivamento mais recente — ver [`timestamptz` em vez de `boolean` para arquivamento](#decisões-de-design).
+- **cards** — cada card é uma casa/imóvel. Campos obrigatórios: `proprietario`, `valor`, `endereco`. Opcionais: `inquilino`, `telefone` (usado para o botão de acionar/WhatsApp na etapa 7), `periodo_inicio`/`periodo_fim` (período do aluguel), `observacoes`. `numero` é o identificador sequencial legível (`#1`, `#2`, `#3`…), exibido no card do Board e usado como filtro exato na consulta do Financeiro — ver [identificador sequencial por sequence](#decisões-de-design) para o porquê de não ser um `uuid` nem um número recalculado na leitura. `arquivado_em` é nulo enquanto o contrato está em operação normal; preenchido, guarda a data/hora do arquivamento mais recente — ver [`timestamptz` em vez de `boolean` para arquivamento](#decisões-de-design). `percentual_administracao`/`percentual_comissao_primeiro_aluguel` (Phase 13) são os percentuais da taxa que a própria imobiliária recebe sobre o aluguel daquele contrato, com defaults 10%/50%, editáveis por exceção — ver [fronteira estrutural entre taxa e livro-razão do aluguel](#decisões-de-design).
 - **alerts** — guarda apenas a **resolução** de um alerta ("já avisei o inquilino", "não interessa"). Os alertas em si não são gravados: o app os recalcula a partir de `periodo_fim` a cada leitura (`web/src/lib/kanban/alerts.ts`), então nunca ficam desatualizados e não é preciso um job agendado com chave privilegiada. Uma linha aqui só existe quando alguém clicou em resolver.
 - **parcelas** — uma linha por contrato por mês de competência. `competencia` é sempre o dia 1 do mês de referência (`2026-08-01`), guardado como `date` e não como texto `"08/2026"`, para não haver ambiguidade de formato; a constraint `parcelas_competencia_dia_1` garante isso. `valor_original` é uma fotografia do `valor` do card no momento em que a parcela nasceu, então reajustar o aluguel não reescreve parcela que já existe. O `status` guardado é só `aberta`, `parcial`, `paga` ou `conciliada` — "a vencer" e "vencida" **não** são status guardados: saem da comparação entre `vencimento` e a data de hoje, feita na leitura (ver [geração de parcelas preguiçosa](#decisões-de-design)).
 - **parcela_lancamentos** — o livro-razão da parcela. Cada pagamento, acréscimo, desconto e destrava é uma linha nova; nada é editado nem apagado — exceto o cancelamento de um pagamento, acréscimo ou desconto lançado por engano, a segunda exceção deliberada ao append-only (ver [Cancelamento de pagamento e ajustes](#decisões-de-design), Phase 11). O valor devido e o valor pago da parcela são somas dos lançamentos, não colunas (ver [livro-razão append-only](#decisões-de-design)). `motivo` é obrigatório quando `tipo` é `destrava`, por constraint no banco (`parcela_lancamentos_destrava_exige_motivo`) — é isso que faz o histórico de destravas ter valor.
 - **allowed_members** — a lista de quem pode usar o sistema, por e-mail. É ela que as policies de RLS consultam; não tem policy de select, ou seja, só é legível pelo SQL Editor / `service_role`.
+- **taxas_imobiliaria** (Phase 13) — o livro-razão paralelo da taxa que a própria imobiliária recebe — administração ou comissão do primeiro aluguel, sempre ligado a uma parcela e a um contrato, gerado automaticamente no momento da baixa mas com valor livre; ver [fronteira estrutural entre taxa e livro-razão do aluguel](#decisões-de-design).
+- **caucao_eventos** (Phase 13) — o ciclo completo de caução — recebido, devolvido, usado — como histórico append-only ligado ao contrato, sem coluna de saldo gravada; ver [caução é histórico, não coluna](#decisões-de-design).
 
 ## Decisões de design
 
@@ -122,6 +150,9 @@ o e-mail do JWT — ver [RLS por allowlist](#decisões-de-design).
 - **Cancelamento de pagamento e ajustes (D-01 Phase 11, D-02 Phase 12) — a segunda exceção deliberada ao livro-razão append-only** — a Phase 9 (item acima) apagava linhas de `parcelas` (parcelas órfãs sem nenhum lançamento); esta é a primeira vez que uma linha do livro-razão em si, `parcela_lancamentos`, é apagada de verdade. Escopo estreito e deliberado: lançamentos `tipo='pagamento'`, `tipo='acrescimo'` ou `tipo='desconto'`, só quando a parcela não está `conciliada` (trava reusada de `exigirParcelaNaoConciliada`, D-06 daquela fase), um lançamento por vez — o botão "Cancelar" em `ParcelaHistoricoSheet` apaga só o lançamento clicado, nunca todos os pagamentos ou ajustes da parcela de uma vez. Diferente de Destravar (Phase 7), que desfaz uma conciliação lançando um evento novo em vez de apagar o registro antigo, cancelar um pagamento ou ajuste não deixa nenhum rastro de quem cancelou, quando, ou por quê — esse trade-off foi levantado diretamente ao usuário antes de perguntar, e ele confirmou apagar mesmo assim (`.planning/phases/11-cancelamento-de-pagamento/11-CONTEXT.md` D-01), e reconfirmado ao pedir a extensão para acréscimo e desconto "da mesma maneira" (`.planning/phases/12-cancelamento-de-ajustes/12-CONTEXT.md` D-02). A garantia que sobra: o status da parcela depois do cancelamento é sempre recalculado a partir do que resta no livro-razão (`recalcularEGravarStatus`), nunca fixado num valor específico — o resultado pode legitimamente pousar em `aberta` (zero lançamentos de débito restantes) ou `parcial` (ainda sobra algo, menor que o devido). `tipo='destrava'` fica permanentemente fora deste mecanismo — é um registro de auditoria (quem destravou, quando, por quê — CONCIL-04), não um valor lançado por engano, e apagá-lo removeria esse rastro sem desfazer o destravamento em si (D-01, `.planning/phases/12-cancelamento-de-ajustes/12-CONTEXT.md`).
 - **O tradeoff de filtrar visibilidade em memória (D-06)** — a regra depende de "tem lançamento", do período atual do card e do mês corrente ao mesmo tempo, e não se expressa numa única query PostgREST. O caminho escolhido é consultar como já se consultava (o `select` do Financeiro já traz o embed `parcela_lancamentos`) e aplicar a função pura sobre o resultado. Com ~48 contratos e ~24 parcelas cada, o custo é irrelevante. **Gatilho de revisão:** se o volume subir uma ordem de grandeza, o caminho é uma view no banco ou uma coluna denormalizada mantida por trigger — não é para resolver agora, é para não ser redescoberto do zero depois.
 - **Por que `arquivado_em` é filtro de query e não parte da regra em memória (D-08)** — é um predicado simples e barato que o banco resolve sozinho (`cards.arquivado_em is null`), ao contrário do resto da regra de visibilidade. A função pura `avaliarVisibilidadeParcela` ainda conhece o caso (retorna o motivo `arquivado`), porque o caminho de escrita precisa dele para recusar com a mensagem certa quando uma aba desatualizada tenta escrever num contrato recém-arquivado.
+- **A fronteira estrutural entre `taxas_imobiliaria` e o livro-razão do aluguel (D-04, Phase 13)** — `taxas_imobiliaria` é uma tabela paralela a `parcela_lancamentos`, nunca uma extensão dela. Nenhuma FK, trigger ou view liga as duas; `somarLancamentos`/`statusDeParcela` (`web/src/lib/kanban/parcelas.ts`) nunca leem `taxas_imobiliaria`, e nenhuma escrita ali aciona `recalcularEGravarStatus`. Por quê: a taxa que a imobiliária recebe (administração, comissão do primeiro aluguel) é dinheiro que sai do bolso do proprietário para a imobiliária, depois que o inquilino já pagou — misturar isso no cálculo de `valorDevido`/`valorPago`/`status` da parcela faria o Financeiro/Relatórios/Relatório Financeiro dedicado (que mostram o valor bruto do aluguel) mudarem de comportamento sem o usuário ter pedido, violando a promessa explícita da fase de ser "estritamente aditiva — nenhuma tela existente muda".
+- **Caução é histórico, não coluna (D-06, Phase 13)** — `caucao_eventos` não tem coluna de saldo; o saldo de um contrato é sempre a soma dos eventos (`recebido − devolvido − usado`), mesmo princípio já usado para `valorDevido`/`valorPago` de uma parcela. Cada evento é uma linha nova, nunca um `UPDATE` — não existe (e não deve existir) forma de editar um evento já gravado.
+- **O backstop de exclusão ampliado (Phase 13, sobre a decisão original da Phase 6.2)** — `impedir_exclusao_de_card_com_lancamento()` ganhou dois `exists` adicionais, um por tabela nova, na mesma função (`create or replace`, não um segundo trigger). `taxas_imobiliaria`/`caucao_eventos` não caíam de graça sob o predicado antigo porque são tabelas novas, não um `tipo` novo dentro de `parcela_lancamentos` — ao contrário de `destrava` e conciliação, que "entraram de graça" reusando a mesma tabela. Isso importa porque, sem a ampliação, excluir um contrato que já recebeu uma caução real apagaria esse registro em cascata sem trava nenhuma.
 
 ## Como aplicar
 
