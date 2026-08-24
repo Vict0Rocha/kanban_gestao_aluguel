@@ -5,15 +5,15 @@ milestone_name: Módulo Financeiro
 current_phase: 13
 current_phase_name: dinheiro-da-imobili-ria
 status: executing
-stopped_at: Plano 13-02 executado — ensaio confirmado em produção, nada aplicado ainda
-last_updated: "2026-08-24T01:00:00.000Z"
+stopped_at: Plano 13-03 executado — schema do dinheiro da imobiliária vivo em produção
+last_updated: "2026-08-24T02:00:00.000Z"
 last_activity: 2026-08-24
-last_activity_desc: "Plano 13-02 executado: usuário rodou a Parte A do runbook contra produção real (SQL Editor, Parte A inteira num único Run, seguindo D-19). Execução completa sem erro = evidência de que as dez recusas de validação e os quatro lados do backstop de exclusão ampliado funcionaram (o script propaga FALHOU se qualquer uma deixasse passar algo indevido). RLS negativa e positiva confirmadas. Duas rodadas extras sem dano (uma com placeholder de e-mail esquecido, RLS recusou corretamente, rollback automático por erro). Banco confirmado idêntico ao baseline (cards_total=58, parcelas_total=551, lancamentos_total=43) em todas as três rodadas. RESULTADO DO ENSAIO registrado no runbook. Próximo: plano 13-03 — aplicar de verdade, atrás de checkpoint:decision."
+last_activity_desc: "Plano 13-03 executado: usuário autorizou (checkpoint:decision, aplicar-agora), migração 20260824000000_dinheiro_imobiliaria.sql aplicada em produção via SQL Editor (Success. No rows returned). docs/data-model.md documentado (fronteira D-04, caução append-only D-06, backstop ampliado). Task 3 (checkpoint:human-verify): BLOCO 4/5/7 do runbook confirmados contra o banco já migrado — colunas/tabelas/constraints/policies/função todos corretos, cards_total e updated_at_max idênticos ao baseline, zero percentual divergente. BLOCO 6 (backstop pós-push) sem erro. Board/Financeiro/Relatórios/Relatório Financeiro dedicado confirmados sem regressão; exclusão de contrato com lançamento continua recusada. Schema em produção, nenhum código de aplicação ainda. Próximo: plano 13-04 (tracer) — taxa no diálogo de pagamento, prova D-04."
 progress:
   total_phases: 13
   completed_phases: 12
   total_plans: 39
-  completed_plans: 34
+  completed_plans: 35
   percent: 92
 ---
 
