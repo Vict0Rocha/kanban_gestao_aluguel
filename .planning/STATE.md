@@ -5,15 +5,15 @@ milestone_name: Módulo Financeiro
 current_phase: 13
 current_phase_name: dinheiro-da-imobili-ria
 status: executing
-stopped_at: Plano 13-01 executado — migração + runbook escritos, nada aplicado em produção ainda
-last_updated: "2026-08-24T00:20:00.000Z"
+stopped_at: Plano 13-02 executado — ensaio confirmado em produção, nada aplicado ainda
+last_updated: "2026-08-24T01:00:00.000Z"
 last_activity: 2026-08-24
-last_activity_desc: "Plano 13-01 executado (worktree isolado): supabase/migrations/20260824000000_dinheiro_imobiliaria.sql (percentuais em cards, taxas_imobiliaria, caucao_eventos, backstop de exclusão ampliado) e supabase/verificacao_dinheiro_imobiliaria.sql (runbook de duas partes, aviso D-19). Dois bugs de conteúdo no runbook auto-corrigidos pelo próprio executor antes do commit (comentário do BLOCO 1 vazando os nomes novos, precedência and/or numa query do BLOCO 5). Revisei o diff completo — migração 100% aditiva, fronteira D-04 documentada no próprio SQL. Nada tocou o banco real. Próximo: plano 13-02 (ensaio em transação revertida)."
+last_activity_desc: "Plano 13-02 executado: usuário rodou a Parte A do runbook contra produção real (SQL Editor, Parte A inteira num único Run, seguindo D-19). Execução completa sem erro = evidência de que as dez recusas de validação e os quatro lados do backstop de exclusão ampliado funcionaram (o script propaga FALHOU se qualquer uma deixasse passar algo indevido). RLS negativa e positiva confirmadas. Duas rodadas extras sem dano (uma com placeholder de e-mail esquecido, RLS recusou corretamente, rollback automático por erro). Banco confirmado idêntico ao baseline (cards_total=58, parcelas_total=551, lancamentos_total=43) em todas as três rodadas. RESULTADO DO ENSAIO registrado no runbook. Próximo: plano 13-03 — aplicar de verdade, atrás de checkpoint:decision."
 progress:
   total_phases: 13
   completed_phases: 12
   total_plans: 39
-  completed_plans: 33
+  completed_plans: 34
   percent: 92
 ---
 

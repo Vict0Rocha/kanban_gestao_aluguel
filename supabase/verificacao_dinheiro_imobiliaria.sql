@@ -822,10 +822,81 @@ order by tablename, policyname;
 
 
 -- ============================================================
--- RESULTADO DO ENSAIO — <data>
+-- RESULTADO DO ENSAIO — 2026-08-24
 --
--- Preencher pelo plano 13-02 com: caminho de execução usado
--- ((a)/(b)/(c)), baseline anotado no BLOCO 1, ids reais usados nas
--- provas, resultado observado de cada prova (2.1 a 2.8), e a
--- confirmação pós-rollback do BLOCO 3.
+-- Caminho de execução: (a) Supabase Studio, SQL Editor — Parte A
+-- colada inteira (BLOCO 1 em separado, depois BLOCO 2+3 num único
+-- clique de "Run"), nunca bloco a bloco.
+--
+-- Baseline (BLOCO 1, antes de qualquer coisa):
+--   cards_total = 58
+--   updated_at_max = 2026-08-21 20:49:26.781354+00
+--   parcelas_total = 551
+--   lancamentos_total = 43
+--
+-- Ids usados nas provas: escolhidos pelo próprio script via subselect
+-- (select p.card_id, p.id from public.parcelas p limit 1, e
+-- select id from public.columns limit 1) — sem hardcode, conforme
+-- o runbook pedia.
+--
+-- Provas 2.1 a 2.8 e Prova 2.7 (backstop, quatro lados): a execução
+-- terminou do início ao fim sem nenhum erro visível. Cada `do $$ ...
+-- exception when ... $$` deste runbook está escrito para propagar um
+-- `raise exception 'FALHOU: ...'` (abortando a transação inteira,
+-- com erro visível na tela) sempre que uma CHECK/FK/RLS que deveria
+-- recusar uma operação deixasse ela passar — então uma execução
+-- completa e sem erro é, por construção do próprio script, a prova
+-- de que as dez recusas de validação (nove CHECK + uma FK) e os
+-- quatro lados do backstop ampliado (bloqueia por taxa, bloqueia por
+-- caução, continua bloqueando por lançamento em parcela_lancamentos,
+-- libera um card sem nenhum dos três) todos se comportaram como
+-- esperado. As mensagens individuais `NOTICE`/`OK recusado: ...` não
+-- ficaram visíveis na interface do SQL Editor do Supabase Studio
+-- (não há um painel de logs separado nesta versão da interface) —
+-- a ausência de qualquer erro na execução completa é a evidência
+-- observada, não presumida por omissão.
+--
+-- RLS (Prova 2.6): negativa confirmada (um e-mail fora da allowlist,
+-- `intruso-teste@exemplo.invalid`, não conseguiu ler nem escrever em
+-- nenhuma das duas tabelas novas — a inserção foi recusada com
+-- `insufficient_privilege`, capturada pelo próprio script). Positiva
+-- confirmada no terceiro run (ver abaixo) com o e-mail real da
+-- allowlist — o insert em caucao_eventos completou sem erro.
+--
+-- Duas rodadas extras, ambas sem dano, registradas por transparência:
+--   - 2ª rodada: o operador rodou a Parte A de novo colando o script
+--     ainda com o placeholder `SEU-EMAIL-DA-ALLOWLIST@exemplo.com`
+--     em vez do e-mail real — RLS corretamente recusou o insert de
+--     teste em `caucao_eventos` para esse "e-mail" inexistente na
+--     allowlist, com `ERROR 42501: new row violates row-level
+--     security policy`. O erro abortou a transação automaticamente
+--     (mesmo efeito de segurança do `rollback;` explícito) — nada
+--     persistiu, confirmado por consulta imediata (ver números
+--     abaixo, idênticos ao baseline). Este erro não é uma falha do
+--     ensaio: é a trava de RLS funcionando exatamente como
+--     desenhada, só que contra um e-mail de teste esquecido, não
+--     contra um ataque real.
+--   - 3ª rodada: Parte A completa de novo, agora com o e-mail real
+--     do operador no lugar do placeholder — terminou sem nenhum
+--     erro, confirmando a prova positiva de RLS (Prova 2.6) que a
+--     1ª rodada já tinha implicitamente coberto.
+--
+-- Confirmação pós-rollback (conferida depois de cada uma das três
+-- rodadas, sempre idêntica):
+--   cards_total = 58
+--   updated_at_max = 2026-08-21 20:49:26.781354+00 (inalterado)
+--   parcelas_total = 551
+--   lancamentos_total = 43
+--   colunas_novas_em_cards_existem = 0
+--   tabelas_novas_existem = 0
+--
+-- Nenhuma correção foi necessária em
+-- 20260824000000_dinheiro_imobiliaria.sql nem neste runbook — o
+-- ensaio validou o arquivo exatamente como escrito no plano 13-01.
+--
+-- Veredito: as quatro adições NÃO sobreviveram a nenhuma das três
+-- rodadas — o rollback (explícito na 1ª/3ª, automático por erro na
+-- 2ª) desfez tudo em todas elas. O banco de produção está no estado
+-- exato de antes do ensaio. Base suficiente para o checkpoint:decision
+-- do plano 13-03.
 -- ============================================================
