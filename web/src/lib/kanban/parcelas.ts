@@ -58,12 +58,15 @@ export type ParcelaComCard = {
     periodo_inicio: string | null
     periodo_fim: string | null
     arquivado_em: string | null
+    percentual_administracao: number
+    percentual_comissao_primeiro_aluguel: number
   } | null
   parcela_lancamentos: LancamentoDetalhado[] | null
 }
 
 export type LinhaParcela = {
   id: string
+  cardId: string
   competencia: string
   endereco: string
   proprietario: string
@@ -73,6 +76,8 @@ export type LinhaParcela = {
   valorPago: number
   situacao: Situacao
   lancamentos: LancamentoDetalhado[]
+  percentualAdministracao: number
+  percentualComissaoPrimeiroAluguel: number
 }
 
 /**
@@ -454,6 +459,7 @@ export function montarLinhas(
 
     return {
       id: parcela.id,
+      cardId: parcela.card_id,
       competencia: parcela.competencia,
       endereco: parcela.cards?.endereco ?? "",
       proprietario: parcela.cards?.proprietario ?? "",
@@ -463,6 +469,9 @@ export function montarLinhas(
       valorPago,
       situacao: situacaoDaParcela(parcela.status, parcela.vencimento, hojeISO),
       lancamentos,
+      percentualAdministracao: parcela.cards?.percentual_administracao ?? 10,
+      percentualComissaoPrimeiroAluguel:
+        parcela.cards?.percentual_comissao_primeiro_aluguel ?? 50,
     }
   })
 

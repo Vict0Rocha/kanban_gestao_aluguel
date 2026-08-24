@@ -5,6 +5,7 @@ import {
   type LinhaParcela,
   type ParcelaComCard,
 } from "@/lib/kanban/parcelas"
+import { primeiraCompetenciaPorCard } from "@/lib/kanban/taxas"
 import { filtrarParcelasVisiveis } from "@/lib/kanban/visibilidade"
 import { hojeEmCuiaba } from "@/lib/kanban/format"
 import { FinanceiroView } from "@/components/financeiro/financeiro-view"
@@ -15,12 +16,15 @@ import { FinanceiroView } from "@/components/financeiro/financeiro-view"
 // filtro `cards.arquivado_em is null` (D-08) aplicado na query abaixo — o
 // `!inner` nunca descarta nenhuma linha legítima aqui porque
 // `parcelas.card_id` é `not null` com FK para `cards`: o embed nunca podia
-// ser nulo de verdade.
+// ser nulo de verdade. Desde a Phase 13, as duas também trazem
+// `percentual_administracao`/`percentual_comissao_primeiro_aluguel` — os
+// dois percentuais do contrato que `taxas.ts` usa para calcular a sugestão
+// de taxa mostrada no diálogo de pagamento.
 const SELECT_PARCELA_PADRAO =
-  "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, ativo, periodo_inicio, periodo_fim, arquivado_em), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
+  "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, ativo, periodo_inicio, periodo_fim, arquivado_em, percentual_administracao, percentual_comissao_primeiro_aluguel), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
 
 const SELECT_PARCELA_FILTRADA =
-  "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, inquilino, ativo, periodo_inicio, periodo_fim, arquivado_em), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
+  "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, inquilino, ativo, periodo_inicio, periodo_fim, arquivado_em, percentual_administracao, percentual_comissao_primeiro_aluguel), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
 
 /** Dia 1 do mês seguinte a "YYYY-MM", sem passar por Date — mesmo padrão usado em parcelas.ts. */
 function inicioMesSeguinte(periodoYYYYMM: string): string {
@@ -161,6 +165,36 @@ export default async function FinanceiroPage({
     }
   }
 
+  // A-02 (13-04-PLAN.md): para MUITOS card_id de uma vez (uma por linha da
+  // tabela), uma única consulta trazendo (card_id, competencia) de TODAS as
+  // parcelas desses contratos — SEM filtro de visibilidade, porque D-08
+  // define "primeira parcela" sobre todas as linhas de `parcelas`, não só
+  // as visíveis — reduzida em memória por `primeiraCompetenciaPorCard`
+  // (mesmo padrão de `visibilidade.ts`: roda em memória sobre o resultado
+  // da query, custo irrelevante na escala atual). Se a consulta falhar, o
+  // fallback é um Record vazio — `AcoesCell` trata ausência de entrada como
+  // "esta própria parcela é a primeira", nunca derruba a página por causa
+  // disso.
+  let primeiraCompetenciaPorCardMap: Record<string, string> = {}
+  const cardIds = [...new Set(linhas.map((linha) => linha.cardId))]
+  if (cardIds.length > 0) {
+    try {
+      const { data: todasCompetencias, error: erroCompetencias } = await supabase
+        .from("parcelas")
+        .select("card_id, competencia")
+        .in("card_id", cardIds)
+
+      if (erroCompetencias) throw erroCompetencias
+
+      primeiraCompetenciaPorCardMap = primeiraCompetenciaPorCard(
+        (todasCompetencias ?? []) as { card_id: string; competencia: string }[]
+      )
+    } catch (erroCapturado) {
+      console.error("financeiro:primeira-competencia", erroCapturado)
+      primeiraCompetenciaPorCardMap = {}
+    }
+  }
+
   // Nota contextual (plano 06.2-07): só quando o filtro é por ID numérico.
   // Consulta independente, deliberadamente SEM filtro de `arquivado_em` —
   // ela precisa enxergar justamente o contrato arquivado, que a query de
@@ -214,6 +248,7 @@ export default async function FinanceiroPage({
             id: idBusca,
           }}
           contratoFiltro={contratoFiltro}
+          primeiraCompetenciaPorCard={primeiraCompetenciaPorCardMap}
         />
       ) : (
         <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">

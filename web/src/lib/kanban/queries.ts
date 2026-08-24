@@ -118,9 +118,12 @@ export async function registrarPagamento(
   parcelaId: string,
   valor: number,
   data: string,
-  observacao: string | null
+  observacao: string | null,
+  taxaImobiliaria: number
 ) {
-  return unwrap(registrarPagamentoAction(parcelaId, valor, data, observacao))
+  return unwrap(
+    registrarPagamentoAction(parcelaId, valor, data, observacao, taxaImobiliaria)
+  )
 }
 
 export async function ajustarParcela(

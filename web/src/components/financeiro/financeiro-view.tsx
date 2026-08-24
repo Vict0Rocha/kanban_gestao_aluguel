@@ -36,6 +36,7 @@ export function FinanceiroView({
   filtrosAtivos,
   filtroInicial,
   contratoFiltro,
+  primeiraCompetenciaPorCard,
 }: {
   linhas: LinhaParcela[]
   temContratoAtivo: boolean
@@ -44,6 +45,7 @@ export function FinanceiroView({
   filtrosAtivos: boolean
   filtroInicial: FiltroValores
   contratoFiltro: ContratoFiltro
+  primeiraCompetenciaPorCard: Record<string, string>
 }) {
   const vazio = !temContratoAtivo
     ? "sem-contrato-ativo"
@@ -90,6 +92,7 @@ export function FinanceiroView({
         vazio={vazio}
         todayISO={todayISO}
         mensagemVazia={linhas.length === 0 ? (nota ?? undefined) : undefined}
+        primeiraCompetenciaPorCard={primeiraCompetenciaPorCard}
       />
     </div>
   )

@@ -10,6 +10,7 @@ import {
   type LancamentoResumo,
   type ParcelaCandidataPoda,
 } from "./parcelas"
+import { origemTaxa } from "./taxas"
 import { hojeEmCuiaba } from "./format"
 import type { ParcelaRelatorio } from "./relatorio-financeiro"
 import {
@@ -105,6 +106,18 @@ function numeroFinito(valor: unknown, campo: string) {
 function valorLancamento(valor: unknown, mensagem: string): string | null {
   if (typeof valor !== "number" || !Number.isFinite(valor)) return mensagem
   if (valor <= 0 || valor >= 10_000_000) return mensagem
+  return null
+}
+
+/**
+ * Espelha `taxas_imobiliaria_valor_nao_negativo`. Diferença deliberada para
+ * `valorLancamento` acima: aceita `valor === 0` (só recusa `< 0`, não finito,
+ * ou `>= 10_000_000`) — D-03: R$ 0,00 é um valor de taxa da imobiliária
+ * legítimo, não um lançamento vazio a recusar.
+ */
+function valorNaoNegativo(valor: unknown, mensagem: string): string | null {
+  if (typeof valor !== "number" || !Number.isFinite(valor)) return mensagem
+  if (valor < 0 || valor >= 10_000_000) return mensagem
   return null
 }
 
@@ -570,7 +583,32 @@ export async function moveCardAction(
  * falha — a incerteza é devolvida ao chamador para decidir: a trava de
  * exclusão fecha (recusa), o pré-voo do diálogo abre (deixa o servidor
  * decidir de verdade no submit).
+ *
+ * A-04 (13-04-PLAN.md): amplia para checar também `taxas_imobiliaria` e
+ * `caucao_eventos` — o backstop de banco (`impedir_exclusao_de_card_com_lancamento`,
+ * plano 13-01) já verifica as três; deixar este pré-voo do app checando só
+ * `parcela_lancamentos` criaria uma janela em que o diálogo de exclusão
+ * mostra "pode excluir" e o banco recusa. `card_id` é direto nas duas tabelas
+ * novas (sem FK indireta via `parcelas`), então cada checagem é um
+ * `select("id").eq("card_id", cardId).limit(1)` simples — mais simples que a
+ * consulta de `parcela_lancamentos` acima, que precisa do `!inner`.
+ * Curto-circuita: se a primeira consulta já achar linha, devolve `true` sem
+ * rodar as outras duas.
  */
+async function tabelaTemCard(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  tabela: "taxas_imobiliaria" | "caucao_eventos",
+  cardId: string
+): Promise<boolean | null> {
+  const { data, error } = await supabase.from(tabela).select("id").eq("card_id", cardId).limit(1)
+
+  if (error) {
+    console.error("cardTemLancamento", tabela, error)
+    return null
+  }
+  return (data?.length ?? 0) > 0
+}
+
 async function cardTemLancamento(
   supabase: Awaited<ReturnType<typeof createClient>>,
   cardId: string
@@ -585,7 +623,13 @@ async function cardTemLancamento(
     console.error("cardTemLancamento", error)
     return null
   }
-  return (data?.length ?? 0) > 0
+  if ((data?.length ?? 0) > 0) return true
+
+  const temTaxa = await tabelaTemCard(supabase, "taxas_imobiliaria", cardId)
+  if (temTaxa === null) return null
+  if (temTaxa) return true
+
+  return tabelaTemCard(supabase, "caucao_eventos", cardId)
 }
 
 export async function deleteCardAction(cardId: string): Promise<ActionResult> {
@@ -1017,7 +1061,8 @@ export async function registrarPagamentoAction(
   parcelaId: string,
   valor: number,
   data: string,
-  observacao: string | null
+  observacao: string | null,
+  taxaImobiliaria: number
 ): Promise<ActionResult> {
   const sessao = await requireUser()
   if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
@@ -1026,7 +1071,8 @@ export async function registrarPagamentoAction(
     id(parcelaId, "Parcela") ??
     valorLancamento(valor, "Informe um valor de pagamento válido.") ??
     dataObrigatoria(data) ??
-    textoOpcional(observacao, "Observação", 2000)
+    textoOpcional(observacao, "Observação", 2000) ??
+    valorNaoNegativo(taxaImobiliaria, "Informe um valor de taxa válido.")
   if (invalido) return { ok: false, error: invalido }
 
   // D-04/D-15: a trava real. A ocultação na tela (filtrarParcelasVisiveis
@@ -1065,8 +1111,78 @@ export async function registrarPagamentoAction(
     return { ok: false, error: semLinhas("registrar o pagamento") }
   }
 
+  // A taxa (`taxaImobiliaria`, validada acima) é gravada DEPOIS de o
+  // recálculo de status da parcela abaixo já ter terminado com sucesso,
+  // nunca antes e nunca dentro dele — chamado exatamente uma vez nesta
+  // função, só para o INSERT em `parcela_lancamentos` que acabou de
+  // acontecer. O INSERT em `taxas_imobiliaria` mais abaixo não aciona um
+  // segundo recálculo de status. Esta é a fronteira estrutural de D-04
+  // expressa em código: nenhuma leitura de `taxas_imobiliaria` participa de
+  // `somarLancamentos`/`statusDeParcela`.
   const erroStatus = await recalcularEGravarStatus(sessao.supabase, parcelaId)
   if (erroStatus) return { ok: false, error: erroStatus }
+
+  // A-01 (13-04-PLAN.md): a `origem` gravada é sempre recalculada aqui, a
+  // partir do `card_id`/`competencia` reais da parcela — nunca confiada a um
+  // valor calculado no cliente. Isso evita que uma aba desatualizada (com os
+  // percentuais editados em outra aba entre o carregamento da página e o
+  // clique em "Registrar pagamento") grave uma `origem` errada.
+  const { data: parcelaDaTaxa, error: erroParcelaDaTaxa } = await sessao.supabase
+    .from("parcelas")
+    .select("card_id, competencia")
+    .eq("id", parcelaId)
+    .maybeSingle()
+
+  if (erroParcelaDaTaxa || !parcelaDaTaxa) {
+    console.error("registrarPagamento (leitura parcela p/ taxa)", erroParcelaDaTaxa)
+    return { ok: false, error: erroDoBanco(erroParcelaDaTaxa?.code, "registrar a taxa da imobiliária") }
+  }
+
+  const { card_id: cardIdDaTaxa, competencia: competenciaDaParcela } =
+    parcelaDaTaxa as unknown as { card_id: string; competencia: string }
+
+  // A-02: o banco já devolve o mínimo (`order by competencia asc limit 1`),
+  // sem trazer linha a mais — mesmo padrão documentado em taxas.ts.
+  const { data: primeiraParcela, error: erroPrimeiraParcela } = await sessao.supabase
+    .from("parcelas")
+    .select("competencia")
+    .eq("card_id", cardIdDaTaxa)
+    .order("competencia", { ascending: true })
+    .limit(1)
+    .maybeSingle()
+
+  if (erroPrimeiraParcela || !primeiraParcela) {
+    console.error("registrarPagamento (primeira competência)", erroPrimeiraParcela)
+    return { ok: false, error: erroDoBanco(erroPrimeiraParcela?.code, "registrar a taxa da imobiliária") }
+  }
+
+  const origem = origemTaxa(
+    competenciaDaParcela,
+    (primeiraParcela as unknown as { competencia: string }).competencia
+  )
+
+  const { data: taxaInserida, error: erroTaxa } = await sessao.supabase
+    .from("taxas_imobiliaria")
+    .insert({
+      parcela_id: parcelaId,
+      card_id: cardIdDaTaxa,
+      origem,
+      valor: taxaImobiliaria,
+      // A mesma `data` do pagamento, não `current_date` — a taxa nasce no
+      // mesmo instante contábil do pagamento que a gerou.
+      data,
+      observacao: null,
+      criado_por: sessao.user.id,
+    })
+    .select("id")
+
+  if (erroTaxa) {
+    console.error("registrarPagamento (taxa)", erroTaxa)
+    return { ok: false, error: erroDoBanco(erroTaxa.code, "registrar a taxa da imobiliária") }
+  }
+  if (!taxaInserida || taxaInserida.length === 0) {
+    return { ok: false, error: semLinhas("registrar a taxa da imobiliária") }
+  }
 
   return { ok: true, data: undefined }
 }
