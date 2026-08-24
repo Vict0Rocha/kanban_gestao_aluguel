@@ -4,15 +4,15 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 13
 current_phase_name: dinheiro-da-imobili-ria
-status: ui-spec-approved
-stopped_at: Phase 13 UI-SPEC approved
-last_updated: "2026-08-22T14:30:00.000Z"
-last_activity: 2026-08-22
-last_activity_desc: "Fase 13 discuss-phase concluído e UI-SPEC aprovado 6/6 (checker + probe real rodado manualmente, 29/29 combinações endereçadas: 6 dispensadas, 17 explícitas, 6 backstop — incluindo um gap real que a primeira passada do researcher deixou passar, o estado de erro de carregamento da página de Configuração financeira). Quatro telas novas especificadas: Configuração financeira (/financeiro/configuracao), campo de taxa no diálogo de pagamento existente, CaucaoHistoricoSheet, e relatório de reconciliação (/relatorios/imobiliaria)."
+status: planned
+stopped_at: Phase 13 planned — 7 planos criados, pronta para execução
+last_updated: "2026-08-24T00:00:00.000Z"
+last_activity: 2026-08-24
+last_activity_desc: "Fase 13 planejada: 7 planos em cadeia sequencial (13-01..13-07), cada um dependendo do anterior porque todos tocam actions.ts. 13-01 escreve a migração + runbook; 13-02 ensaia em transação revertida; 13-03 aplica em produção atrás de checkpoint:decision (porta de mão única, mesma régua das Fases 4/6.1/6.2/9) e documenta em docs/data-model.md; 13-04 é o tracer — estende registrarPagamentoAction com o campo de taxa, prova a fronteira estrutural D-04 (taxa nunca soma no status da parcela) em produção; 13-05 Configuração financeira; 13-06 ciclo de caução; 13-07 relatório de reconciliação. Planner sofreu uma falha transitória de API a meio caminho (deixou 13-01-PLAN.md truncado), retomado via SendMessage e completou os 7 planos normalmente."
 progress:
   total_phases: 13
   completed_phases: 12
-  total_plans: 32
+  total_plans: 39
   completed_plans: 32
   percent: 92
 ---
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Fase 13 (Dinheiro da imobiliária) — UI-SPEC aprovado, pronta para o plano.
+**Current focus:** Fase 13 (Dinheiro da imobiliária) — 7 planos criados, pronta para execução.
 
 ## Current Position
 
-Phase: 13 (dinheiro-da-imobili-ria) — UI-SPEC APPROVED
-Status: 13-UI-SPEC.md aprovado (6/6 dimensões); falta o plano antes de executar
-Last activity: 2026-08-22 — Phase 13 UI-SPEC aprovado
+Phase: 13 (dinheiro-da-imobili-ria) — PLANNED
+Status: 7 planos criados (13-01..13-07), cadeia sequencial; falta executar
+Last activity: 2026-08-24 — Phase 13 planejada
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
