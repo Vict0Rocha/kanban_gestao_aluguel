@@ -7,6 +7,7 @@ import { Banknote, History, Lock, Unlock } from "lucide-react"
 import { conciliarParcela } from "@/lib/kanban/queries"
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
 import type { LinhaParcela } from "@/lib/kanban/parcelas"
+import { percentualAplicavel } from "@/lib/kanban/taxas"
 import { AjustarParcelaDialog } from "@/components/financeiro/ajustar-parcela-dialog"
 import { ConciliarFalhaToast } from "@/components/financeiro/conciliar-falha-toast"
 import { DestravarParcelaDialog } from "@/components/financeiro/destravar-parcela-dialog"
@@ -36,10 +37,12 @@ const VAZIO_LABEL = {
 function AcoesCell({
   linha,
   todayISO,
+  primeiraCompetenciaPorCard,
   onConciliarErro,
 }: {
   linha: LinhaParcela
   todayISO: string
+  primeiraCompetenciaPorCard: Record<string, string>
   onConciliarErro: (message: string) => void
 }) {
   const router = useRouter()
@@ -63,6 +66,19 @@ function AcoesCell({
       setConciliando(false)
     }
   }
+
+  // D-01/D-08: se o contrato não tiver entrada no mapa (consulta de
+  // primeira competência falhou, ver financeiro/page.tsx), assume que a
+  // própria parcela é a primeira — fallback seguro que nunca derruba a
+  // tela por causa disso.
+  const primeiraCompetencia =
+    primeiraCompetenciaPorCard[linha.cardId] ?? linha.competencia
+  const { percentual, origem } = percentualAplicavel(
+    linha.competencia,
+    primeiraCompetencia,
+    linha.percentualAdministracao,
+    linha.percentualComissaoPrimeiroAluguel
+  )
 
   return (
     <TableCell className="flex items-center gap-2">
@@ -129,6 +145,8 @@ function AcoesCell({
         competencia={linha.competencia}
         valorDevido={linha.valorDevido}
         valorPago={linha.valorPago}
+        percentualAplicavel={percentual}
+        origemPercentual={origem}
         todayISO={todayISO}
         open={dialogoAberto === "pagamento"}
         onOpenChange={(open) => setDialogoAberto(open ? "pagamento" : null)}
@@ -169,6 +187,7 @@ export function ParcelasTable({
   vazio,
   todayISO,
   mensagemVazia,
+  primeiraCompetenciaPorCard,
 }: {
   linhas: LinhaParcela[]
   erro?: boolean
@@ -179,6 +198,10 @@ export function ParcelasTable({
    * ID resolve para um contrato inativo ou arquivado e a lista vem vazia.
    * As três mensagens do mapa ficam inalteradas. */
   mensagemVazia?: string
+  /** A-02 (13-04-PLAN.md): menor `competencia` por `card_id`, calculada uma
+   * vez em financeiro/page.tsx para todos os contratos — `AcoesCell` usa
+   * para decidir a `origem` da taxa sugerida (D-08). */
+  primeiraCompetenciaPorCard: Record<string, string>
 }) {
   const [conciliarErro, setConciliarErro] = React.useState<string | null>(null)
 
@@ -234,6 +257,7 @@ export function ParcelasTable({
                   <AcoesCell
                     linha={linha}
                     todayISO={todayISO}
+                    primeiraCompetenciaPorCard={primeiraCompetenciaPorCard}
                     onConciliarErro={setConciliarErro}
                   />
                 </TableRow>

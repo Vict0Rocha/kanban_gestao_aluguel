@@ -4,6 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 
 import { formatCurrency } from "@/lib/kanban/format"
+import type { OrigemTaxa } from "@/lib/kanban/taxas"
 import { registrarPagamento } from "@/lib/kanban/queries"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,12 +39,30 @@ function valorInicial(valorDevido: number, valorPago: number): string {
   return restante.toFixed(2).replace(".", ",")
 }
 
+/** Arredonda para 2 casas decimais, sem os erros de ponto flutuante de
+ * `Math.round(x * 100) / 100` puro em alguns casos de borda. */
+function round2(valor: number): number {
+  return Math.round((valor + Number.EPSILON) * 100) / 100
+}
+
+/** D-03: mesmo quando "Valor recebido" está vazio, a sugestão é R$ 0,00 —
+ * nunca um campo em branco por padrão. */
+function calcularTaxaInicial(percentualAplicavel: number, valorBase: string): string {
+  const parsedValorBase = valorBase ? Number(valorBase.replace(",", ".")) : 0
+  const base = Number.isFinite(parsedValorBase) ? parsedValorBase : 0
+  return round2((percentualAplicavel / 100) * base)
+    .toFixed(2)
+    .replace(".", ",")
+}
+
 export function RegistrarPagamentoDialog({
   parcelaId,
   endereco,
   competencia,
   valorDevido,
   valorPago,
+  percentualAplicavel,
+  origemPercentual,
   todayISO,
   open,
   onOpenChange,
@@ -53,6 +72,8 @@ export function RegistrarPagamentoDialog({
   competencia: string
   valorDevido: number
   valorPago: number
+  percentualAplicavel: number
+  origemPercentual: OrigemTaxa
   todayISO: string
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -63,6 +84,10 @@ export function RegistrarPagamentoDialog({
   )
   const [data, setData] = React.useState(todayISO)
   const [observacao, setObservacao] = React.useState("")
+  const [taxa, setTaxa] = React.useState(() =>
+    calcularTaxaInicial(percentualAplicavel, valorInicial(valorDevido, valorPago))
+  )
+  const [taxaTocada, setTaxaTocada] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [saving, setSaving] = React.useState(false)
 
@@ -72,12 +97,18 @@ export function RegistrarPagamentoDialog({
   if (open !== wasOpen) {
     setWasOpen(open)
     if (open) {
-      setValor(valorInicial(valorDevido, valorPago))
+      const valorInicialCalculado = valorInicial(valorDevido, valorPago)
+      setValor(valorInicialCalculado)
       setData(todayISO)
       setObservacao("")
+      setTaxa(calcularTaxaInicial(percentualAplicavel, valorInicialCalculado))
+      setTaxaTocada(false)
       setError(null)
     }
   }
+
+  const origemLabel =
+    origemPercentual === "administracao" ? "administração" : "comissão do primeiro aluguel"
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -91,6 +122,11 @@ export function RegistrarPagamentoDialog({
       setError("Informe a data do pagamento.")
       return
     }
+    const parsedTaxa = Number(taxa.replace(",", "."))
+    if (!Number.isFinite(parsedTaxa) || parsedTaxa < 0) {
+      setError("Informe um valor de taxa válido.")
+      return
+    }
 
     setSaving(true)
     setError(null)
@@ -99,7 +135,8 @@ export function RegistrarPagamentoDialog({
         parcelaId,
         parsedValor,
         data,
-        observacao.trim() || null
+        observacao.trim() || null,
+        parsedTaxa
       )
       onOpenChange(false)
       router.refresh()
@@ -136,8 +173,36 @@ export function RegistrarPagamentoDialog({
               inputMode="decimal"
               placeholder="0,00"
               value={valor}
-              onChange={(e) => setValor(e.target.value)}
+              onChange={(e) => {
+                setValor(e.target.value)
+                // Sugestão viva (UI-SPEC §2): recalcula a taxa a partir do
+                // novo valor recebido, a menos que o usuário já tenha
+                // editado o campo de taxa diretamente nesta abertura do
+                // diálogo — nesse caso o valor dele nunca é sobrescrito.
+                if (!taxaTocada) {
+                  setTaxa(calcularTaxaInicial(percentualAplicavel, e.target.value))
+                }
+              }}
             />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="taxa-imobiliaria">Taxa da imobiliária (R$)</Label>
+            <Input
+              id="taxa-imobiliaria"
+              inputMode="decimal"
+              placeholder="0,00"
+              value={taxa}
+              onChange={(e) => {
+                // Marca taxaTocada ANTES de gravar o valor — nesta ordem,
+                // para que o próximo onChange de "Valor recebido" já veja
+                // taxaTocada verdadeiro e pare de sobrescrever este campo.
+                setTaxaTocada(true)
+                setTaxa(e.target.value)
+              }}
+            />
+            <p className="text-xs text-muted-foreground">
+              Sugestão: {percentualAplicavel}% de {origemLabel} sobre o valor recebido.
+            </p>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="data-pagamento">Data do pagamento</Label>
