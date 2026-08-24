@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { Filter, X } from "lucide-react"
+import Link from "next/link"
+import { Filter, SlidersHorizontal, X } from "lucide-react"
 
 import {
   Collapsible,
@@ -94,6 +95,14 @@ export function FiltroParcelas({
               para a busca
             </span>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            render={<Link href="/financeiro/configuracao" />}
+          >
+            <SlidersHorizontal className="size-3.5" />
+            Configuração financeira
+          </Button>
           <CollapsibleTrigger
             render={
               <Button variant="outline" size="sm">
