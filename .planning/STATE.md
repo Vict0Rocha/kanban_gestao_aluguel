@@ -4,16 +4,16 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 13
 current_phase_name: dinheiro-da-imobili-ria
-status: planned
-stopped_at: Phase 13 planned — 7 planos criados, pronta para execução
-last_updated: "2026-08-24T00:00:00.000Z"
+status: executing
+stopped_at: Plano 13-01 executado — migração + runbook escritos, nada aplicado em produção ainda
+last_updated: "2026-08-24T00:20:00.000Z"
 last_activity: 2026-08-24
-last_activity_desc: "Fase 13 planejada: 7 planos em cadeia sequencial (13-01..13-07), cada um dependendo do anterior porque todos tocam actions.ts. 13-01 escreve a migração + runbook; 13-02 ensaia em transação revertida; 13-03 aplica em produção atrás de checkpoint:decision (porta de mão única, mesma régua das Fases 4/6.1/6.2/9) e documenta em docs/data-model.md; 13-04 é o tracer — estende registrarPagamentoAction com o campo de taxa, prova a fronteira estrutural D-04 (taxa nunca soma no status da parcela) em produção; 13-05 Configuração financeira; 13-06 ciclo de caução; 13-07 relatório de reconciliação. Planner sofreu uma falha transitória de API a meio caminho (deixou 13-01-PLAN.md truncado), retomado via SendMessage e completou os 7 planos normalmente."
+last_activity_desc: "Plano 13-01 executado (worktree isolado): supabase/migrations/20260824000000_dinheiro_imobiliaria.sql (percentuais em cards, taxas_imobiliaria, caucao_eventos, backstop de exclusão ampliado) e supabase/verificacao_dinheiro_imobiliaria.sql (runbook de duas partes, aviso D-19). Dois bugs de conteúdo no runbook auto-corrigidos pelo próprio executor antes do commit (comentário do BLOCO 1 vazando os nomes novos, precedência and/or numa query do BLOCO 5). Revisei o diff completo — migração 100% aditiva, fronteira D-04 documentada no próprio SQL. Nada tocou o banco real. Próximo: plano 13-02 (ensaio em transação revertida)."
 progress:
   total_phases: 13
   completed_phases: 12
   total_plans: 39
-  completed_plans: 32
+  completed_plans: 33
   percent: 92
 ---
 
