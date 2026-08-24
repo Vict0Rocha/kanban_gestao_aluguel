@@ -1450,6 +1450,67 @@ export async function cancelarLancamentoAction(
 }
 
 // ------------------------------------------------------------------
+// Configuração financeira (Phase 13)
+// ------------------------------------------------------------------
+
+/**
+ * Espelha a CHECK constraint de `percentual_administracao`/
+ * `percentual_comissao_primeiro_aluguel` (migration da Phase 13): recusa
+ * não-número/não-finito ou fora da faixa 0–100. O banco é a autoridade
+ * final — esta checagem só existe para devolver uma mensagem legível em vez
+ * de um erro cru do Postgres.
+ */
+function percentualValido(valor: unknown, campo: string): string | null {
+  if (typeof valor !== "number" || !Number.isFinite(valor)) {
+    return `${campo} inválido — informe um percentual entre 0 e 100.`
+  }
+  if (valor < 0 || valor > 100) {
+    return `${campo} inválido — informe um percentual entre 0 e 100.`
+  }
+  return null
+}
+
+/**
+ * IMOB-01: grava os dois percentuais do contrato usados por
+ * `registrarPagamentoAction` (plano 13-04) para sugerir a taxa da
+ * imobiliária no próximo pagamento. Esta action só faz `update` em `cards`
+ * — nunca toca `taxas_imobiliaria` nem `parcela_lancamentos`: uma mudança de
+ * percentual vale só para pagamentos futuros, o mesmo princípio de D-05
+ * (sem retroativo) já usado em `vencimentoDaCompetencia` — "uma mudança de
+ * regra de geração nunca reescreve o que já foi gerado".
+ */
+export async function salvarPercentuaisAction(
+  cardId: string,
+  percentualAdministracao: number,
+  percentualComissaoPrimeiroAluguel: number
+): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido =
+    id(cardId, "Imóvel") ??
+    percentualValido(percentualAdministracao, "Percentual de administração") ??
+    percentualValido(
+      percentualComissaoPrimeiroAluguel,
+      "Percentual de comissão do primeiro aluguel"
+    )
+  if (invalido) return { ok: false, error: invalido }
+
+  const { data, error } = await sessao.supabase
+    .from("cards")
+    .update({
+      percentual_administracao: percentualAdministracao,
+      percentual_comissao_primeiro_aluguel: percentualComissaoPrimeiroAluguel,
+    })
+    .eq("id", cardId)
+    .select("id")
+
+  if (error) return { ok: false, error: erroDoBanco(error.code, "salvar os percentuais") }
+  if (!data || data.length === 0) return { ok: false, error: semLinhas("salvar os percentuais") }
+  return { ok: true, data: undefined }
+}
+
+// ------------------------------------------------------------------
 // Relatório financeiro
 // ------------------------------------------------------------------
 

@@ -19,6 +19,7 @@ import {
   registrarPagamentoAction,
   renameColumnAction,
   resolveAlertAction,
+  salvarPercentuaisAction,
   setCardAtivoAction,
   updateCardAction,
 } from "./actions"
@@ -145,4 +146,18 @@ export async function destravarParcela(parcelaId: string, motivo: string) {
 
 export async function cancelarLancamento(parcelaId: string, lancamentoId: string) {
   return unwrap(cancelarLancamentoAction(parcelaId, lancamentoId))
+}
+
+export async function salvarPercentuais(
+  cardId: string,
+  percentualAdministracao: number,
+  percentualComissaoPrimeiroAluguel: number
+) {
+  return unwrap(
+    salvarPercentuaisAction(
+      cardId,
+      percentualAdministracao,
+      percentualComissaoPrimeiroAluguel
+    )
+  )
 }
