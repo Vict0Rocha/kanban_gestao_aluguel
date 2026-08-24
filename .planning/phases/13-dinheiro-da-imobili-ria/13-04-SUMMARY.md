@@ -45,7 +45,7 @@ key-decisions:
   - "cardTemLancamento refatorada com um helper interno (tabelaTemCard) para as duas checagens novas (taxas_imobiliaria/caucao_eventos), evitando duplicar a mesma forma de consulta duas vezes — mantém o único ponto de escrita literal `from(\"taxas_imobiliaria\")` isolado no INSERT de registrarPagamentoAction"
   - "Comentário sobre a fronteira D-04 em registrarPagamentoAction reescrito para não repetir o identificador `recalcularEGravarStatus` (satisfaz o acceptance criteria de contagem exata de 1 ocorrência dentro da função, que conflitava com o texto 'verbatim' sugerido pela ação do plano) — o conteúdo semântico do aviso foi preservado por paráfrase"
 
-requirements-completed: []
+requirements-completed: [IMOB-02, IMOB-03]
 
 coverage:
   - id: D1
@@ -56,10 +56,10 @@ coverage:
         ref: "cd web && npm run lint && npm run build"
         status: pass
       - kind: manual_procedural
-        ref: "Task 2 (checkpoint:human-verify) — ainda não executada, aguardando o operador em produção após o merge"
-        status: unknown
+        ref: "Task 2 (checkpoint:human-verify) — operador confirmou em produção: sugestão viva recalculando com 'Valor recebido', parando de recalcular após editar o campo de taxa diretamente ('sticky once touched')"
+        status: pass
     human_judgment: true
-    rationale: "A sugestão viva e a interação 'sticky once touched' só são plenamente verificáveis testando o diálogo de verdade contra dados reais de produção — o checkpoint que faz essa verificação ainda não rodou."
+    rationale: "Confirmado em produção pelo usuário."
   - id: D2
     description: "A taxa gravada nunca afeta valorDevido/valorPago/status de nenhuma parcela nem muda o comportamento de Financeiro/Relatórios/Relatório Financeiro dedicado — recalcularEGravarStatus é chamada exatamente uma vez por registrarPagamentoAction, e a inserção em taxas_imobiliaria acontece só depois dela, nunca aciona uma segunda"
     requirement: "IMOB-03"
@@ -68,31 +68,34 @@ coverage:
         ref: "awk '/export async function registrarPagamentoAction/,/^}/' web/src/lib/kanban/actions.ts | grep -c recalcularEGravarStatus — devolve 1, e a linha do insert em taxas_imobiliaria vem depois dela"
         status: pass
       - kind: manual_procedural
-        ref: "Task 2, passos 3-4 — prova em produção com SQL (taxas_imobiliaria, parcelas, parcela_lancamentos) e recarregamento visual de /financeiro, /relatorios, /relatorios/financeiro — ainda não executada"
-        status: unknown
+        ref: "Task 2, passos 3-4 — operador registrou um pagamento de teste em produção, confirmou por SQL que exatamente uma linha nova nasceu em taxas_imobiliaria (origem coerente com D-08), que parcelas.status/valor_original não mudaram por causa da taxa, e que parcela_lancamentos não ganhou lançamento extra; recarregou /financeiro, /relatorios e /relatorios/financeiro sem nenhuma mudança visual"
+        status: pass
     human_judgment: true
-    rationale: "A garantia estrutural (ordem exata das chamadas, ausência de import privilegiado em taxas.ts, único ponto de escrita) é verificável por grep/awk e já passou, mas a confirmação de que nenhuma tela existente mudou de comportamento em dados reais de produção fica para o checkpoint."
+    rationale: "Confirmado em produção pelo usuário — todos os passos 0 a 5 do checkpoint reportados como bem-sucedidos."
   - id: D3
     description: "cardTemLancamento (pré-voo de exclusão do card) passa a checar taxas_imobiliaria e caucao_eventos, além de parcela_lancamentos"
     verification:
       - kind: unit
         ref: "awk '/^async function cardTemLancamento/,/^}/' web/src/lib/kanban/actions.ts | grep -cE 'taxas_imobiliaria|caucao_eventos|parcela_lancamentos' — devolve 3"
         status: pass
+      - kind: manual_procedural
+        ref: "Task 2, passo 5 — operador confirmou que o diálogo de exclusão do card testado reflete a movimentação financeira nova (taxa registrada)"
+        status: pass
     human_judgment: false
 
-duration: ~55min (Task 1; Task 2 pendente)
+duration: ~55min (Task 1) + verificação em produção
 completed: 2026-08-24
-status: halted
+status: complete
 ---
 
 # Phase 13 Plan 04: Taxa da imobiliária no registro de pagamento Summary
 
-**`registrarPagamentoAction` grava a taxa da imobiliária em `taxas_imobiliaria` sempre depois de `recalcularEGravarStatus` já ter concluído — fronteira estrutural D-04 provada em código; a prova em produção (checkpoint) fica pendente para depois do merge.**
+**`registrarPagamentoAction` grava a taxa da imobiliária em `taxas_imobiliaria` sempre depois de `recalcularEGravarStatus` já ter concluído — fronteira estrutural D-04 provada em código e confirmada em produção com um pagamento real de teste.**
 
 ## Performance
 
-- **Duration:** ~55 min (Task 1)
-- **Tasks:** 1 de 2 (Task 2 é `checkpoint:human-verify`, `gate="blocking"` — pausa obrigatória, não executável num worktree isolado)
+- **Duration:** ~55 min (Task 1) + verificação em produção (Task 2)
+- **Tasks:** 2/2 — Task 2 (`checkpoint:human-verify`) aprovada pelo operador após o merge
 - **Files modified:** 8 (1 novo, 7 modificados)
 
 ## Accomplishments
@@ -105,9 +108,7 @@ status: halted
 ## Task Commits
 
 1. **Task 1: Fatia vertical — percentual do contrato → sugestão viva no diálogo → taxa gravada separada do livro-razão** - `5604bb3` (feat)
-2. **Task 2: Provar em produção que a taxa nunca afeta status/valor da parcela** - `checkpoint:human-verify`, `gate="blocking"`, **pausada, aguardando o operador em produção após o merge**
-
-**Plan metadata:** este commit (docs: SUMMARY parcial, plano pausado no checkpoint)
+2. **Task 2: Provar em produção que a taxa nunca afeta status/valor da parcela** - `checkpoint:human-verify`, `gate="blocking"`, **aprovada pelo operador em produção** (todos os passos 0-5 confirmados: sugestão viva, uma linha nova em `taxas_imobiliaria`, zero efeito em `parcelas`/`parcela_lancamentos`, nenhuma mudança visual em `/financeiro`/`/relatorios`/`/relatorios/financeiro`, pré-voo de exclusão refletindo a movimentação nova)
 
 ## Files Created/Modified
 - `web/src/lib/kanban/taxas.ts` (novo) - cálculo puro de origem/percentual da taxa e menor competência por contrato
@@ -166,9 +167,11 @@ None - nenhuma configuração de serviço externo necessária.
 
 ## Next Phase Readiness
 
-**Plano pausado no checkpoint da Task 2, por design — mesmo padrão de `06-02-SUMMARY.md`.** Task 1 está commitada (`5604bb3`); `npm run lint` e `npm run build` passam; todos os `acceptance_criteria` automatizados desta task bateram (com 3 ajustes de forma documentados acima). O código está pronto para a prova em produção que a Task 2 pede — mas esta execução rodou num worktree isolado, sem acesso a browser ao vivo nem à sessão SQL Editor de produção, então a Task 2 não pôde ser executada aqui.
+**Plano completo — Task 1 e Task 2 concluídas.** O operador testou em produção e confirmou todos os passos 0-5 do checkpoint: pré-voo (`taxas_antes = 0`), sugestão viva no diálogo (recalcula com "Valor recebido", para de recalcular após tocar o campo de taxa), um pagamento de teste registrado, a linha nova em `taxas_imobiliaria` confirmada por SQL (origem coerente), `parcelas.status`/`valor_original` e `parcela_lancamentos` sem nenhum efeito colateral, `/financeiro`/`/relatorios`/`/relatorios/financeiro` idênticos a antes do teste, e o pré-voo de exclusão do card refletindo a movimentação nova.
 
-**Bloqueio:** aguardando o merge deste worktree e, depois disso, o operador seguir os passos 0-5 da Task 2 (`13-04-PLAN.md`) contra o banco de produção — pré-voo (`taxas_antes = 0`), abrir "Registrar pagamento" e confirmar a sugestão viva, registrar um pagamento de teste, conferir via SQL que a taxa não afetou `parcelas`/`parcela_lancamentos`, recarregar `/financeiro`/`/relatorios`/`/relatorios/financeiro` e confirmar nenhuma mudança visual, e abrir o diálogo de exclusão do card testado para confirmar que reflete a movimentação nova. IMOB-02/IMOB-03 só ficam confirmados como completos (`requirements-completed`) depois dessa aprovação — por isso o campo está vazio nesta SUMMARY parcial. Os planos 13-05/13-06/13-07 dependem do schema já aplicado (13-01/13-03), não deste plano diretamente, mas reusam `taxas.ts`/o padrão de `AcoesCell` que este plano estabeleceu.
+**Achado do usuário durante o teste (não um bug):** depois de registrar a taxa, o usuário notou que não havia nenhuma tela mostrando o valor — perguntou se a comissão deveria aparecer em `/relatorios` e `/relatorios/financeiro`. Esclarecido e confirmado pelo usuário: isso é o comportamento esperado de D-04 (aditivo, nenhuma tela existente muda) — o relatório de reconciliação dedicado (plano 13-07, ainda não construído) é onde essa visibilidade chega. Usuário confirmou que quer só o relatório novo, sem mudar as telas atuais — nenhuma revisão de escopo necessária.
+
+Os planos 13-05/13-06/13-07 dependem do schema já aplicado (13-01/13-03) e reusam `taxas.ts`/o padrão de `AcoesCell` que este plano estabeleceu.
 
 ## Self-Check: PASSED
 
@@ -176,7 +179,8 @@ None - nenhuma configuração de serviço externo necessária.
 - FOUND: commit `5604bb3`, confirmed via `git log --oneline --all | grep 5604bb3`
 - `cd web && npm run lint && npm run build` both exit 0
 - All Task 1 `<acceptance_criteria>` re-verified passing after the 3 documented deviations
+- Task 2 (`checkpoint:human-verify`) approved by the operator against production
 
 ---
 *Phase: 13-dinheiro-da-imobili-ria*
-*Status: halted (aguardando checkpoint da Task 2)*
+*Status: complete*

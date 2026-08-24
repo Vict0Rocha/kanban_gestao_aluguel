@@ -298,8 +298,8 @@ Plans:
 **Success Criteria** (what must be TRUE):
 
   1. Cada contrato tem percentual de administração e percentual de comissão de primeiro aluguel configuráveis (defaults 10%/50%), numa tela de configuração financeira própria
-  2. Registrar um pagamento mostra e permite editar um valor sugerido de taxa da imobiliária, calculado pelo percentual certo (primeiro aluguel na parcela de competência mais antiga, administração normal nas demais)
-  3. O valor da taxa nunca entra no cálculo de status/valor devido/pago da parcela — Financeiro, Relatórios e Relatório Financeiro dedicado continuam idênticos
+  2. ✓ Registrar um pagamento mostra e permite editar um valor sugerido de taxa da imobiliária, calculado pelo percentual certo (primeiro aluguel na parcela de competência mais antiga, administração normal nas demais) — confirmado em produção
+  3. ✓ O valor da taxa nunca entra no cálculo de status/valor devido/pago da parcela — Financeiro, Relatórios e Relatório Financeiro dedicado continuam idênticos — confirmado em produção
   4. Existe registro de caução com ciclo completo (recebido, devolvido, usado) como ação separada ligada ao contrato
   5. Existe um relatório/área mostrando o total recebido pela imobiliária num período, para bater com o extrato bancário
 
@@ -310,7 +310,7 @@ Plans:
 - [x] 13-01-PLAN.md — Migração aditiva (percentuais em `cards`, `taxas_imobiliaria`, `caucao_eventos`, backstop de exclusão ampliado) + runbook
 - [x] 13-02-PLAN.md — Ensaiar a migração no SQL Editor de produção dentro de uma transação desfeita no fim
 - [x] 13-03-PLAN.md — Aplicar em produção (checkpoint de decisão), conferir e documentar em `docs/data-model.md`
-- [ ] 13-04-PLAN.md — Fatia vertical: percentual do contrato → sugestão viva no diálogo de pagamento → taxa gravada separada do livro-razão (D-04)
+- [x] 13-04-PLAN.md — Fatia vertical: percentual do contrato → sugestão viva no diálogo de pagamento → taxa gravada separada do livro-razão (D-04)
 - [ ] 13-05-PLAN.md — Tela de Configuração financeira: percentuais por contrato, editáveis, separada do modal do card
 - [ ] 13-06-PLAN.md — Ciclo completo de caução (recebido/devolvido/usado), histórico append-only
 - [ ] 13-07-PLAN.md — Relatório de reconciliação ("Dinheiro da imobiliária"): seis tiles + lista, filtro ao vivo por período
@@ -333,6 +333,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 10. Relatório Financeiro dedicado | 2/2 | Complete | 2026-08-21 |
 | 11. Cancelamento de pagamento | 1/1 | Complete | 2026-08-21 |
 | 12. Cancelamento de ajustes | 1/1 | Complete | 2026-08-22 |
-| 13. Dinheiro da imobiliária | 3/7 plans | In Progress | - |
+| 13. Dinheiro da imobiliária | 4/7 plans | In Progress | - |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12 e 13 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário; Phase 12: capacidade nova pedida pelo usuário; Phase 13: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.

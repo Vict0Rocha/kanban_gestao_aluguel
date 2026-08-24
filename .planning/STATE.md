@@ -5,15 +5,15 @@ milestone_name: Módulo Financeiro
 current_phase: 13
 current_phase_name: dinheiro-da-imobili-ria
 status: executing
-stopped_at: Plano 13-03 executado — schema do dinheiro da imobiliária vivo em produção
-last_updated: "2026-08-24T02:00:00.000Z"
+stopped_at: Plano 13-04 executado — taxa da imobiliária provada em produção (fronteira D-04)
+last_updated: "2026-08-24T03:00:00.000Z"
 last_activity: 2026-08-24
-last_activity_desc: "Plano 13-03 executado: usuário autorizou (checkpoint:decision, aplicar-agora), migração 20260824000000_dinheiro_imobiliaria.sql aplicada em produção via SQL Editor (Success. No rows returned). docs/data-model.md documentado (fronteira D-04, caução append-only D-06, backstop ampliado). Task 3 (checkpoint:human-verify): BLOCO 4/5/7 do runbook confirmados contra o banco já migrado — colunas/tabelas/constraints/policies/função todos corretos, cards_total e updated_at_max idênticos ao baseline, zero percentual divergente. BLOCO 6 (backstop pós-push) sem erro. Board/Financeiro/Relatórios/Relatório Financeiro dedicado confirmados sem regressão; exclusão de contrato com lançamento continua recusada. Schema em produção, nenhum código de aplicação ainda. Próximo: plano 13-04 (tracer) — taxa no diálogo de pagamento, prova D-04."
+last_activity_desc: "Plano 13-04 (tracer) executado: registrarPagamentoAction estendida com o parâmetro taxaImobiliaria, gravando em taxas_imobiliaria sempre DEPOIS de recalcularEGravarStatus concluir (nunca antes/dentro/duas vezes) — fronteira D-04 confirmada por grep/awk e em produção com um pagamento real de teste. RegistrarPagamentoDialog ganhou o campo 'Taxa da imobiliária (R$)' com sugestão viva (recalcula com Valor recebido, para de recalcular após o usuário tocar o campo). origem sempre recalculada no servidor (A-01), nunca confiada ao cliente. cardTemLancamento ampliada para taxas_imobiliaria/caucao_eventos (A-04). Usuário testou em produção: sugestão viva OK, uma linha nova em taxas_imobiliaria, zero efeito em parcelas/parcela_lancamentos, Financeiro/Relatórios/Relatório Financeiro dedicado idênticos, pré-voo de exclusão refletindo a movimentação nova. Usuário perguntou onde a comissão fica visível — esclarecido que é o relatório dedicado do plano 13-07 (ainda não construído), confirmado que não quer mudar as telas existentes. IMOB-02/IMOB-03 confirmados em produção. Próximo: plano 13-05 (Configuração financeira)."
 progress:
   total_phases: 13
   completed_phases: 12
   total_plans: 39
-  completed_plans: 35
+  completed_plans: 36
   percent: 92
 ---
 
