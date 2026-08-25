@@ -16,6 +16,7 @@ import {
   destravarParcelaAction,
   moveCardAction,
   moveColumnAction,
+  registrarEventoCaucaoAction,
   registrarPagamentoAction,
   renameColumnAction,
   resolveAlertAction,
@@ -159,5 +160,17 @@ export async function salvarPercentuais(
       percentualAdministracao,
       percentualComissaoPrimeiroAluguel
     )
+  )
+}
+
+export async function registrarEventoCaucao(
+  cardId: string,
+  tipo: "recebido" | "devolvido" | "usado",
+  valor: number,
+  data: string,
+  observacao: string | null
+) {
+  return unwrap(
+    registrarEventoCaucaoAction(cardId, tipo, valor, data, observacao)
   )
 }

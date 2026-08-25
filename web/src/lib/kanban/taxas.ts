@@ -76,3 +76,67 @@ export function primeiraCompetenciaPorCard(
   }
   return resultado
 }
+
+// ------------------------------------------------------------------
+// Caução (plano 13-06) — ciclo completo: recebido, devolvido, usado
+// (D-06, IMOB-04). Estrutura espelhada em `parcelas.ts`
+// (`LancamentoResumo`/`somarLancamentos`/`LancamentoDetalhado`), mas nunca
+// misturada com ela: `caucao_eventos` é uma terceira tabela isolada, ligada
+// só a `card_id`, e nada aqui participa de `somarLancamentos`/
+// `statusDeParcela` nem de `taxas_imobiliaria`.
+// ------------------------------------------------------------------
+
+export type TipoCaucao = "recebido" | "devolvido" | "usado"
+
+export type CaucaoEventoResumo = { tipo: TipoCaucao; valor: number }
+
+/** Lançamento de caução com todos os campos que o histórico (Sheet, plano
+ * 13-06) precisa — mesmo molde de `LancamentoDetalhado` (parcelas.ts). */
+export type CaucaoEventoDetalhado = {
+  id: string
+  tipo: TipoCaucao
+  valor: number
+  data: string
+  observacao: string | null
+  criado_em: string
+  profiles: { full_name: string | null; email: string | null } | null
+}
+
+/**
+ * `recebido` soma, `devolvido`/`usado` subtraem. Array vazio/nulo devolve 0.
+ * Espelha `somarLancamentos` (parcelas.ts) na forma, nunca na função — este
+ * saldo nunca participa do cálculo de status de nenhuma parcela.
+ */
+export function saldoCaucao(
+  eventos: CaucaoEventoResumo[] | null | undefined
+): number {
+  if (!eventos?.length) return 0
+  return eventos.reduce((total, evento) => {
+    if (evento.tipo === "recebido") return total + evento.valor
+    return total - evento.valor
+  }, 0)
+}
+
+export type StatusCaucao = "nao-recebida" | "recebida" | "devolvida" | "usada"
+
+/**
+ * A-03 (13-06-PLAN.md): sem eventos, "nao-recebida". Saldo positivo,
+ * "recebida". Saldo <= 0 com pelo menos um evento, o tipo do evento mais
+ * recente (por `criado_em`) decide "devolvida" vs. "usada" — leitura mais
+ * simples e defensável do texto ("saldo voltou a 0 via devolução"/"via
+ * uso"), não uma regra mais elaborada sobre qual evento trouxe o saldo a
+ * zero pela última vez em cenários intercalados.
+ */
+export function statusCaucao(
+  eventos: (CaucaoEventoResumo & { criado_em: string })[] | null | undefined
+): StatusCaucao {
+  if (!eventos?.length) return "nao-recebida"
+
+  const saldo = saldoCaucao(eventos)
+  if (saldo > 0) return "recebida"
+
+  const maisRecente = [...eventos].sort((a, b) =>
+    b.criado_em < a.criado_em ? -1 : b.criado_em > a.criado_em ? 1 : 0
+  )[0]
+  return maisRecente.tipo === "devolvido" ? "devolvida" : "usada"
+}

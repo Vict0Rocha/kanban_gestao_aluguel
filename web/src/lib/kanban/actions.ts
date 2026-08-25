@@ -121,7 +121,8 @@ function valorNaoNegativo(valor: unknown, mensagem: string): string | null {
   return null
 }
 
-/** Só é usada por `registrarPagamentoAction` — o diálogo de ajuste não tem campo de data (A-04). */
+/** Usada por `registrarPagamentoAction` e `registrarEventoCaucaoAction` (plano 13-06) — o
+ * diálogo de ajuste não tem campo de data (A-04). */
 function dataObrigatoria(valor: unknown): string | null {
   if (typeof valor !== "string" || valor.length === 0 || !DATA_ISO.test(valor)) {
     return "Informe a data do pagamento."
@@ -1507,6 +1508,73 @@ export async function salvarPercentuaisAction(
 
   if (error) return { ok: false, error: erroDoBanco(error.code, "salvar os percentuais") }
   if (!data || data.length === 0) return { ok: false, error: semLinhas("salvar os percentuais") }
+  return { ok: true, data: undefined }
+}
+
+/** Recusa qualquer valor fora do allowlist de `caucao_eventos_tipo_valido`. */
+function tipoCaucaoValido(valor: unknown): string | null {
+  if (valor !== "recebido" && valor !== "devolvido" && valor !== "usado") {
+    return "Tipo de evento de caução inválido."
+  }
+  return null
+}
+
+/**
+ * D-06/IMOB-04: grava um evento novo do ciclo de caução — sempre um INSERT,
+ * nunca um UPDATE sobre uma linha já existente (mesmo espírito append-only
+ * do resto do sistema). Esta action só toca `caucao_eventos` — nunca
+ * `parcela_lancamentos` nem `taxas_imobiliaria`, e nunca chama
+ * `recalcularEGravarStatus`: caução é uma terceira tabela estruturalmente
+ * separada (T-13-25), ligada só a `card_id`.
+ *
+ * Nenhuma trava de saldo — devolver/usar mais do que o `saldoCaucao` atual
+ * não é recusado aqui (A-02, 13-05-PLAN.md); o campo já vem pré-preenchido
+ * com o saldo no diálogo, mas permanece editável para cobrir devolução/uso
+ * parcial ou correção de um valor recebido incorretamente como um NOVO
+ * evento, nunca uma edição do antigo (D-06).
+ */
+export async function registrarEventoCaucaoAction(
+  cardId: string,
+  tipo: "recebido" | "devolvido" | "usado",
+  valor: number,
+  data: string,
+  observacao: string | null
+): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido =
+    id(cardId, "Imóvel") ??
+    tipoCaucaoValido(tipo) ??
+    valorLancamento(valor, "Informe um valor válido.") ??
+    dataObrigatoria(data) ??
+    textoOpcional(observacao, "Observação", 2000)
+  if (invalido) return { ok: false, error: invalido }
+
+  const { data: inserido, error } = await sessao.supabase
+    .from("caucao_eventos")
+    .insert({
+      card_id: cardId,
+      tipo,
+      valor,
+      data,
+      observacao: observacao?.trim() || null,
+      criado_por: sessao.user.id,
+    })
+    .select("id")
+
+  if (error) {
+    return {
+      ok: false,
+      error: erroDoBanco(
+        error.code,
+        `registrar ${tipo === "recebido" ? "o recebimento" : tipo === "devolvido" ? "a devolução" : "o uso"} da caução`
+      ),
+    }
+  }
+  if (!inserido || inserido.length === 0) {
+    return { ok: false, error: semLinhas("registrar o evento de caução") }
+  }
   return { ok: true, data: undefined }
 }
 
