@@ -123,7 +123,7 @@ Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuár
 - [x] **IMOB-02**: Ao registrar um pagamento, o diálogo mostra e permite editar um valor de taxa da imobiliária, pré-calculado pelo percentual do contrato (usando o percentual de primeiro aluguel quando a parcela é a de competência mais antiga do contrato, senão o percentual de administração normal) — editável para qualquer valor, não travado a ser derivado do percentual — confirmado em produção
 - [x] **IMOB-03**: O valor da taxa registrado nunca afeta o cálculo de `valorDevido`/`valorPago`/status da parcela — nenhuma tela existente (Financeiro, Relatórios, Relatório Financeiro dedicado) muda de comportamento — confirmado em produção
 - [x] **IMOB-04**: Existe uma forma de registrar o recebimento da caução de um contrato, e depois devolvê-la ou registrar seu uso, como ações separadas ligadas ao contrato, com histórico de cada evento (nunca uma edição) — confirmado em produção
-- [ ] **IMOB-05**: Existe um relatório/área mostrando o total recebido pela imobiliária (taxas de administração + comissão de primeiro aluguel + movimento de caução) num período, para conferência contra o extrato bancário
+- [x] **IMOB-05**: Existe um relatório/área mostrando o total recebido pela imobiliária (taxas de administração + comissão de primeiro aluguel + movimento de caução) num período, para conferência contra o extrato bancário — confirmado em produção
 
 ## Carried over from v1.0
 
@@ -235,7 +235,7 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | IMOB-02 | Phase 13 | Confirmado em produção |
 | IMOB-03 | Phase 13 | Confirmado em produção |
 | IMOB-04 | Phase 13 | Confirmado em produção |
-| IMOB-05 | Phase 13 | Pendente |
+| IMOB-05 | Phase 13 | Confirmado em produção |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5

@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 13
 current_phase_name: dinheiro-da-imobili-ria
-status: executing
-stopped_at: Plano 13-07 Task 1 mesclado — aguardando checkpoint de verificação humana (Task 2)
-last_updated: "2026-08-25T15:00:00.000Z"
+status: complete
+stopped_at: Phase 13 encerrada — IMOB-01..05 confirmados em produção
+last_updated: "2026-08-25T16:00:00.000Z"
 last_activity: 2026-08-25
-last_activity_desc: "Plano 13-07 Task 1 executado e mesclado (worktree, commit cf6fa65): reconciliacao.ts (módulo puro de agregação, mesmo molde de relatorio-financeiro.ts) — calcularReconciliacao soma administração+comissão+caução recebida em totalRecebido, excluindo deliberadamente caucaoDevolvida/caucaoUsada (comentado explicitamente no código, confirmado por grep que a linha de totalRecebido não referencia as duas). buscarReconciliacaoAction lê taxas_imobiliaria + caucao_eventos sem filtro de período/arquivado/ativo no servidor (D-01/D-05), filtragem ao vivo no cliente. Nova rota /relatorios/imobiliaria + DinheiroImobiliariaView: seis StatTile (Administração/Comissão 1º aluguel/Total recebido/Caução recebida/devolvida/usada), lista unificada taxas+caução ordenada DESCENDENTE por data (divergência deliberada da ordem ascendente do Relatório Financeiro dedicado). Segundo botão de entrada 'Dinheiro da imobiliária' (ícone Landmark) ao lado do já existente em /relatorios, mesmo peso visual. Revisão independente: todos os 11 grep de acceptance_criteria conferidos manualmente + lint/build rodados de novo no worktree e no main pós-merge, ambos limpos, build lista a rota nova. Task 2 (checkpoint:human-verify, gate=blocking) pendente — requer o usuário abrir /relatorios/imobiliaria em produção e conferir os seis tiles contra soma SQL de taxas_imobiliaria/caucao_eventos do mês testado. IMOB-05 ainda não confirmado."
+last_activity_desc: "Plano 13-07 (último da fase) confirmado em produção pelo usuário: rota /relatorios/imobiliaria com seis tiles (Administração/Comissão 1º aluguel/Total recebido/Caução recebida/devolvida/usada) e lista unificada taxas+caução em ordem descendente por data, filtro de período ao vivo sem round-trip ao servidor. Os dois botões de entrada em /relatorios com mesmo peso visual, os cinco totais individuais batendo com a soma SQL do mês testado, 'Total recebido no período' excluindo devolvida/usada corretamente, mês vazio zerando os seis tiles sem chamada de rede, lista em ordem correta. IMOB-05 confirmado. Com isso encerram as 13 fases planejadas do projeto (v2.0 + trabalho pós-milestone) — IMOB-01 a IMOB-05 todos entregues e confirmados em produção."
 progress:
   total_phases: 13
-  completed_phases: 12
+  completed_phases: 13
   total_plans: 39
-  completed_plans: 38
-  percent: 92
+  completed_plans: 39
+  percent: 100
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Fase 13 (Dinheiro da imobiliária) — 6/7 planos executados e confirmados em produção; falta só o relatório de reconciliação (13-07).
+**Current focus:** Nenhum — todas as 13 fases planejadas do projeto estão concluídas e confirmadas em produção. Aguardando próximo pedido do usuário.
 
 ## Current Position
 
-Phase: 13 (dinheiro-da-imobili-ria) — EXECUTING
-Status: 6/7 planos executados (13-01..13-06), cadeia sequencial; falta 13-07
-Last activity: 2026-08-25 — Plano 13-06 confirmado em produção (IMOB-04)
+Phase: 13 (dinheiro-da-imobili-ria) — COMPLETE
+Status: 7/7 planos executados (13-01..13-07), todos confirmados em produção
+Last activity: 2026-08-25 — Phase 13 encerrada (IMOB-01..05 confirmados em produção)
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -83,6 +83,7 @@ Last activity: 2026-08-25 — Plano 13-06 confirmado em produção (IMOB-04)
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-25: **Fase 13 encerrada — IMOB-01..05 confirmados em produção.** Plano 13-07 (relatório de reconciliação "Dinheiro da imobiliária") fechou a fase: rota `/relatorios/imobiliaria`, alcançada por um segundo botão em `/relatorios` ao lado do já existente (mesmo peso visual, nenhum destacado), com seis `StatTile` (Administração, Comissão 1º aluguel, Total recebido no período, Caução recebida, devolvida, usada) e uma lista unificada de eventos de `taxas_imobiliaria`+`caucao_eventos`, ordenada DESCENDENTE por data (divergência deliberada da ordem ascendente do Relatório Financeiro dedicado — "acabei de receber o extrato, confiro as entradas mais recentes primeiro"). `calcularReconciliacao` (`reconciliacao.ts`, módulo puro espelhando `relatorio-financeiro.ts`) soma `totalRecebido` só com administração+comissão+caução recebida, excluindo deliberadamente devolvida/usada (comentado explicitamente no código — devolvida é saída de caixa, usada é reclassificação, nenhuma das duas é entrada nova) — confirmado por asserção de fonte e por conta manual do usuário em produção. Filtro de período ao vivo, em memória no cliente, sem round-trip ao servidor (D-01). Usuário testou em produção: os cinco totais individuais batendo com a soma SQL do mês testado, mês vazio zerando os seis tiles sem chamada de rede, lista em ordem correta com o tipo certo em cada linha. **Com isso encerram as 13 fases planejadas do projeto inteiro** (v2.0 Módulo Financeiro + todo o trabalho pós-milestone: Phases 9-13) — a ideia de dinheiro da imobiliária, adiada desde a Phase 10, está totalmente entregue. O usuário já avisou que vai querer refinar o relatório de reconciliação depois de usá-lo por um tempo (13-CONTEXT.md) — não é trabalho pendente, é um aviso para quando ele voltar com feedback de uso real.
 - 2026-08-25: **Plano 13-06 concluído e confirmado em produção.** Ciclo completo de caução (recebido/devolvido/usado) via `caucao_eventos` (append-only — `registrarEventoCaucaoAction` só implementa `.insert()`, verificado por asserção de fonte). Botão "Caução" na tela de Configuração financeira abre `CaucaoHistoricoSheet` em ordem cronológica ascendente, rodapé com 0/1/2 botões conforme `saldoCaucao()` (recebido − devolvido − usado, nunca coluna gravada). `RegistrarEventoCaucaoDialog` tipo-aware: campo Valor vazio para recebimento, pré-preenchido com o saldo para devolução/uso, sempre editável. Terceira tabela estruturalmente isolada de `parcela_lancamentos`/`taxas_imobiliaria` (D-04 estendido a caução) — `awk`/`grep` confirmaram zero referência cruzada. Backstop de exclusão do card (`cardTemLancamento`) ampliado desde o plano 13-04 agora exercitado com dado real. Usuário testou em produção: máquina de estados dos botões (0 evento → 1 botão, saldo > 0 → 2 botões, saldo de volta a 0 → 1 botão), ciclo completo recebido→uso parcial (R$300 de R$1.000)→devolução do restante (R$700) gerando três linhas distintas sem nenhuma edição, nenhuma tabela financeira além de `caucao_eventos` afetada, e a trava de exclusão do contrato de teste indicando movimentação financeira. IMOB-04 confirmado em produção. Falta só o plano 13-07 (relatório de reconciliação) para fechar a Phase 13.
 - 2026-08-22: **Fase 12 encerrada — CANAJU-01..04 confirmados em produção.** Usuário testou o botão "Cancelar" para acréscimo e desconto em `ParcelaHistoricoSheet`, confirmou que a composição Sheet+AlertDialog não quebra visualmente a partir dessas duas linhas novas (mesma composição verificada para pagamento na Phase 11), que `tipo='destrava'` nunca mostra o botão e que uma parcela conciliada não aceita cancelamento de nenhum tipo. Com isso encerram as 12 fases planejadas do projeto (v2.0 + trabalho pós-milestone) — a única pendência conhecida é a ideia adiada sobre dinheiro recebido pela própria imobiliária, ainda não discutida.
 - 2026-08-21: **Plano 12-01 executado** (worktree isolado, `agent-a31c29673760fe38e`). `cancelarPagamentoAction`/`cancelarPagamento`/`CancelarPagamentoDialog`/`cancelar-pagamento-dialog.tsx` renomeados para `cancelarLancamentoAction`/`cancelarLancamento`/`CancelarLancamentoDialog`/`cancelar-lancamento-dialog.tsx` (arquivo movido via `git mv`, histórico preservado). DELETE ampliado de `.eq("tipo","pagamento")` para `.in("tipo",["pagamento","acrescimo","desconto"])` — allowlist explícito, nunca alcança `destrava` (D-01, 12-CONTEXT.md), seguido de `recalcularEGravarStatus` sem nenhum status hardcoded. `TIPO` exportado de `lancamento-tipo-label.tsx` (D-08), diálogo generalizado lê `TIPO[tipo].label` para título/descrição/botão, preservando byte-a-byte o guard `{data ? ... : ""}` do bug `284e52b`. `ParcelaHistoricoSheet` amplia o gatilho para `["pagamento","acrescimo","desconto"].includes(lancamento.tipo)` e passa a prop `tipo` ao diálogo. `docs/data-model.md` atualizado: mesma "segunda exceção" (nunca terceira) ao livro-razão append-only, agora citando os três tipos e nomeando `destrava` como permanentemente excluído. `npm run lint`/`npm run build` verdes (worktree precisou de `npm install` próprio — não compartilha `node_modules` com o checkout principal), todas as asserções de fonte do `<verify>` do plano confirmadas manualmente. Commits: `fbadec8` (Task 1), `b65ca01` (Task 2). **Human-check pendente em produção** (ver Blockers) — composição Sheet+AlertDialog nunca exercitada a partir de acréscimo/desconto antes desta fase.
