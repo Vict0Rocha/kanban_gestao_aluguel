@@ -5,15 +5,15 @@ milestone_name: Módulo Financeiro
 current_phase: 13
 current_phase_name: dinheiro-da-imobili-ria
 status: executing
-stopped_at: Plano 13-04 executado — taxa da imobiliária provada em produção (fronteira D-04)
-last_updated: "2026-08-24T03:00:00.000Z"
+stopped_at: Plano 13-05 executado — Configuração financeira confirmada em produção
+last_updated: "2026-08-24T04:00:00.000Z"
 last_activity: 2026-08-24
-last_activity_desc: "Plano 13-04 (tracer) executado: registrarPagamentoAction estendida com o parâmetro taxaImobiliaria, gravando em taxas_imobiliaria sempre DEPOIS de recalcularEGravarStatus concluir (nunca antes/dentro/duas vezes) — fronteira D-04 confirmada por grep/awk e em produção com um pagamento real de teste. RegistrarPagamentoDialog ganhou o campo 'Taxa da imobiliária (R$)' com sugestão viva (recalcula com Valor recebido, para de recalcular após o usuário tocar o campo). origem sempre recalculada no servidor (A-01), nunca confiada ao cliente. cardTemLancamento ampliada para taxas_imobiliaria/caucao_eventos (A-04). Usuário testou em produção: sugestão viva OK, uma linha nova em taxas_imobiliaria, zero efeito em parcelas/parcela_lancamentos, Financeiro/Relatórios/Relatório Financeiro dedicado idênticos, pré-voo de exclusão refletindo a movimentação nova. Usuário perguntou onde a comissão fica visível — esclarecido que é o relatório dedicado do plano 13-07 (ainda não construído), confirmado que não quer mudar as telas existentes. IMOB-02/IMOB-03 confirmados em produção. Próximo: plano 13-05 (Configuração financeira)."
+last_activity_desc: "Plano 13-05 executado: nova rota /financeiro/configuracao (Server Component sem filtro de arquivado_em/ativo — percentuais são configuração de contrato, não dado escopado por tempo), listando todos os contratos com Administração/Comissão 1º aluguel e um botão 'Editar percentuais' por linha. salvarPercentuaisAction grava só em cards, nunca toca taxas_imobiliaria/parcela_lancamentos (verificado por asserção de fonte). Botão de entrada em /financeiro, mesma linha do Filtrar (precedente RELDED-01). Usuário testou em produção: contratos inativos/arquivados aparecem, edição atualiza sem reload, percentual fora de 0-100 recusado, valores batendo com SQL, e a sugestão de taxa do plano 13-04 já lê o percentual editado. IMOB-01 confirmado em produção. Próximo: plano 13-06 (ciclo de caução)."
 progress:
   total_phases: 13
   completed_phases: 12
   total_plans: 39
-  completed_plans: 36
+  completed_plans: 37
   percent: 92
 ---
 

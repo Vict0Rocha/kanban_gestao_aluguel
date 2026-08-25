@@ -119,7 +119,7 @@ Fora do conjunto de 39 requisitos da v2.0 — extensão pedida pelo usuário log
 
 Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário, adiada desde a Phase 10 e retomada depois da Phase 12 fechar. Decisões registradas em `.planning/phases/13-dinheiro-da-imobili-ria/13-CONTEXT.md`. Estritamente aditiva: nenhum requisito abaixo altera o comportamento de FINUI/CONSULTA/FINREL/RELDED já existentes.
 
-- [ ] **IMOB-01**: Cada contrato tem um percentual de administração e um percentual de comissão de primeiro aluguel configuráveis, com defaults 10%/50%, numa tela de configuração financeira separada do modal de edição do card
+- [x] **IMOB-01**: Cada contrato tem um percentual de administração e um percentual de comissão de primeiro aluguel configuráveis, com defaults 10%/50%, numa tela de configuração financeira separada do modal de edição do card — confirmado em produção
 - [x] **IMOB-02**: Ao registrar um pagamento, o diálogo mostra e permite editar um valor de taxa da imobiliária, pré-calculado pelo percentual do contrato (usando o percentual de primeiro aluguel quando a parcela é a de competência mais antiga do contrato, senão o percentual de administração normal) — editável para qualquer valor, não travado a ser derivado do percentual — confirmado em produção
 - [x] **IMOB-03**: O valor da taxa registrado nunca afeta o cálculo de `valorDevido`/`valorPago`/status da parcela — nenhuma tela existente (Financeiro, Relatórios, Relatório Financeiro dedicado) muda de comportamento — confirmado em produção
 - [ ] **IMOB-04**: Existe uma forma de registrar o recebimento da caução de um contrato, e depois devolvê-la ou registrar seu uso, como ações separadas ligadas ao contrato, com histórico de cada evento (nunca uma edição)
@@ -231,7 +231,7 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | CANAJU-02 | Phase 12 | Confirmado em produção |
 | CANAJU-03 | Phase 12 | Confirmado em produção |
 | CANAJU-04 | Phase 12 | Confirmado em produção |
-| IMOB-01 | Phase 13 | Pendente |
+| IMOB-01 | Phase 13 | Confirmado em produção |
 | IMOB-02 | Phase 13 | Confirmado em produção |
 | IMOB-03 | Phase 13 | Confirmado em produção |
 | IMOB-04 | Phase 13 | Pendente |
