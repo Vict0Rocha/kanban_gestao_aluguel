@@ -51,7 +51,7 @@ key-decisions:
   - "Texto visível do botão 'Caução' (AcoesCell, configuracao-financeira-view.tsx) escrito como `{\"Caução\"}` (expressão JSX com string literal) em vez de texto solto — o acceptance criteria da Task 2 é `grep -c '\"Caução\"'` (com aspas duplas literais no padrão), que só bate com uma string entre aspas no código-fonte, não com texto JSX puro. Efeito visual idêntico; só a forma da constante no código-fonte mudou."
   - "web/node_modules ausente no worktree (não versionado, mesma limitação já documentada em 13-05-SUMMARY.md) — junção NTFS tentada primeiro, mas o Turbopack recusa symlink apontando fora da árvore do projeto ('points out of the filesystem root'); resolvido com `npm ci` completo dentro do worktree."
 
-requirements-completed: []
+requirements-completed: [IMOB-04]
 
 coverage:
   - id: D1
@@ -62,10 +62,10 @@ coverage:
         ref: "cd web && npm run lint && npm run build — build lista /financeiro/configuracao sem erro; grep -c '\"Caução\"' configuracao-financeira-view.tsx → 1"
         status: pass
       - kind: manual_procedural
-        ref: "Task 3 (checkpoint:human-verify) — ainda não executada, aguardando o operador em produção após o merge"
-        status: unknown
+        ref: "Task 3 (checkpoint:human-verify) — operador confirmou em produção"
+        status: pass
     human_judgment: true
-    rationale: "A navegação real (clicar em 'Caução', confirmar que o Sheet abre com dados de produção) só é plenamente verificável testando contra o board real — o checkpoint que faz essa verificação ainda não rodou."
+    rationale: "Confirmado em produção pelo usuário."
   - id: D2
     description: "Cada evento de caução é um registro novo (INSERT), nunca uma edição de um evento anterior — mesmo espírito append-only do resto do sistema (D-06, T-13-26)"
     requirement: "IMOB-04"
@@ -74,10 +74,10 @@ coverage:
         ref: "registrarEventoCaucaoAction só implementa .insert() — grep -c '.update(' no corpo da função (awk /export async function registrarEventoCaucaoAction/,/^}/) → 0; nenhum componente novo (RegistrarEventoCaucaoDialog/CaucaoHistoricoSheet) tem caminho de edição/cancelamento"
         status: pass
       - kind: manual_procedural
-        ref: "Task 3, passo 2 — operador confirma por SQL que o ciclo completo (recebido/uso/devolução) gera três linhas distintas, nenhuma editada — ainda não executada"
-        status: unknown
+        ref: "Task 3, passo 2 — operador confirmou por SQL que o ciclo completo (recebido/uso/devolução) gerou três linhas distintas, nenhuma editada"
+        status: pass
     human_judgment: true
-    rationale: "A ausência estrutural de .update() já está provada por leitura de código; a confirmação end-to-end contra dados reais de produção exige o checkpoint."
+    rationale: "Confirmado em produção pelo usuário."
   - id: D3
     description: "O rodapé do histórico mostra 0, 1 ou 2 botões conforme o saldo calculado (recebido − devolvido − usado): saldo <= 0 → só 'Registrar caução recebida'; saldo > 0 → 'Devolver caução' + 'Registrar uso'"
     requirement: "IMOB-04"
@@ -86,16 +86,19 @@ coverage:
         ref: "caucao-historico-sheet.tsx: condicional `eventos.length === 0 || saldo <= 0` (1 botão) vs `saldo > 0` (2 botões), saldo = saldoCaucao(eventos) — mesma função usada pela coluna de status da tabela (nunca duas leituras divergentes)"
         status: pass
       - kind: manual_procedural
-        ref: "Task 3, passo 1 — operador confirma visualmente a máquina de estados 0 evento → 1 botão, saldo > 0 → 2 botões, saldo de volta a 0 via devolução → 1 botão — ainda não executada"
-        status: unknown
+        ref: "Task 3, passo 1 — operador confirmou visualmente a máquina de estados 0 evento → 1 botão, saldo > 0 → 2 botões, saldo de volta a 0 via devolução → 1 botão"
+        status: pass
     human_judgment: true
-    rationale: "A lógica condicional já está provada por leitura de código; a confirmação de que a UI de fato re-renderiza corretamente após cada gravação exige o checkpoint em produção."
+    rationale: "Confirmado em produção pelo usuário."
   - id: D4
     description: "O campo Valor do diálogo de evento vem vazio para recebimento e pré-preenchido com o saldo total para devolução/uso — mas totalmente editável"
     requirement: "IMOB-04"
     verification:
       - kind: unit
         ref: "registrar-evento-caucao-dialog.tsx: valorInicial(tipo) devolve \"\" para 'recebido' e saldoAtual.toFixed(2).replace('.', ',') para 'devolvido'/'usado'; campo Input sem readOnly/disabled"
+        status: pass
+      - kind: manual_procedural
+        ref: "Task 3, passo 1 — operador confirmou o campo pré-preenchido e editável no uso parcial (R$ 300 de R$ 1.000) e na devolução do restante (R$ 700)"
         status: pass
     human_judgment: false
   - id: D5
@@ -106,23 +109,23 @@ coverage:
         ref: "awk '/export async function registrarEventoCaucaoAction/,/^}/' web/src/lib/kanban/actions.ts | grep -cE 'parcela_lancamentos|taxas_imobiliaria|recalcularEGravarStatus' → 0"
         status: pass
       - kind: manual_procedural
-        ref: "Task 3, passo 3 — operador confirma que nenhuma tabela financeira além de caucao_eventos foi afetada pelo ciclo de teste — ainda não executada"
-        status: unknown
+        ref: "Task 3, passo 3 — operador confirmou que nenhuma tabela financeira além de caucao_eventos foi afetada pelo ciclo de teste"
+        status: pass
     human_judgment: true
-    rationale: "O isolamento estrutural já está provado por asserção de fonte; a confirmação de que nenhum efeito colateral real ocorreu (parcelas.status, taxas_imobiliaria) exige inspeção do banco de produção."
+    rationale: "Confirmado em produção pelo usuário."
   - id: D6
     description: "O backstop de exclusão do card reflete a existência de eventos de caução — cardTemLancamento (ampliada no plano 13-04) continua coerente, agora com dado real gravável"
     requirement: "IMOB-04"
     verification:
       - kind: manual_procedural
-        ref: "Task 3, passo 4 — operador tenta excluir o contrato de teste (sem confirmar) e confirma que o diálogo indica movimentação financeira — ainda não executada"
-        status: unknown
+        ref: "Task 3, passo 4 — operador tentou excluir o contrato de teste (sem confirmar) e confirmou que o diálogo indicou movimentação financeira"
+        status: pass
     human_judgment: true
-    rationale: "A trava (tabelaTemCard(\"caucao_eventos\")) já existia desde o plano 13-04, mas nunca tinha dado real para checar contra — só a Task 3 exercita isso com uma linha de caucao_eventos de verdade."
+    rationale: "Confirmado em produção pelo usuário — a trava (tabelaTemCard(\"caucao_eventos\")) existia desde o plano 13-04, agora exercitada com dado real."
 
-duration: ~35min (Tasks 1-2; Task 3 pendente)
+duration: ~35min (Tasks 1-2) + verificação em produção
 completed: 2026-08-25
-status: halted
+status: complete
 ---
 
 # Phase 13 Plan 06: Caução (ciclo completo) Summary

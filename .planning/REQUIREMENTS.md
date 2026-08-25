@@ -122,7 +122,7 @@ Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuár
 - [x] **IMOB-01**: Cada contrato tem um percentual de administração e um percentual de comissão de primeiro aluguel configuráveis, com defaults 10%/50%, numa tela de configuração financeira separada do modal de edição do card — confirmado em produção
 - [x] **IMOB-02**: Ao registrar um pagamento, o diálogo mostra e permite editar um valor de taxa da imobiliária, pré-calculado pelo percentual do contrato (usando o percentual de primeiro aluguel quando a parcela é a de competência mais antiga do contrato, senão o percentual de administração normal) — editável para qualquer valor, não travado a ser derivado do percentual — confirmado em produção
 - [x] **IMOB-03**: O valor da taxa registrado nunca afeta o cálculo de `valorDevido`/`valorPago`/status da parcela — nenhuma tela existente (Financeiro, Relatórios, Relatório Financeiro dedicado) muda de comportamento — confirmado em produção
-- [ ] **IMOB-04**: Existe uma forma de registrar o recebimento da caução de um contrato, e depois devolvê-la ou registrar seu uso, como ações separadas ligadas ao contrato, com histórico de cada evento (nunca uma edição)
+- [x] **IMOB-04**: Existe uma forma de registrar o recebimento da caução de um contrato, e depois devolvê-la ou registrar seu uso, como ações separadas ligadas ao contrato, com histórico de cada evento (nunca uma edição) — confirmado em produção
 - [ ] **IMOB-05**: Existe um relatório/área mostrando o total recebido pela imobiliária (taxas de administração + comissão de primeiro aluguel + movimento de caução) num período, para conferência contra o extrato bancário
 
 ## Carried over from v1.0
@@ -234,7 +234,7 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | IMOB-01 | Phase 13 | Confirmado em produção |
 | IMOB-02 | Phase 13 | Confirmado em produção |
 | IMOB-03 | Phase 13 | Confirmado em produção |
-| IMOB-04 | Phase 13 | Pendente |
+| IMOB-04 | Phase 13 | Confirmado em produção |
 | IMOB-05 | Phase 13 | Pendente |
 
 **Coverage:**

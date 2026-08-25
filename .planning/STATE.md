@@ -5,15 +5,15 @@ milestone_name: Módulo Financeiro
 current_phase: 13
 current_phase_name: dinheiro-da-imobili-ria
 status: executing
-stopped_at: Plano 13-05 executado — Configuração financeira confirmada em produção
-last_updated: "2026-08-24T04:00:00.000Z"
-last_activity: 2026-08-24
-last_activity_desc: "Plano 13-05 executado: nova rota /financeiro/configuracao (Server Component sem filtro de arquivado_em/ativo — percentuais são configuração de contrato, não dado escopado por tempo), listando todos os contratos com Administração/Comissão 1º aluguel e um botão 'Editar percentuais' por linha. salvarPercentuaisAction grava só em cards, nunca toca taxas_imobiliaria/parcela_lancamentos (verificado por asserção de fonte). Botão de entrada em /financeiro, mesma linha do Filtrar (precedente RELDED-01). Usuário testou em produção: contratos inativos/arquivados aparecem, edição atualiza sem reload, percentual fora de 0-100 recusado, valores batendo com SQL, e a sugestão de taxa do plano 13-04 já lê o percentual editado. IMOB-01 confirmado em produção. Próximo: plano 13-06 (ciclo de caução)."
+stopped_at: Plano 13-06 executado — Ciclo de caução confirmado em produção
+last_updated: "2026-08-25T12:00:00.000Z"
+last_activity: 2026-08-25
+last_activity_desc: "Plano 13-06 executado: ciclo completo de caução (recebido/devolvido/usado) via nova tabela caucao_eventos, append-only (registrarEventoCaucaoAction só faz .insert()). Botão 'Caução' na tela de Configuração financeira abre CaucaoHistoricoSheet (ordem cronológica ascendente), rodapé com 0/1/2 botões conforme saldoCaucao() (recebido − devolvido − usado). Campo Valor vem vazio para recebimento e pré-preenchido com o saldo para devolução/uso, totalmente editável. Terceira tabela estruturalmente isolada de parcela_lancamentos/taxas_imobiliaria (D-04 estendido). Backstop de exclusão do card (cardTemLancamento) agora exercitado com dado real de caucao_eventos. Usuário testou em produção: máquina de estados dos botões, ciclo completo recebido→uso parcial→devolução do restante gerando três linhas distintas, nenhuma tabela financeira além de caucao_eventos afetada, e a trava de exclusão do contrato de teste. IMOB-04 confirmado em produção. Próximo: plano 13-07 (relatório de reconciliação 'Dinheiro da imobiliária')."
 progress:
   total_phases: 13
   completed_phases: 12
   total_plans: 39
-  completed_plans: 37
+  completed_plans: 38
   percent: 92
 ---
 
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Fase 13 (Dinheiro da imobiliária) — 7 planos criados, pronta para execução.
+**Current focus:** Fase 13 (Dinheiro da imobiliária) — 6/7 planos executados e confirmados em produção; falta só o relatório de reconciliação (13-07).
 
 ## Current Position
 
-Phase: 13 (dinheiro-da-imobili-ria) — PLANNED
-Status: 7 planos criados (13-01..13-07), cadeia sequencial; falta executar
-Last activity: 2026-08-24 — Phase 13 planejada
+Phase: 13 (dinheiro-da-imobili-ria) — EXECUTING
+Status: 6/7 planos executados (13-01..13-06), cadeia sequencial; falta 13-07
+Last activity: 2026-08-25 — Plano 13-06 confirmado em produção (IMOB-04)
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -83,6 +83,7 @@ Last activity: 2026-08-24 — Phase 13 planejada
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-25: **Plano 13-06 concluído e confirmado em produção.** Ciclo completo de caução (recebido/devolvido/usado) via `caucao_eventos` (append-only — `registrarEventoCaucaoAction` só implementa `.insert()`, verificado por asserção de fonte). Botão "Caução" na tela de Configuração financeira abre `CaucaoHistoricoSheet` em ordem cronológica ascendente, rodapé com 0/1/2 botões conforme `saldoCaucao()` (recebido − devolvido − usado, nunca coluna gravada). `RegistrarEventoCaucaoDialog` tipo-aware: campo Valor vazio para recebimento, pré-preenchido com o saldo para devolução/uso, sempre editável. Terceira tabela estruturalmente isolada de `parcela_lancamentos`/`taxas_imobiliaria` (D-04 estendido a caução) — `awk`/`grep` confirmaram zero referência cruzada. Backstop de exclusão do card (`cardTemLancamento`) ampliado desde o plano 13-04 agora exercitado com dado real. Usuário testou em produção: máquina de estados dos botões (0 evento → 1 botão, saldo > 0 → 2 botões, saldo de volta a 0 → 1 botão), ciclo completo recebido→uso parcial (R$300 de R$1.000)→devolução do restante (R$700) gerando três linhas distintas sem nenhuma edição, nenhuma tabela financeira além de `caucao_eventos` afetada, e a trava de exclusão do contrato de teste indicando movimentação financeira. IMOB-04 confirmado em produção. Falta só o plano 13-07 (relatório de reconciliação) para fechar a Phase 13.
 - 2026-08-22: **Fase 12 encerrada — CANAJU-01..04 confirmados em produção.** Usuário testou o botão "Cancelar" para acréscimo e desconto em `ParcelaHistoricoSheet`, confirmou que a composição Sheet+AlertDialog não quebra visualmente a partir dessas duas linhas novas (mesma composição verificada para pagamento na Phase 11), que `tipo='destrava'` nunca mostra o botão e que uma parcela conciliada não aceita cancelamento de nenhum tipo. Com isso encerram as 12 fases planejadas do projeto (v2.0 + trabalho pós-milestone) — a única pendência conhecida é a ideia adiada sobre dinheiro recebido pela própria imobiliária, ainda não discutida.
 - 2026-08-21: **Plano 12-01 executado** (worktree isolado, `agent-a31c29673760fe38e`). `cancelarPagamentoAction`/`cancelarPagamento`/`CancelarPagamentoDialog`/`cancelar-pagamento-dialog.tsx` renomeados para `cancelarLancamentoAction`/`cancelarLancamento`/`CancelarLancamentoDialog`/`cancelar-lancamento-dialog.tsx` (arquivo movido via `git mv`, histórico preservado). DELETE ampliado de `.eq("tipo","pagamento")` para `.in("tipo",["pagamento","acrescimo","desconto"])` — allowlist explícito, nunca alcança `destrava` (D-01, 12-CONTEXT.md), seguido de `recalcularEGravarStatus` sem nenhum status hardcoded. `TIPO` exportado de `lancamento-tipo-label.tsx` (D-08), diálogo generalizado lê `TIPO[tipo].label` para título/descrição/botão, preservando byte-a-byte o guard `{data ? ... : ""}` do bug `284e52b`. `ParcelaHistoricoSheet` amplia o gatilho para `["pagamento","acrescimo","desconto"].includes(lancamento.tipo)` e passa a prop `tipo` ao diálogo. `docs/data-model.md` atualizado: mesma "segunda exceção" (nunca terceira) ao livro-razão append-only, agora citando os três tipos e nomeando `destrava` como permanentemente excluído. `npm run lint`/`npm run build` verdes (worktree precisou de `npm install` próprio — não compartilha `node_modules` com o checkout principal), todas as asserções de fonte do `<verify>` do plano confirmadas manualmente. Commits: `fbadec8` (Task 1), `b65ca01` (Task 2). **Human-check pendente em produção** (ver Blockers) — composição Sheet+AlertDialog nunca exercitada a partir de acréscimo/desconto antes desta fase.
 - 2026-08-21: **Fase 11 encerrada — CANPAG-01..04 confirmados em produção**, incluindo o ponto de maior risco (composição `AlertDialog` dentro de `Sheet` já aberto, inédita neste projeto) sem quebra visual. Ao testar, o usuário encontrou um bug real: aplicar qualquer filtro no Financeiro que trouxesse ao menos uma parcela derrubava a tela inteira com `RangeError: Invalid time value` (Error Boundary "Algo deu errado ao carregar esta tela"). Causa raiz: `CancelarPagamentoDialog` (novo nesta fase) fica sempre montado dentro de `ParcelaHistoricoSheet` — mesmo padrão dos outros diálogos de ação — e usava `cancelando?.data ?? ""` como fallback enquanto nenhum lançamento está selecionado; `formatDate("")` monta uma `Date` inválida e `Intl.DateTimeFormat.format()` lança a exceção assim que qualquer linha de parcela renderiza. A visão padrão "vencendo hoje" mascarava o bug quando vazia. Corrigido fora de um plano formal (`cancelar-pagamento-dialog.tsx`: `formatDate(data)` só é chamado quando `data` não é vazio), commit `284e52b`, `npm run lint`/`build` limpos, reconfirmado pelo usuário. Com isso encerram as 11 fases planejadas do projeto (v2.0 + trabalho pós-milestone).
