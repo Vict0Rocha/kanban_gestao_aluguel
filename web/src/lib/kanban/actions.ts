@@ -13,6 +13,10 @@ import {
 import { origemTaxa } from "./taxas"
 import { hojeEmCuiaba } from "./format"
 import type { ParcelaRelatorio } from "./relatorio-financeiro"
+import type {
+  CaucaoEventoRelatorio,
+  TaxaImobiliariaRelatorio,
+} from "./reconciliacao"
 import {
   avaliarVisibilidadeParcela,
   EXCLUSAO_BLOQUEADA_POR_LANCAMENTO,
@@ -1623,6 +1627,48 @@ export async function buscarParcelasRelatorioAction(): Promise<
     ok: true,
     data: {
       parcelas: (data ?? []) as unknown as ParcelaRelatorio[],
+      hojeISO: hojeEmCuiaba(),
+    },
+  }
+}
+
+// Relatório de reconciliação (Phase 13)
+
+/**
+ * Espelha `buscarParcelasRelatorioAction`: sem filtro de período no
+ * servidor — o filtro roda em memória no cliente (D-01), a cada troca de
+ * mês, sem round-trip novo. Sem filtro de `arquivado_em`/`ativo` pelo mesmo
+ * motivo de D-05 (Phase 8): o relatório de reconciliação inclui contrato
+ * arquivado/inativo — dinheiro que a imobiliária já recebeu não deixa de
+ * ter sido recebido só porque o contrato mudou de estado depois.
+ */
+export async function buscarReconciliacaoAction(): Promise<
+  ActionResult<{
+    taxas: TaxaImobiliariaRelatorio[]
+    caucaoEventos: CaucaoEventoRelatorio[]
+    hojeISO: string
+  }>
+> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const { data: taxas, error: erroTaxas } = await sessao.supabase
+    .from("taxas_imobiliaria")
+    .select("id, data, valor, origem, observacao, cards(endereco, proprietario, numero)")
+
+  if (erroTaxas) return { ok: false, error: erroDoBanco(erroTaxas.code, "carregar o relatório") }
+
+  const { data: caucaoEventos, error: erroCaucao } = await sessao.supabase
+    .from("caucao_eventos")
+    .select("id, data, valor, tipo, observacao, cards(endereco, proprietario, numero)")
+
+  if (erroCaucao) return { ok: false, error: erroDoBanco(erroCaucao.code, "carregar o relatório") }
+
+  return {
+    ok: true,
+    data: {
+      taxas: (taxas ?? []) as unknown as TaxaImobiliariaRelatorio[],
+      caucaoEventos: (caucaoEventos ?? []) as unknown as CaucaoEventoRelatorio[],
       hojeISO: hojeEmCuiaba(),
     },
   }

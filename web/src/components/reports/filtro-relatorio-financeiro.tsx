@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ArrowUpRight } from "lucide-react"
+import { ArrowUpRight, Landmark } from "lucide-react"
 import { Filter, X } from "lucide-react"
 
 import {
@@ -85,6 +85,14 @@ export function FiltroRelatorioFinanceiro({
         >
           <ArrowUpRight className="size-3.5" />
           Relatório financeiro
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          render={<Link href="/relatorios/imobiliaria" />}
+        >
+          <Landmark className="size-3.5" />
+          Dinheiro da imobiliária
         </Button>
         <CollapsibleTrigger
           render={
