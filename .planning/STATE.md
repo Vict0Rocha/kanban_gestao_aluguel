@@ -5,16 +5,16 @@ milestone_name: Módulo Financeiro
 current_phase: 14
 current_phase_name: cancelamento-de-taxas-e-cau-o
 status: executing
-stopped_at: Plano 14-01 executado — migração + runbook escritos, nada aplicado em produção
-last_updated: "2026-08-26T14:43:31.629Z"
+stopped_at: Migração 14 aplicada em produção (via incidente de pooling) — falta Task 3 de 14-03 e planos 14-04/14-05
+last_updated: "2026-08-26T16:00:00.000Z"
 last_activity: 2026-08-26
-last_activity_desc: "Plano 14-01 executado (worktree agent-a86fb281d2312c106, merge no main): migração aditiva supabase/migrations/20260826000000_taxas_imobiliaria_lancamento_id.sql (coluna lancamento_id nullable, FK para parcela_lancamentos.id com on delete cascade, mais índice) + runbook supabase/verificacao_taxas_imobiliaria_lancamento_id.sql. O runbook prova a cascata de verdade dentro de uma transação revertida: cria card/parcela/lançamento/taxa de teste, apaga o lançamento, confirma via raise exception/raise notice que a taxa some junto. Nada foi aplicado em produção ainda — isso acontece no plano 14-03, atrás de um checkpoint:decision. Próximo: plano 14-02 (ensaiar contra produção real, dentro de begin;...rollback;)."
+last_activity_desc: "Planos 14-02 e 14-03 (parcial): durante o ensaio do plano 14-02, o operador colou só a DDL da migração (sem o begin; amarrado no mesmo clique) — o SQL Editor tratou cada statement como autocommit, e a migração 20260826000000_taxas_imobiliaria_lancamento_id.sql foi aplicada e commitada de verdade em produção (mesmo tipo de incidente de pooling já visto na Fase 6.1). Verificado por consulta direta: coluna lancamento_id uuid/nullable/sem default, índice existe, RLS inalterada (1 policy), zero backfill, cards_total=60/cards_updated_at_max idênticos ao baseline anterior. Usuário confirmou explicitamente aceitar como aplicada em vez de desfazer. A cascata de exclusão em si (Prova 2.3) ainda não foi observada — isso fica para o checkpoint de produção do plano 14-04. docs/data-model.md já atualizado (Task 2 de 14-03) com a coluna, a relação de cascata e a bullet de decisão. Falta: Task 3 de 14-03 (checkpoint:human-verify de Board/Financeiro/Relatórios) e os planos 14-04/14-05."
 progress:
   total_phases: 14
   completed_phases: 13
   total_plans: 44
-  completed_plans: 40
-  percent: 91
+  completed_plans: 41
+  percent: 93
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Fase 14 (Cancelamento de taxas e caução) — plano 14-01 executado (migração + runbook), 14-02 a 14-05 pendentes.
+**Current focus:** Fase 14 (Cancelamento de taxas e caução) — migração aplicada em produção (via incidente de pooling, aceita); falta a verificação de regressão (Task 3, 14-03) e os planos 14-04/14-05.
 
 ## Current Position
 
 Phase: 14 (cancelamento-de-taxas-e-cau-o) — EXECUTING
-Status: Plano 14-01 concluído (migração aditiva + runbook de ensaio, nada aplicado em produção); 14-02 a 14-05 pendentes
-Last activity: 2026-08-26 — Plano 14-01 executado (worktree agent-a86fb281d2312c106)
+Status: Migração `taxas_imobiliaria.lancamento_id` já aplicada em produção (planos 14-02/14-03, Tasks 1-2); falta Task 3 de 14-03 (regressão) e os planos 14-04/14-05
+Last activity: 2026-08-26 — Migração aplicada por incidente de pooling, aceita pelo usuário, docs/data-model.md atualizado
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 

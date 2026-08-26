@@ -327,5 +327,67 @@ where schemaname = 'public'
 
 
 -- ============================================================
--- RESULTADO DO ENSAIO — <data>
+-- RESULTADO DO ENSAIO — 2026-08-26
+--
+-- Contexto primeiro: este ensaio NÃO saiu como a PARTE A previa — o
+-- mesmo tipo de acidente já registrado em
+-- supabase/verificacao_cards_numero.sql (2026-08-18, D-19). O
+-- operador rodou a DDL do BLOCO 2 (`alter table ...`/`create index
+-- ...`) sozinha, sem o `begin;` colado junto no mesmo clique de
+-- "Run" — o SQL Editor do Supabase Studio trata cada statement fora
+-- de uma transação explícita como autocommit. Resultado: a migração
+-- 20260826000000_taxas_imobiliaria_lancamento_id.sql foi APLICADA E
+-- COMMITADA DE VERDADE em produção durante o que deveria ser um
+-- ensaio — as Provas 2.1 a 2.6 e o `rollback;` do BLOCO 3 nunca
+-- chegaram a rodar.
+--
+-- Verificado depois, por consulta direta ao banco já com a coluna
+-- viva (consolidada numa única query para não perder resultado no
+-- SQL Editor):
+--
+--   select
+--     (coluna: lancamento_id, uuid, is_nullable=YES, column_default=null),
+--     indice_existe = 1,
+--     policies_taxas_imobiliaria = 1,
+--     taxas_total = 11,
+--     lancamentos_total = 54,
+--     cards_total = 60,
+--     cards_updated_at_max = 2026-08-25 14:30:10.290788+00,
+--     taxas_com_lancamento_id = 0
+--
+-- Ou seja: a coluna nasceu exatamente como a migração pretendia
+-- (uuid, nullable, sem default, FK com on delete cascade), o índice
+-- existe, a policy "team full access taxas_imobiliaria" continua
+-- sendo a única (nenhuma nova), zero linha de taxa ganhou
+-- `lancamento_id` por engano (sem backfill, como desenhado), e
+-- `cards_total`/`cards_updated_at_max` batem exatamente com o
+-- baseline anotado antes do acidente (60 cards, mesmo timestamp) —
+-- nenhuma linha pré-existente foi tocada.
+--
+-- A cascata de exclusão (Prova 2.3, a prova central desta fase) NÃO
+-- foi observada dentro deste "ensaio" — ela nunca chegou a rodar,
+-- porque o operador só executou a DDL, não o bloco `do $$ ... $$` de
+-- teste que viria depois dela no BLOCO 2. Isso significa que a
+-- cascata ainda não foi vista funcionando de verdade contra o schema
+-- real neste momento — só fica provada quando o plano 14-04 gravar
+-- um `lancamento_id` real (via `registrarPagamentoAction`) e alguém
+-- cancelar aquele pagamento (CANPAG) observando, por SQL, que a taxa
+-- some junto. Essa verificação passa a ser parte do checkpoint de
+-- produção do próprio plano 14-04, em vez de um ensaio isolado aqui.
+--
+-- Decisão do usuário (2026-08-26, retroativa — mesmo tratamento já
+-- dado ao acidente idêntico da Fase 6.1): não desfazer a coluna. A
+-- mudança é aditiva, nullable, sem CHECK novo, sem policy nova, e já
+-- confirmada correta pelas consultas acima — desfazer com um `alter
+-- table ... drop column` manual seria uma segunda mudança de schema
+-- em produção sem necessidade real. Os planos 14-02 (este) e 14-03
+-- (aplicar + checkpoint de decisão) ficam fechados como "aplicado,
+-- ensaio pulado por acidente, resultado confirmado correto" — não
+-- será feito um novo ensaio formal dentro de `begin;...rollback;`
+-- para uma mudança que já está em produção e já confirmada.
+--
+-- Lição para o próximo runbook deste projeto: reforçar, no aviso de
+-- D-19 do cabeçalho, que colar SÓ a DDL (sem o `begin;` acima dela no
+-- mesmo clique) já é aplicação real — não existe "ensaiar a DDL
+-- isolada" no SQL Editor do Supabase Studio.
 -- ============================================================
