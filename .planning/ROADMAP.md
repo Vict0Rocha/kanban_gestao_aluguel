@@ -329,11 +329,15 @@ Plans:
   4. No histórico de caução, só o evento mais recente pode ser cancelado por vez, liberando o anterior a cada cancelamento
   5. O diálogo de confirmação de cancelamento de taxa/caução segue o mesmo padrão já existente (sem motivo obrigatório)
 
-**Plans:** 0 plans
+**Plans:** 5 plans
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 14 to break down)
+- [ ] 14-01-PLAN.md — Migração aditiva `taxas_imobiliaria.lancamento_id` (FK cascade) + runbook de ensaio
+- [ ] 14-02-PLAN.md — Ensaiar a migração no SQL Editor de produção (transação revertida), provando a cascata de exclusão de verdade
+- [ ] 14-03-PLAN.md — Aplicar em produção (checkpoint de decisão), conferir e documentar em `docs/data-model.md`
+- [ ] 14-04-PLAN.md — Fatia vertical: taxa no histórico da parcela, cancelamento isolado e cascata pagamento→taxa
+- [ ] 14-05-PLAN.md — Cancelamento sequencial de caução (evento mais recente), docs finais e verificação de toda a fase
 
 ## Progress
 
@@ -354,6 +358,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 11. Cancelamento de pagamento | 1/1 | Complete | 2026-08-21 |
 | 12. Cancelamento de ajustes | 1/1 | Complete | 2026-08-22 |
 | 13. Dinheiro da imobiliária | 7/7 | Complete | 2026-08-25 |
-| 14. Cancelamento de taxas e caução | 0 plans | Not planned | - |
+| 14. Cancelamento de taxas e caução | 0/5 | Planned | - |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13 e 14 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário; Phase 12: capacidade nova pedida pelo usuário; Phase 13: capacidade nova pedida pelo usuário; Phase 14: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.
