@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 14
-current_phase_name: cancelamento-de-taxas-e-cau-o
-status: complete
-stopped_at: Phase 15 context gathered
+current_phase: 15
+current_phase_name: exclus-o-de-card-com-destrava-e-pagina-o
+status: planning
+stopped_at: "Phase 15 context gathered — pronto para /gsd-plan-phase 15"
 last_updated: "2026-08-26T20:20:25.089Z"
 last_activity: 2026-08-26
-last_activity_desc: "Plano 14-05 (Task 3, checkpoint:human-verify) confirmado pelo usuário em produção: 'Fiz os testes, tudo funcionou como o esperado.' Ciclo recebido→uso→devolução cancelado sequencialmente a partir do topo três vezes, confirmando a cada passo que só o evento mais recente mostra 'Cancelar'. Fecha CANIMOB-04/05 e, por ser o último plano pendente, fecha a Phase 14 inteira (CANIMOB-01..05, 5/5 critérios de sucesso do ROADMAP). Com isso encerram as 14 fases planejadas do projeto."
+last_activity_desc: "Phase 15 (Exclusão de card com destrava e paginação) adicionada ao roadmap e discuss-phase concluído. Duas capacidades: (1) cardTemLancamento/deleteCardAction e o trigger de banco impedir_exclusao_de_card_com_lancamento deixam de contar tipo='destrava' como impeditivo — card com destrava-only history (sem parcela conciliada) passa a poder ser excluído; cancelarLancamentoAction ganha 'destrava' no allowlist .in(\"tipo\",...), reabrindo pontualmente D-01 de 12-CONTEXT.md — a única trava que resta é exigirParcelaNaoConciliada (já existente), que já cobre 'parcela conciliada bloqueia'; (2) paginação (máx. 10 itens, numerada) em seis listagens fora do Board: Financeiro, Relatórios→Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados — nenhum componente de paginação existe hoje, será construído do zero. 15-CONTEXT.md e 15-DISCUSSION-LOG.md escritos e commitados (d2b6c27). Requer migração de banco (create or replace function sobre o trigger existente) — mesmo ciclo ensaio→aplicar já usado nas Phases 4/6.1/6.2/13/14."
 progress:
-  total_phases: 14
-  completed_phases: 13
-  total_plans: 43
-  completed_plans: 43
+  total_phases: 15
+  completed_phases: 14
+  total_plans: 44
+  completed_plans: 44
   percent: 93
 ---
 
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Nenhum — as 14 fases planejadas do projeto estão completas. Próximo trabalho depende do usuário voltar com feedback (ver `reconciliacao-imobiliaria-vai-ser-refinada.md` na memória).
+**Current focus:** Phase 15 (Exclusão de card com destrava e paginação) — contexto capturado, pronta para planejamento.
 
 ## Current Position
 
-Phase: 14 (cancelamento-de-taxas-e-cau-o) — COMPLETE
-Status: Planos 14-01 a 14-05 completos, CANIMOB-01..05 confirmados em produção — Phase 14 encerrada, nenhuma fase pendente
-Last activity: 2026-08-26 — Plano 14-05 Task 3 confirmada em produção pelo usuário, fechando a Phase 14 e o projeto inteiro
+Phase: 15 (exclusão-de-card-com-destrava-e-paginação) — CONTEXT GATHERED
+Status: 15-CONTEXT.md e 15-DISCUSSION-LOG.md escritos; falta rodar /gsd-plan-phase 15
+Last activity: 2026-08-26 — discuss-phase da Phase 15 concluído
 
-**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14. A numeração continua da v1.0 (Phases 1-3), não reinicia.
+**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
 ## Performance Metrics
 
