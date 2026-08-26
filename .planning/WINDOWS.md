@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 1
+open_count: 2
 waived_count: 0
 fixed_count: 1
-total_count: 2
-last_updated: 2026-08-26T15:31:46.968Z
+total_count: 3
+last_updated: 2026-08-26T18:57:36.745Z
 ---
 
 # Broken Windows Ledger
@@ -17,6 +17,7 @@ last_updated: 2026-08-26T15:31:46.968Z
 |----|-------|------|------|------|-------------|--------|--------|-------------|-------------|
 | 1 | 06.1 | deviation | supabase/verificacao_cards_numero.sql |  | Ensaio da migração cards.numero não ficou confinado a transação revertida: connection pooling do Supabase Studio SQL Editor commitou a migração de verdade em produção; usuário aceitou explicitamente como aplicada em vez de reverter | fixed |  | 2026-08-18T19:17:11.819Z | 2026-08-18T19:17:51.440Z |
 | 2 | 14 | unrun-verify | .planning/phases/14-cancelamento-de-taxas-e-cau-o/14-04-PLAN.md |  | Task 3 (checkpoint:human-verify, gate=blocking) da 14-04 pendente: taxa visivel/cancelavel e cascata pagamento->taxa precisam ser confirmadas em producao via SQL | open |  | 2026-08-26T15:31:46.968Z |  |
+| 3 | 14 | unrun-verify | .planning/phases/14-cancelamento-de-taxas-e-cau-o/14-05-PLAN.md |  | Task 3 (checkpoint:human-verify, gate=blocking) da 14-05 pendente: cancelamento sequencial de caucao (recebido->uso->devolucao, sempre a partir do topo) e os 5 criterios de sucesso da Phase 14 precisam ser confirmados em producao | open |  | 2026-08-26T18:57:36.745Z |  |
 
 ````json
 [
@@ -43,7 +44,20 @@ last_updated: 2026-08-26T15:31:46.968Z
     "reason": "",
     "recorded_at": "2026-08-26T15:31:46.968Z",
     "resolved_at": null
+  },
+  {
+    "id": 3,
+    "kind": "unrun-verify",
+    "phase": "14",
+    "file": ".planning/phases/14-cancelamento-de-taxas-e-cau-o/14-05-PLAN.md",
+    "line": null,
+    "description": "Task 3 (checkpoint:human-verify, gate=blocking) da 14-05 pendente: cancelamento sequencial de caucao (recebido->uso->devolucao, sempre a partir do topo) e os 5 criterios de sucesso da Phase 14 precisam ser confirmados em producao",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-08-26T18:57:36.745Z",
+    "resolved_at": null
   }
 ]
 ````
+
 
