@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 14
 current_phase_name: cancelamento-de-taxas-e-cau-o
-status: discussed
-stopped_at: Phase 14 context gathered
-last_updated: "2026-08-26T10:00:00.000Z"
+status: executing
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-08-26T14:43:31.629Z"
 last_activity: 2026-08-26
 last_activity_desc: "Discuss-phase da Phase 14 concluído. Decisões-chave (14-CONTEXT.md): taxa entra na mesma lista cronológica do histórico da parcela (não seção separada), com botão Cancelar próprio bloqueado por parcela conciliada (mesma trava de CONCIL-02); cancelar um pagamento (CANPAG) cancela automaticamente a taxa vinculada a ele — achado real durante a análise: taxas_imobiliaria só guarda parcela_id, não qual lançamento a gerou, então hoje uma taxa sobrevive ao cancelamento do pagamento que a originou — usuário confirmou 'fica junto automaticamente', exigindo uma coluna nova de ligação (migração aditiva); histórico de caução ganha cancelamento só do evento mais recente, aplicado sequencialmente (cancelar o topo libera o novo topo, nunca um evento do meio); mesmo diálogo de confirmação simples já usado (CancelarLancamentoDialog) para os dois casos. Requirements CANIMOB-01..05 criados. Próximo: /gsd-plan-phase 14."
 progress:
   total_phases: 13
-  completed_phases: 13
-  total_plans: 39
+  completed_phases: 12
+  total_plans: 43
   completed_plans: 39
-  percent: 100
+  percent: 91
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Fase 14 (Cancelamento de taxas e caução) — contexto capturado, pronta para plan-phase (com ou sem UI-SPEC antes).
+**Current focus:** Fase 14 (Cancelamento de taxas e caução) — plano 14-01 executado (migração + runbook), 14-02 a 14-05 pendentes.
 
 ## Current Position
 
-Phase: 14 (cancelamento-de-taxas-e-cau-o) — DISCUSSED
-Status: 14-CONTEXT.md e 14-DISCUSSION-LOG.md prontos; ainda sem UI-SPEC/planos
-Last activity: 2026-08-26 — Discuss-phase concluído, CANIMOB-01..05 travados
+Phase: 14 (cancelamento-de-taxas-e-cau-o) — EXECUTING
+Status: Plano 14-01 concluído (migração aditiva + runbook de ensaio, nada aplicado em produção); 14-02 a 14-05 pendentes
+Last activity: 2026-08-26 — Plano 14-01 executado (worktree agent-a86fb281d2312c106)
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -76,6 +76,7 @@ Last activity: 2026-08-26 — Discuss-phase concluído, CANIMOB-01..05 travados
 | Phase 07-concilia-o-e-destrava-rastreada P02 | ~12min | 3 tasks | 5 files |
 | Phase 08-relat-rios-financeiros P01 | 15min | 2 tasks | 5 files |
 | Phase 12-cancelamento-de-ajustes P01 | ~20min | 2 tasks | 6 files |
+| Phase 14-cancelamento-de-taxas-e-cau-o P01 | 12min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - [Phase ?]: Filtro arquivado_em sobre embed cards(*) em page.tsx/relatorios usa .is() sem !inner, para preservar a coluna e filtrar so as linhas do embed
 - 2026-08-20: **Plano 07-02 concluído** (worktree isolado, `agent-af95894d026629c62`). `destravarParcelaAction` relê `status` antes de qualquer gravação (só aceita `"conciliada"`), grava lançamento `tipo="destrava"` com `motivo` obrigatório (teto real **500**, corrigindo um erro da UI-SPEC que citava 2000 — CHECK `parcela_lancamentos_motivo_tamanho` é distinta da CHECK de `observacao`) e devolve `status` a `"paga"`. `DestravarParcelaDialog` novo (motivo obrigatório, bloqueado no cliente antes do round-trip) e `AcoesCell` reestruturado: linha conciliada mostra só Destravar+Histórico, demais situações mantêm a sequência do plano 07-01. `ParcelaHistoricoSheet` agora renderiza `motivo` ao lado de `observacao`, fechando CONCIL-04 — os quatro `tipo` de `parcela_lancamentos` estão todos alcançáveis pela interface. `npm run lint`/`npm run build` verdes, todas as asserções de grep passaram. Commits: `3906a4e` (Task 1), `477f56b` (Task 2), `7373eba` (Task 3). **Human-check pendente em produção** (ver Blockers).
 - 2026-08-20: **Plano 08-01 concluído** (worktree isolado, `agent-a21e4bc9c4e5a64a0`). Relatório financeiro de 4 categorias (pagas/a vencer/vencidas/conciliadas) em /relatorios, calcularRelatorioFinanceiro reusa situacaoDaParcela/somarLancamentos verbatim (D-06/D-07). Nova query parcelas deliberadamente sem filtro de arquivado/ativo (D-05) — contrato arquivado/inativo entra nos totais. Painel de filtro suspenso (imóvel/proprietário/período/situação) disparado só por Gerar relatório (D-04/FINREL-05). reports-view.tsx preservado byte a byte (git diff confirma zero linhas de conteúdo pré-existente removidas), FilterChip/toggle exportados na Task 2 (exatamente 2 linhas alteradas). npm run lint/build verdes. Commits: 0c186eb (Task 1), b93d7c6 (Task 2). Última fase do Módulo Financeiro v2.0 — falta só verificação humana em produção (browser + SQL Editor).
+- 2026-08-26: **Plano 14-01 concluído** (worktree isolado, agent-a86fb281d2312c106). Migracao aditiva 20260826000000_taxas_imobiliaria_lancamento_id.sql cria taxas_imobiliaria.lancamento_id (uuid, nullable, FK cascade para parcela_lancamentos.id) + indice, com comentario-guarda citando D-04 (Phase 13) -- a FK reabre o isolamento estrutural so para cascata de limpeza (CANIMOB-03), nunca para calculo de status. Runbook supabase/verificacao_taxas_imobiliaria_lancamento_id.sql prova, dentro de begin/rollback, a cascata real (cria card/parcela/lancamento/taxa de teste, apaga o lancamento, confirma via raise exception/raise notice que a taxa some junto), coluna nullable, indice, lancamento_id nulo aceito, RLS inalterada, cards intocado. Nada aplicado em producao neste plano -- ensaio real fica para o plano 14-02, aplicacao para o 14-03 atras de checkpoint:decision. Commits: 75ce2bf (Task 1), 7ca25bc (Task 2).
 
 ### Pending Todos
 
@@ -153,6 +155,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-22T14:08:48.260Z
-Stopped at: Phase 13 UI-SPEC approved
-Resume file: .planning/phases/13-dinheiro-da-imobili-ria/13-UI-SPEC.md
+Last session: 2026-08-26T14:43:31.563Z
+Stopped at: Completed 14-01-PLAN.md
+Resume file: None
