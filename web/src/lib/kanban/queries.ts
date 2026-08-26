@@ -4,6 +4,7 @@ import {
   ajustarParcelaAction,
   arquivarCardAction,
   cancelarLancamentoAction,
+  cancelarTaxaImobiliariaAction,
   cardTemLancamentoAction,
   conciliarParcelaAction,
   contarParcelasEmAbertoAction,
@@ -147,6 +148,10 @@ export async function destravarParcela(parcelaId: string, motivo: string) {
 
 export async function cancelarLancamento(parcelaId: string, lancamentoId: string) {
   return unwrap(cancelarLancamentoAction(parcelaId, lancamentoId))
+}
+
+export async function cancelarTaxaImobiliaria(parcelaId: string, taxaId: string) {
+  return unwrap(cancelarTaxaImobiliariaAction(parcelaId, taxaId))
 }
 
 export async function salvarPercentuais(

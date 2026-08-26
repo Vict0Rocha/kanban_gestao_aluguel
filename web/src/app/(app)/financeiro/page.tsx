@@ -19,12 +19,15 @@ import { FinanceiroView } from "@/components/financeiro/financeiro-view"
 // ser nulo de verdade. Desde a Phase 13, as duas também trazem
 // `percentual_administracao`/`percentual_comissao_primeiro_aluguel` — os
 // dois percentuais do contrato que `taxas.ts` usa para calcular a sugestão
-// de taxa mostrada no diálogo de pagamento.
+// de taxa mostrada no diálogo de pagamento. Desde a Phase 14, as duas também
+// trazem `taxas_imobiliaria` — a taxa que `parcelas.ts` (`montarLinhas`)
+// funde com `parcela_lancamentos` no histórico unificado da parcela (D-01,
+// 14-CONTEXT.md).
 const SELECT_PARCELA_PADRAO =
-  "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, ativo, periodo_inicio, periodo_fim, arquivado_em, percentual_administracao, percentual_comissao_primeiro_aluguel), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
+  "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, ativo, periodo_inicio, periodo_fim, arquivado_em, percentual_administracao, percentual_comissao_primeiro_aluguel), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email)), taxas_imobiliaria(id, origem, valor, data, observacao, criado_em, profiles(full_name, email))"
 
 const SELECT_PARCELA_FILTRADA =
-  "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, inquilino, ativo, periodo_inicio, periodo_fim, arquivado_em, percentual_administracao, percentual_comissao_primeiro_aluguel), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email))"
+  "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, inquilino, ativo, periodo_inicio, periodo_fim, arquivado_em, percentual_administracao, percentual_comissao_primeiro_aluguel), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email)), taxas_imobiliaria(id, origem, valor, data, observacao, criado_em, profiles(full_name, email))"
 
 /** Dia 1 do mês seguinte a "YYYY-MM", sem passar por Date — mesmo padrão usado em parcelas.ts. */
 function inicioMesSeguinte(periodoYYYYMM: string): string {

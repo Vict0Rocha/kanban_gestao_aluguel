@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 
+import type { OrigemTaxa } from "./taxas"
+
 /**
  * Parcelas são geradas de forma preguiçosa na leitura da rota /financeiro —
  * mesma filosofia de alerts.ts: nada de job agendado, nada de chave
@@ -28,6 +30,30 @@ export type LancamentoDetalhado = {
   criado_em: string
   profiles: { full_name: string | null; email: string | null } | null
 }
+
+/** Taxa da imobiliária com os campos que o histórico unificado (Phase 14)
+ * precisa — mesmo espírito de `LancamentoDetalhado`, mas sem `tipo`/`motivo`
+ * (não existem em `taxas_imobiliaria`: cada linha já É uma taxa, e o
+ * diálogo de cancelamento de taxa não pede motivo, D-06/14-CONTEXT.md). */
+export type TaxaHistorico = {
+  id: string
+  origem: OrigemTaxa
+  valor: number
+  data: string
+  observacao: string | null
+  criado_em: string
+  profiles: { full_name: string | null; email: string | null } | null
+}
+
+/**
+ * D-01 (14-CONTEXT.md): pagamento/acréscimo/desconto/destrava e taxa da
+ * imobiliária na MESMA lista cronológica, nunca uma seção separada — união
+ * discriminada por `kind` para o histórico da parcela poder misturar as duas
+ * origens de linha sem perder o tipo concreto de cada uma.
+ */
+export type LinhaHistoricoParcela =
+  | (LancamentoDetalhado & { kind: "lancamento" })
+  | (TaxaHistorico & { kind: "taxa" })
 
 export type CardParaGeracao = {
   id: string
@@ -62,6 +88,7 @@ export type ParcelaComCard = {
     percentual_comissao_primeiro_aluguel: number
   } | null
   parcela_lancamentos: LancamentoDetalhado[] | null
+  taxas_imobiliaria: TaxaHistorico[] | null
 }
 
 export type LinhaParcela = {
@@ -75,7 +102,7 @@ export type LinhaParcela = {
   valorDevido: number
   valorPago: number
   situacao: Situacao
-  lancamentos: LancamentoDetalhado[]
+  historico: LinhaHistoricoParcela[]
   percentualAdministracao: number
   percentualComissaoPrimeiroAluguel: number
 }
@@ -453,9 +480,13 @@ export function montarLinhas(
 
     // A-01: mais recente primeiro — ordenação local a este campo, não
     // interfere na ordenação por vencimento/endereço das próprias linhas.
-    const lancamentos = [...(parcela.parcela_lancamentos ?? [])].sort(
-      (a, b) => (a.criado_em < b.criado_em ? 1 : a.criado_em > b.criado_em ? -1 : 0)
-    )
+    // D-01 (14-CONTEXT.md): a taxa da imobiliária entra na MESMA lista
+    // cronológica dos lançamentos, nunca uma seção separada — merge dos dois
+    // arrays antes do sort, cada um marcado com seu `kind`.
+    const historico: LinhaHistoricoParcela[] = [
+      ...(parcela.parcela_lancamentos ?? []).map((l) => ({ ...l, kind: "lancamento" as const })),
+      ...(parcela.taxas_imobiliaria ?? []).map((t) => ({ ...t, kind: "taxa" as const })),
+    ].sort((a, b) => (a.criado_em < b.criado_em ? 1 : a.criado_em > b.criado_em ? -1 : 0))
 
     return {
       id: parcela.id,
@@ -468,7 +499,7 @@ export function montarLinhas(
       valorDevido,
       valorPago,
       situacao: situacaoDaParcela(parcela.status, parcela.vencimento, hojeISO),
-      lancamentos,
+      historico,
       percentualAdministracao: parcela.cards?.percentual_administracao ?? 10,
       percentualComissaoPrimeiroAluguel:
         parcela.cards?.percentual_comissao_primeiro_aluguel ?? 50,

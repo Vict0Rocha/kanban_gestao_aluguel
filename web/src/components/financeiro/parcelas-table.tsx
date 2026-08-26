@@ -163,7 +163,7 @@ function AcoesCell({
         endereco={linha.endereco}
         competencia={linha.competencia}
         vencimento={linha.vencimento}
-        lancamentos={linha.lancamentos}
+        historico={linha.historico}
         parcelaId={linha.id}
         parcelaConciliada={linha.situacao === "conciliada"}
         open={dialogoAberto === "historico"}

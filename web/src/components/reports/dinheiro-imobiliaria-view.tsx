@@ -8,7 +8,6 @@ import {
   ShieldCheck,
   Sparkles,
   Wallet,
-  type LucideIcon,
 } from "lucide-react"
 
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
@@ -18,10 +17,10 @@ import {
   type CaucaoEventoRelatorio,
   type TaxaImobiliariaRelatorio,
 } from "@/lib/kanban/reconciliacao"
-import type { OrigemTaxa } from "@/lib/kanban/taxas"
 import { StatTile } from "@/components/reports/stat-tile"
 import { CaucaoEventoLabel } from "@/components/financeiro/caucao-evento-label"
 import { IdPill } from "@/components/financeiro/id-pill"
+import { TaxaOrigemBadge } from "@/components/financeiro/taxa-origem-label"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -32,26 +31,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
-/**
- * A-03 (13-07-PLAN.md): mapa local só desta view — nenhuma outra tela
- * precisa rotular taxa por origem, então não vira componente compartilhado
- * como `CaucaoEventoLabel`.
- */
-const TAXA_ORIGEM: Record<OrigemTaxa, { icon: LucideIcon; label: string }> = {
-  administracao: { icon: Percent, label: "Administração" },
-  comissao_primeiro_aluguel: { icon: Sparkles, label: "Comissão 1º aluguel" },
-}
-
-function TaxaOrigemBadge({ origem }: { origem: OrigemTaxa }) {
-  const { icon: Icon, label } = TAXA_ORIGEM[origem]
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground">
-      <Icon className="size-3.5 shrink-0" />
-      {label}
-    </span>
-  )
-}
 
 type LinhaLista = {
   id: string
