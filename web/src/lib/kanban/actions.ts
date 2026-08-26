@@ -1123,7 +1123,11 @@ export async function registrarPagamentoAction(
   // acontecer. O INSERT em `taxas_imobiliaria` mais abaixo não aciona um
   // segundo recálculo de status. Esta é a fronteira estrutural de D-04
   // expressa em código: nenhuma leitura de `taxas_imobiliaria` participa de
-  // `somarLancamentos`/`statusDeParcela`.
+  // `somarLancamentos`/`statusDeParcela`. A partir da Phase 14, o INSERT de
+  // taxa abaixo também grava `lancamento_id: inserido[0].id` — é esse valor
+  // que permite `cancelarLancamentoAction` arrastar a taxa junto via
+  // `on delete cascade` quando o pagamento é cancelado (CANIMOB-03), sem
+  // exigir nenhuma mudança em `cancelarLancamentoAction` em si.
   const erroStatus = await recalcularEGravarStatus(sessao.supabase, parcelaId)
   if (erroStatus) return { ok: false, error: erroStatus }
 
@@ -1178,6 +1182,7 @@ export async function registrarPagamentoAction(
       data,
       observacao: null,
       criado_por: sessao.user.id,
+      lancamento_id: inserido[0].id,
     })
     .select("id")
 
@@ -1450,6 +1455,51 @@ export async function cancelarLancamentoAction(
   // grava um valor de status por conta própria.
   const erroStatus = await recalcularEGravarStatus(sessao.supabase, parcelaId)
   if (erroStatus) return { ok: false, error: erroStatus }
+
+  return { ok: true, data: undefined }
+}
+
+/**
+ * CANIMOB-02/D-04 (14-CONTEXT.md): mesmo padrão de cancelarLancamentoAction
+ * acima, mas sobre `taxas_imobiliaria` — sem `.in("tipo", [...])` (não existe
+ * coluna `tipo` nesta tabela, cada linha já É uma taxa) e SEM chamar
+ * `recalcularEGravarStatus` (D-04, 13-CONTEXT.md continua valendo: taxa
+ * nunca participa do cálculo de status da parcela).
+ *
+ * Cancelar um `tipo='pagamento'` que gerou esta taxa também a remove — não
+ * por código aqui, mas pelo `on delete cascade` de
+ * `taxas_imobiliaria.lancamento_id -> parcela_lancamentos.id` (migração
+ * 20260826000000_taxas_imobiliaria_lancamento_id.sql, D-03/CANIMOB-03,
+ * 14-CONTEXT.md) — a cascata é 100% do banco, nenhuma segunda chamada de
+ * DELETE nesta função.
+ */
+export async function cancelarTaxaImobiliariaAction(
+  parcelaId: string,
+  taxaId: string
+): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(parcelaId, "Parcela") ?? id(taxaId, "Taxa")
+  if (invalido) return { ok: false, error: invalido }
+
+  const recusaConciliada = await exigirParcelaNaoConciliada(sessao.supabase, parcelaId)
+  if (recusaConciliada) return { ok: false, error: recusaConciliada }
+
+  const { data, error } = await sessao.supabase
+    .from("taxas_imobiliaria")
+    .delete()
+    .eq("id", taxaId)
+    .eq("parcela_id", parcelaId)
+    .select("id")
+
+  if (error) {
+    console.error("cancelarTaxaImobiliaria", error)
+    return { ok: false, error: erroDoBanco(error.code, "cancelar a taxa") }
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: semLinhas("cancelar a taxa") }
+  }
 
   return { ok: true, data: undefined }
 }

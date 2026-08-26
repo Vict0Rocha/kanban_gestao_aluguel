@@ -4,10 +4,10 @@ import * as React from "react"
 import { Trash2 } from "lucide-react"
 
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
-import type { LancamentoDetalhado, LinhaHistoricoParcela } from "@/lib/kanban/parcelas"
+import type { LinhaHistoricoParcela } from "@/lib/kanban/parcelas"
 import { CancelarLancamentoDialog } from "@/components/financeiro/cancelar-lancamento-dialog"
-import { LancamentoTipoLabel } from "@/components/financeiro/lancamento-tipo-label"
-import { TaxaOrigemBadge } from "@/components/financeiro/taxa-origem-label"
+import { LancamentoTipoLabel, TIPO } from "@/components/financeiro/lancamento-tipo-label"
+import { TAXA_ORIGEM, TaxaOrigemBadge } from "@/components/financeiro/taxa-origem-label"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -34,6 +34,16 @@ function prefixoValorItem(item: LinhaHistoricoParcela): string {
   if (item.tipo === "destrava") return "—"
   if (item.tipo === "desconto") return `− ${formatCurrency(item.valor)}`
   return `+ ${formatCurrency(item.valor)}`
+}
+
+/** Rótulo textual (distinto do componente visual `LancamentoTipoLabel`/
+ * `TaxaOrigemBadge`) para o título/descrição de `CancelarLancamentoDialog`,
+ * que recebe `rotulo: string` pronto em vez de recalcular a partir de `tipo`
+ * (D-06/CANIMOB-05, A-02). */
+function rotuloDoItem(item: LinhaHistoricoParcela): string {
+  return item.kind === "lancamento"
+    ? TIPO[item.tipo].label
+    : `Taxa · ${TAXA_ORIGEM[item.origem].label}`
 }
 
 export function ParcelaHistoricoSheet({
@@ -115,7 +125,7 @@ export function ParcelaHistoricoSheet({
                         {item.motivo}
                       </p>
                     )}
-                    {item.kind === "lancamento" && ["pagamento", "acrescimo", "desconto"].includes(item.tipo) && !parcelaConciliada && (
+                    {(item.kind === "taxa" || ["pagamento", "acrescimo", "desconto"].includes(item.tipo)) && !parcelaConciliada && (
                       <div className="flex justify-end">
                         <Button
                           variant="ghost"
@@ -135,16 +145,10 @@ export function ParcelaHistoricoSheet({
         </div>
       </SheetContent>
       <CancelarLancamentoDialog
-        parcelaId={parcelaId}
-        lancamentoId={cancelando?.id ?? ""}
-        tipo={
-          (cancelando && cancelando.kind === "lancamento"
-            ? cancelando.tipo
-            : "pagamento") as Extract<
-            LancamentoDetalhado["tipo"],
-            "pagamento" | "acrescimo" | "desconto"
-          >
-        }
+        parentId={parcelaId}
+        itemId={cancelando?.id ?? ""}
+        rotulo={cancelando ? rotuloDoItem(cancelando) : ""}
+        acao={cancelando?.kind ?? "lancamento"}
         valor={cancelando?.valor ?? 0}
         data={cancelando?.data ?? ""}
         open={cancelando !== null}
