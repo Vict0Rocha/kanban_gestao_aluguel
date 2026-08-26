@@ -138,6 +138,27 @@ Phase 13, sem desfazer o isolamento em si. Decisões registradas em
 - [x] **CANIMOB-04**: No histórico de caução, existe um botão "Cancelar" apenas no evento mais recente; cancelar o mais recente libera o cancelamento do evento que ficou no topo, permitindo desfazer o ciclo inteiro sequencialmente — nunca um cancelamento de evento do meio da linha do tempo — confirmado em produção
 - [x] **CANIMOB-05**: O diálogo de confirmação de cancelamento de taxa/caução segue o mesmo padrão já existente (sem motivo obrigatório, DELETE real, aviso de que não pode ser desfeito) — confirmado em produção
 
+### CANDEST — Cancelamento/exclusão com destrava (pós-milestone, Phase 15)
+
+Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário logo após a Phase 14
+fechar. Reabre pontualmente D-14 (06.2-CONTEXT.md, "qualquer lançamento trava a exclusão do card") e
+D-01 (12-CONTEXT.md, "destrava fica fora do cancelamento") só para este caso específico. Decisões
+registradas em `.planning/phases/15-exclus-o-de-card-com-destrava-e-pagina-o/15-CONTEXT.md`.
+
+- [ ] **CANDEST-01**: Um card com histórico de destrava, mas sem nenhuma parcela conciliada, pode ser excluído de verdade — nem o pré-voo do app (`cardTemLancamento`) nem o trigger de banco (`impedir_exclusao_de_card_com_lancamento`) bloqueiam mais por causa só de `tipo='destrava'`
+- [ ] **CANDEST-02**: Um lançamento `tipo='destrava'` ganha o mesmo botão "Cancelar" já usado para pagamento/acréscimo/desconto/taxa/caução, usando o mesmo `CancelarLancamentoDialog` — cancelar não reabre a conciliação nem altera o status da parcela, só remove o registro de auditoria
+- [ ] **CANDEST-03**: Uma parcela conciliada continua bloqueando tanto a exclusão do card quanto o cancelamento de qualquer lançamento seu (incluindo destrava) — mesma trava já existente (`exigirParcelaNaoConciliada`)
+
+### PAGIN — Paginação de listagens (pós-milestone, Phase 15)
+
+Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário na mesma conversa que
+CANDEST. Estritamente aditiva na camada de apresentação — nenhuma mudança de query/Server Action.
+Decisões registradas em `.planning/phases/15-exclus-o-de-card-com-destrava-e-pagina-o/15-CONTEXT.md`.
+
+- [ ] **PAGIN-01**: As seis listagens fora do Board (Financeiro, Relatórios → Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) mostram no máximo 10 itens por página
+- [ ] **PAGIN-02**: A navegação entre páginas é numerada (1, 2, 3… + setas anterior/próxima), não apenas Anterior/Próxima
+- [ ] **PAGIN-03**: Mudar um filtro em qualquer uma das seis telas volta a listagem para a página 1 — mas uma ação que não muda o filtro (cancelar/conciliar/desarquivar um item) nunca reseta a página do usuário
+
 ## Carried over from v1.0
 
 Requisito não concluído na v1.0, mantido visível para não se perder. **Não faz parte do escopo de fases da v2.0** — é uma ação de painel, não trabalho de código, adiada por escolha do usuário.
@@ -254,12 +275,18 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | CANIMOB-03 | Phase 14 | Confirmado em produção |
 | CANIMOB-04 | Phase 14 | Confirmado em produção |
 | CANIMOB-05 | Phase 14 | Confirmado em produção |
+| CANDEST-01 | Phase 15 | Pendente |
+| CANDEST-02 | Phase 15 | Pendente |
+| CANDEST-03 | Phase 15 | Pendente |
+| PAGIN-01 | Phase 15 | Pendente |
+| PAGIN-02 | Phase 15 | Pendente |
+| PAGIN-03 | Phase 15 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
 - Mapped to phases: 39
 - Unmapped: 0
-- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05) e Phase 14 (CANIMOB-01..05) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB` e `### CANIMOB` acima
+- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05) e Phase 15 (CANDEST-01..03, PAGIN-01..03) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST` e `### PAGIN` acima
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 - VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 
