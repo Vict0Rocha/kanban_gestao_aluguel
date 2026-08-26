@@ -4,11 +4,11 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 14
 current_phase_name: cancelamento-de-taxas-e-cau-o
-status: added
-stopped_at: Phase 14 adicionada — aguardando discuss-phase
-last_updated: "2026-08-25T17:00:00.000Z"
-last_activity: 2026-08-25
-last_activity_desc: "Phase 14 adicionada ao roadmap: usuário pediu, logo após a Phase 13 fechar, que a taxa da imobiliária apareça no histórico de lançamentos da parcela (hoje invisível ali por D-04 de Phase 13) com opção de cancelar, e que eventos de caução também possam ser cancelados (hoje append-only por D-06 de Phase 13). Ambas reabrem decisões estruturais recém-tomadas — precisa de discuss-phase formal antes de planejar. Próximo: /gsd-discuss-phase 14."
+status: discussed
+stopped_at: Phase 14 context gathered
+last_updated: "2026-08-26T10:00:00.000Z"
+last_activity: 2026-08-26
+last_activity_desc: "Discuss-phase da Phase 14 concluído. Decisões-chave (14-CONTEXT.md): taxa entra na mesma lista cronológica do histórico da parcela (não seção separada), com botão Cancelar próprio bloqueado por parcela conciliada (mesma trava de CONCIL-02); cancelar um pagamento (CANPAG) cancela automaticamente a taxa vinculada a ele — achado real durante a análise: taxas_imobiliaria só guarda parcela_id, não qual lançamento a gerou, então hoje uma taxa sobrevive ao cancelamento do pagamento que a originou — usuário confirmou 'fica junto automaticamente', exigindo uma coluna nova de ligação (migração aditiva); histórico de caução ganha cancelamento só do evento mais recente, aplicado sequencialmente (cancelar o topo libera o novo topo, nunca um evento do meio); mesmo diálogo de confirmação simples já usado (CancelarLancamentoDialog) para os dois casos. Requirements CANIMOB-01..05 criados. Próximo: /gsd-plan-phase 14."
 progress:
   total_phases: 13
   completed_phases: 13
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Fase 14 (Cancelamento de taxas e caução) — recém-adicionada, aguardando discuss-phase.
+**Current focus:** Fase 14 (Cancelamento de taxas e caução) — contexto capturado, pronta para plan-phase (com ou sem UI-SPEC antes).
 
 ## Current Position
 
-Phase: 14 (cancelamento-de-taxas-e-cau-o) — ADDED
-Status: Fase criada no roadmap, ainda sem CONTEXT.md/UI-SPEC/planos
-Last activity: 2026-08-25 — Phase 14 adicionada, pedido do usuário após a Phase 13 fechar
+Phase: 14 (cancelamento-de-taxas-e-cau-o) — DISCUSSED
+Status: 14-CONTEXT.md e 14-DISCUSSION-LOG.md prontos; ainda sem UI-SPEC/planos
+Last activity: 2026-08-26 — Discuss-phase concluído, CANIMOB-01..05 travados
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
