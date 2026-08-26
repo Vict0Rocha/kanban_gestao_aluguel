@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 15
 current_phase_name: exclus-o-de-card-com-destrava-e-pagina-o
-status: planning
-stopped_at: "Phase 15 context gathered — pronto para /gsd-plan-phase 15"
-last_updated: "2026-08-26T20:20:25.089Z"
+status: planned
+stopped_at: "Phase 15 planejada (6 planos, 3 ondas) — pronta para /gsd-execute-phase 15"
+last_updated: "2026-08-26T21:05:00.000Z"
 last_activity: 2026-08-26
-last_activity_desc: "Phase 15 (Exclusão de card com destrava e paginação) adicionada ao roadmap e discuss-phase concluído. Duas capacidades: (1) cardTemLancamento/deleteCardAction e o trigger de banco impedir_exclusao_de_card_com_lancamento deixam de contar tipo='destrava' como impeditivo — card com destrava-only history (sem parcela conciliada) passa a poder ser excluído; cancelarLancamentoAction ganha 'destrava' no allowlist .in(\"tipo\",...), reabrindo pontualmente D-01 de 12-CONTEXT.md — a única trava que resta é exigirParcelaNaoConciliada (já existente), que já cobre 'parcela conciliada bloqueia'; (2) paginação (máx. 10 itens, numerada) em seis listagens fora do Board: Financeiro, Relatórios→Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados — nenhum componente de paginação existe hoje, será construído do zero. 15-CONTEXT.md e 15-DISCUSSION-LOG.md escritos e commitados (d2b6c27). Requer migração de banco (create or replace function sobre o trigger existente) — mesmo ciclo ensaio→aplicar já usado nas Phases 4/6.1/6.2/13/14."
+last_activity_desc: "Phase 15 pesquisada, mapeada e planejada. 15-RESEARCH.md (HIGH confidence): SQL exato do trigger relaxado, diffs antes/depois de cancelarLancamentoAction e parcela-historico-sheet.tsx, e um componente Pagination/usePagination novo (web/src/components/pagination.tsx) com tabela de wiring para as 6 listagens — achado notável: 4 das 6 listas chamam router.refresh() após mutações não relacionadas a filtro, então o reset de página usa uma resetKey explícita por filtro, nunca a referência do array (Pitfall 3). 15-PATTERNS.md: 13/13 analogs encontrados. gsd-planner produziu 6 planos em 3 ondas: Wave 1 (15-01 migração+runbook, 15-02 widen do cancelamento de destrava, 15-03 componente Pagination + tracer no Financeiro, todos paralelos); Wave 2 (15-04 ensaio contra produção depende de 15-01; 15-05 paginação das 5 listagens restantes depende de 15-03); Wave 3 (15-06 checkpoint:decision → aplicar migração → SÓ DEPOIS relaxar cardTemLancamento no app → checkpoint:human-verify, depende de 15-02+15-04). CANDEST-01..03/PAGIN-01..03 adicionados a REQUIREMENTS.md e ao Requirements: do ROADMAP.md. Seção Success Criteria adicionada manualmente ao ROADMAP.md (ausente no template do planner). Commits: 1e70aeb (research), 5460f5d (requirement IDs), 5fe6c41 (plans)."
 progress:
   total_phases: 15
   completed_phases: 14
-  total_plans: 44
+  total_plans: 50
   completed_plans: 44
-  percent: 93
+  percent: 88
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 15 (Exclusão de card com destrava e paginação) — contexto capturado, pronta para planejamento.
+**Current focus:** Phase 15 (Exclusão de card com destrava e paginação) — planejada (6 planos, 3 ondas), pronta para execução.
 
 ## Current Position
 
-Phase: 15 (exclusão-de-card-com-destrava-e-paginação) — CONTEXT GATHERED
-Status: 15-CONTEXT.md e 15-DISCUSSION-LOG.md escritos; falta rodar /gsd-plan-phase 15
-Last activity: 2026-08-26 — discuss-phase da Phase 15 concluído
+Phase: 15 (exclusão-de-card-com-destrava-e-paginação) — PLANNED
+Status: 15-01 a 15-06-PLAN.md escritos; falta rodar /gsd-execute-phase 15
+Last activity: 2026-08-26 — research + pattern-mapping + planning da Phase 15 concluídos
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 

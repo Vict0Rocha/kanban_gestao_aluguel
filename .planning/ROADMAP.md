@@ -362,13 +362,21 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 14. Cancelamento de taxas e caução | 5/5 | Complete | 2026-08-26 |
 | 15. Exclusão de card com destrava e paginação | 0/6 | Planned | - |
 
-**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13 e 14 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário; Phase 12: capacidade nova pedida pelo usuário; Phase 13: capacidade nova pedida pelo usuário; Phase 14: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.
+**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14 e 15 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário; Phase 12: capacidade nova pedida pelo usuário; Phase 13: capacidade nova pedida pelo usuário; Phase 14: capacidade nova pedida pelo usuário; Phase 15: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN.
 
 ### Phase 15: Exclusão de card com destrava e paginação
 
 **Goal:** Um card com histórico de destrava (mas sem parcela conciliada) pode ser excluído de verdade, e um lançamento de destrava pode ser cancelado individualmente como qualquer outro; e as seis listagens fora do Board (Financeiro, Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) ganham paginação de no máximo 10 itens por página
 **Requirements**: CANDEST-01, CANDEST-02, CANDEST-03, PAGIN-01, PAGIN-02, PAGIN-03 (trabalho pós-milestone — ver 15-CONTEXT.md)
 **Depends on:** Phase 14
+**Success Criteria** (what must be TRUE):
+
+  1. Um card com histórico de destrava, mas sem nenhuma parcela conciliada, pode ser excluído de verdade — nem o pré-voo do app (`cardTemLancamento`) nem o trigger de banco (`impedir_exclusao_de_card_com_lancamento`) bloqueiam mais só por causa de `tipo='destrava'`
+  2. Um lançamento `tipo='destrava'` ganha o mesmo botão "Cancelar" já usado para pagamento/acréscimo/desconto/taxa/caução — cancelar remove só o registro de auditoria, sem alterar o status da parcela
+  3. Uma parcela conciliada continua bloqueando tanto a exclusão do card quanto o cancelamento de qualquer lançamento seu, incluindo destrava — nenhuma trava nova, a existente (`exigirParcelaNaoConciliada`) já cobre
+  4. As seis listagens fora do Board (Financeiro, Relatórios → Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) mostram no máximo 10 itens por página, com navegação numerada (1, 2, 3… + setas anterior/próxima)
+  5. Mudar um filtro em qualquer uma das seis telas volta a listagem para a página 1; uma ação que não muda o filtro (cancelar/conciliar/desarquivar um item) nunca reseta a página em que o usuário está
+
 **Plans:** 6 plans
 
 Plans:
