@@ -5,16 +5,16 @@ milestone_name: Módulo Financeiro
 current_phase: 14
 current_phase_name: cancelamento-de-taxas-e-cau-o
 status: executing
-stopped_at: Migração 14 aplicada em produção (via incidente de pooling) — falta Task 3 de 14-03 e planos 14-04/14-05
-last_updated: "2026-08-26T16:00:00.000Z"
+stopped_at: "Completed 14-04-PLAN.md Tasks 1-2; Task 3 (checkpoint:human-verify, gate=blocking) pendente"
+last_updated: "2026-08-26T15:32:51.744Z"
 last_activity: 2026-08-26
 last_activity_desc: "Planos 14-02 e 14-03 (parcial): durante o ensaio do plano 14-02, o operador colou só a DDL da migração (sem o begin; amarrado no mesmo clique) — o SQL Editor tratou cada statement como autocommit, e a migração 20260826000000_taxas_imobiliaria_lancamento_id.sql foi aplicada e commitada de verdade em produção (mesmo tipo de incidente de pooling já visto na Fase 6.1). Verificado por consulta direta: coluna lancamento_id uuid/nullable/sem default, índice existe, RLS inalterada (1 policy), zero backfill, cards_total=60/cards_updated_at_max idênticos ao baseline anterior. Usuário confirmou explicitamente aceitar como aplicada em vez de desfazer. A cascata de exclusão em si (Prova 2.3) ainda não foi observada — isso fica para o checkpoint de produção do plano 14-04. docs/data-model.md já atualizado (Task 2 de 14-03) com a coluna, a relação de cascata e a bullet de decisão. Falta: Task 3 de 14-03 (checkpoint:human-verify de Board/Financeiro/Relatórios) e os planos 14-04/14-05."
 progress:
-  total_phases: 14
-  completed_phases: 13
-  total_plans: 44
-  completed_plans: 41
-  percent: 93
+  total_phases: 13
+  completed_phases: 12
+  total_plans: 43
+  completed_plans: 42
+  percent: 92
 ---
 
 # Project State
@@ -77,6 +77,7 @@ Last activity: 2026-08-26 — Migração aplicada por incidente de pooling, acei
 | Phase 08-relat-rios-financeiros P01 | 15min | 2 tasks | 5 files |
 | Phase 12-cancelamento-de-ajustes P01 | ~20min | 2 tasks | 6 files |
 | Phase 14-cancelamento-de-taxas-e-cau-o P01 | 12min | 2 tasks | 2 files |
+| Phase 14 P04 | ~35min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - 2026-08-20: **Plano 07-02 concluído** (worktree isolado, `agent-af95894d026629c62`). `destravarParcelaAction` relê `status` antes de qualquer gravação (só aceita `"conciliada"`), grava lançamento `tipo="destrava"` com `motivo` obrigatório (teto real **500**, corrigindo um erro da UI-SPEC que citava 2000 — CHECK `parcela_lancamentos_motivo_tamanho` é distinta da CHECK de `observacao`) e devolve `status` a `"paga"`. `DestravarParcelaDialog` novo (motivo obrigatório, bloqueado no cliente antes do round-trip) e `AcoesCell` reestruturado: linha conciliada mostra só Destravar+Histórico, demais situações mantêm a sequência do plano 07-01. `ParcelaHistoricoSheet` agora renderiza `motivo` ao lado de `observacao`, fechando CONCIL-04 — os quatro `tipo` de `parcela_lancamentos` estão todos alcançáveis pela interface. `npm run lint`/`npm run build` verdes, todas as asserções de grep passaram. Commits: `3906a4e` (Task 1), `477f56b` (Task 2), `7373eba` (Task 3). **Human-check pendente em produção** (ver Blockers).
 - 2026-08-20: **Plano 08-01 concluído** (worktree isolado, `agent-a21e4bc9c4e5a64a0`). Relatório financeiro de 4 categorias (pagas/a vencer/vencidas/conciliadas) em /relatorios, calcularRelatorioFinanceiro reusa situacaoDaParcela/somarLancamentos verbatim (D-06/D-07). Nova query parcelas deliberadamente sem filtro de arquivado/ativo (D-05) — contrato arquivado/inativo entra nos totais. Painel de filtro suspenso (imóvel/proprietário/período/situação) disparado só por Gerar relatório (D-04/FINREL-05). reports-view.tsx preservado byte a byte (git diff confirma zero linhas de conteúdo pré-existente removidas), FilterChip/toggle exportados na Task 2 (exatamente 2 linhas alteradas). npm run lint/build verdes. Commits: 0c186eb (Task 1), b93d7c6 (Task 2). Última fase do Módulo Financeiro v2.0 — falta só verificação humana em produção (browser + SQL Editor).
 - 2026-08-26: **Plano 14-01 concluído** (worktree isolado, agent-a86fb281d2312c106). Migracao aditiva 20260826000000_taxas_imobiliaria_lancamento_id.sql cria taxas_imobiliaria.lancamento_id (uuid, nullable, FK cascade para parcela_lancamentos.id) + indice, com comentario-guarda citando D-04 (Phase 13) -- a FK reabre o isolamento estrutural so para cascata de limpeza (CANIMOB-03), nunca para calculo de status. Runbook supabase/verificacao_taxas_imobiliaria_lancamento_id.sql prova, dentro de begin/rollback, a cascata real (cria card/parcela/lancamento/taxa de teste, apaga o lancamento, confirma via raise exception/raise notice que a taxa some junto), coluna nullable, indice, lancamento_id nulo aceito, RLS inalterada, cards intocado. Nada aplicado em producao neste plano -- ensaio real fica para o plano 14-02, aplicacao para o 14-03 atras de checkpoint:decision. Commits: 75ce2bf (Task 1), 7ca25bc (Task 2).
+- [Phase ?]: 2026-08-26: Plano 14-04 (Tasks 1-2) concluido em worktree isolado (agent-a30e340107bf0bf54). Historico unificado da parcela (parcelas.ts: TaxaHistorico/LinhaHistoricoParcela, uniao discriminada por kind) funde parcela_lancamentos+taxas_imobiliaria numa so lista cronologica; taxa-origem-label.tsx (novo) promove TAXA_ORIGEM/TaxaOrigemBadge de dinheiro-imobiliaria-view.tsx com className por origem (A-03). cancelarTaxaImobiliariaAction (nova): DELETE condicionado id+parcela_id, exigirParcelaNaoConciliada, NUNCA recalcularEGravarStatus. registrarPagamentoAction grava lancamento_id: inserido[0].id no INSERT de taxas_imobiliaria -- habilita a cascata on delete cascade sem nenhuma linha nova em cancelarLancamentoAction (CANIMOB-03). CancelarLancamentoDialog generalizado de tipo: Extract<...> para parentId/itemId/rotulo/acao ("lancamento"|"taxa"), pronto para caucao no plano 14-05. npm run lint/build verdes (worktree precisou de npm install proprio), todas as assercoes de fonte do <verify> confirmadas. Commits: c834a93 (Task 1), cb264b9 (Task 2). Task 3 (checkpoint:human-verify, gate=blocking) pendente -- requer prova em producao (SQL Editor) da cascata pagamento->taxa.
 
 ### Pending Todos
 
@@ -130,6 +132,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - **Produção com dados reais.** ~46 imóveis em uso; a migração da Phase 4 precisa ser aditiva e retrocompatível — nada de coluna apagada, nada de `ativo` nulo.
 - ~~Correção da aba desatualizada (`buscarParcelasRelatorioAction`) sem confirmação funcional em produção~~ — resolvido, em uso contínuo em produção desde então sem novos relatos.
 - ~~27 parcelas órfãs já existem em produção (2 contratos de teste, "A" e "outro")~~ — resolvido pelo plano 09-02, BLOCO 3 confirmou zero órfãs restantes (2026-08-21).
+- Plano 14-04 Task 3 (checkpoint:human-verify, gate=blocking) pendente: operador precisa confirmar em producao (SQL Editor + navegador) que a taxa aparece no historico unificado, pode ser cancelada isoladamente sem afetar o status da parcela, e que cancelar o pagamento que gerou a taxa remove-a via cascata de banco (on delete cascade).
 
 ### Roadmap Evolution
 
@@ -155,6 +158,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-26T14:43:31.563Z
-Stopped at: Completed 14-01-PLAN.md
-Resume file: None
+Last session: 2026-08-26T15:32:51.664Z
+Stopped at: Completed 14-04-PLAN.md Tasks 1-2; Task 3 (checkpoint:human-verify, gate=blocking) pendente
+Resume file: .planning/phases/14-cancelamento-de-taxas-e-cau-o/14-04-PLAN.md
