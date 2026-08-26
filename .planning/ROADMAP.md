@@ -360,7 +360,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 12. Cancelamento de ajustes | 1/1 | Complete | 2026-08-22 |
 | 13. Dinheiro da imobiliária | 7/7 | Complete | 2026-08-25 |
 | 14. Cancelamento de taxas e caução | 5/5 | Complete | 2026-08-26 |
-| 15. Exclusão de card com destrava e paginação | 0/TBD | Not Started | - |
+| 15. Exclusão de card com destrava e paginação | 0/6 | Planned | - |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13 e 14 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário; Phase 12: capacidade nova pedida pelo usuário; Phase 13: capacidade nova pedida pelo usuário; Phase 14: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.
 
@@ -369,8 +369,13 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 **Goal:** Um card com histórico de destrava (mas sem parcela conciliada) pode ser excluído de verdade, e um lançamento de destrava pode ser cancelado individualmente como qualquer outro; e as seis listagens fora do Board (Financeiro, Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) ganham paginação de no máximo 10 itens por página
 **Requirements**: CANDEST-01, CANDEST-02, CANDEST-03, PAGIN-01, PAGIN-02, PAGIN-03 (trabalho pós-milestone — ver 15-CONTEXT.md)
 **Depends on:** Phase 14
-**Plans:** 0 plans
+**Plans:** 6 plans
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 15 to break down)
+- [ ] 15-01-PLAN.md — Migração — relaxar `impedir_exclusao_de_card_com_lancamento()` para excluir `destrava` do predicado de bloqueio, + runbook de ensaio
+- [ ] 15-02-PLAN.md — Cancelar lançamento `destrava` (widen do allowlist de `cancelarLancamentoAction` + botão no histórico) e correção de `docs/data-model.md`
+- [ ] 15-03-PLAN.md — Componente `Pagination`/`usePagination` + paginação da lista de parcelas do Financeiro (tracer)
+- [ ] 15-04-PLAN.md — Ensaiar a migração de relaxamento contra produção (transação revertida) e registrar o resultado
+- [ ] 15-05-PLAN.md — Paginação das cinco listagens restantes (contratos, relatório financeiro dedicado, relatório da imobiliária, configuração financeira, arquivados)
+- [ ] 15-06-PLAN.md — Aplicar a migração em produção (checkpoint de decisão), relaxar `cardTemLancamento` no app, documentar, e confirmar CANDEST-01/02/03 em produção
