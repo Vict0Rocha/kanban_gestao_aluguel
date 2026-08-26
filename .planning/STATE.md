@@ -5,15 +5,15 @@ milestone_name: Módulo Financeiro
 current_phase: 14
 current_phase_name: cancelamento-de-taxas-e-cau-o
 status: executing
-stopped_at: Completed 14-01-PLAN.md
+stopped_at: Plano 14-01 executado — migração + runbook escritos, nada aplicado em produção
 last_updated: "2026-08-26T14:43:31.629Z"
 last_activity: 2026-08-26
-last_activity_desc: "Discuss-phase da Phase 14 concluído. Decisões-chave (14-CONTEXT.md): taxa entra na mesma lista cronológica do histórico da parcela (não seção separada), com botão Cancelar próprio bloqueado por parcela conciliada (mesma trava de CONCIL-02); cancelar um pagamento (CANPAG) cancela automaticamente a taxa vinculada a ele — achado real durante a análise: taxas_imobiliaria só guarda parcela_id, não qual lançamento a gerou, então hoje uma taxa sobrevive ao cancelamento do pagamento que a originou — usuário confirmou 'fica junto automaticamente', exigindo uma coluna nova de ligação (migração aditiva); histórico de caução ganha cancelamento só do evento mais recente, aplicado sequencialmente (cancelar o topo libera o novo topo, nunca um evento do meio); mesmo diálogo de confirmação simples já usado (CancelarLancamentoDialog) para os dois casos. Requirements CANIMOB-01..05 criados. Próximo: /gsd-plan-phase 14."
+last_activity_desc: "Plano 14-01 executado (worktree agent-a86fb281d2312c106, merge no main): migração aditiva supabase/migrations/20260826000000_taxas_imobiliaria_lancamento_id.sql (coluna lancamento_id nullable, FK para parcela_lancamentos.id com on delete cascade, mais índice) + runbook supabase/verificacao_taxas_imobiliaria_lancamento_id.sql. O runbook prova a cascata de verdade dentro de uma transação revertida: cria card/parcela/lançamento/taxa de teste, apaga o lançamento, confirma via raise exception/raise notice que a taxa some junto. Nada foi aplicado em produção ainda — isso acontece no plano 14-03, atrás de um checkpoint:decision. Próximo: plano 14-02 (ensaiar contra produção real, dentro de begin;...rollback;)."
 progress:
-  total_phases: 13
-  completed_phases: 12
-  total_plans: 43
-  completed_plans: 39
+  total_phases: 14
+  completed_phases: 13
+  total_plans: 44
+  completed_plans: 40
   percent: 91
 ---
 
@@ -32,7 +32,7 @@ Phase: 14 (cancelamento-de-taxas-e-cau-o) — EXECUTING
 Status: Plano 14-01 concluído (migração aditiva + runbook de ensaio, nada aplicado em produção); 14-02 a 14-05 pendentes
 Last activity: 2026-08-26 — Plano 14-01 executado (worktree agent-a86fb281d2312c106)
 
-**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13. A numeração continua da v1.0 (Phases 1-3), não reinicia.
+**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
 ## Performance Metrics
 
