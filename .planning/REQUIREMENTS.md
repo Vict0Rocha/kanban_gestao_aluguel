@@ -125,6 +125,19 @@ Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuár
 - [x] **IMOB-04**: Existe uma forma de registrar o recebimento da caução de um contrato, e depois devolvê-la ou registrar seu uso, como ações separadas ligadas ao contrato, com histórico de cada evento (nunca uma edição) — confirmado em produção
 - [x] **IMOB-05**: Existe um relatório/área mostrando o total recebido pela imobiliária (taxas de administração + comissão de primeiro aluguel + movimento de caução) num período, para conferência contra o extrato bancário — confirmado em produção
 
+### CANIMOB — Cancelamento de taxas e caução (pós-milestone, Phase 14)
+
+Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário logo após a Phase 13
+fechar. Reabre pontualmente D-04 (isolamento estrutural taxa/parcela) e D-06 (caução append-only) da
+Phase 13, sem desfazer o isolamento em si. Decisões registradas em
+`.planning/phases/14-cancelamento-de-taxas-e-cau-o/14-CONTEXT.md`.
+
+- [ ] **CANIMOB-01**: A taxa da imobiliária aparece no histórico de lançamentos da parcela (`ParcelaHistoricoSheet`), na mesma lista cronológica que pagamento/acréscimo/desconto, com um rótulo indicando a origem (Administração / Comissão 1º aluguel)
+- [ ] **CANIMOB-02**: Cada taxa no histórico tem seu próprio botão "Cancelar" (mesmo diálogo de confirmação simples já usado para pagamento/acréscimo/desconto), bloqueado quando a parcela está conciliada (mesma trava de CONCIL-02)
+- [ ] **CANIMOB-03**: Cancelar um lançamento `tipo="pagamento"` (CANPAG) cancela automaticamente a taxa vinculada àquele pagamento específico, em vez de deixá-la órfã
+- [ ] **CANIMOB-04**: No histórico de caução, existe um botão "Cancelar" apenas no evento mais recente; cancelar o mais recente libera o cancelamento do evento que ficou no topo, permitindo desfazer o ciclo inteiro sequencialmente — nunca um cancelamento de evento do meio da linha do tempo
+- [ ] **CANIMOB-05**: O diálogo de confirmação de cancelamento de taxa/caução segue o mesmo padrão já existente (sem motivo obrigatório, DELETE real, aviso de que não pode ser desfeito)
+
 ## Carried over from v1.0
 
 Requisito não concluído na v1.0, mantido visível para não se perder. **Não faz parte do escopo de fases da v2.0** — é uma ação de painel, não trabalho de código, adiada por escolha do usuário.
@@ -236,12 +249,17 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | IMOB-03 | Phase 13 | Confirmado em produção |
 | IMOB-04 | Phase 13 | Confirmado em produção |
 | IMOB-05 | Phase 13 | Confirmado em produção |
+| CANIMOB-01 | Phase 14 | Pendente |
+| CANIMOB-02 | Phase 14 | Pendente |
+| CANIMOB-03 | Phase 14 | Pendente |
+| CANIMOB-04 | Phase 14 | Pendente |
+| CANIMOB-05 | Phase 14 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
 - Mapped to phases: 39
 - Unmapped: 0
-- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04) e Phase 13 (IMOB-01..05) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU` e `### IMOB` acima
+- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05) e Phase 14 (CANIMOB-01..05) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB` e `### CANIMOB` acima
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 - VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 

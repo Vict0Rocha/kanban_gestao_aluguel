@@ -318,9 +318,17 @@ Plans:
 
 ### Phase 14: Cancelamento de taxas e caução
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** A taxa da imobiliária aparece no histórico da parcela e pode ser cancelada (individualmente ou junto com o pagamento que a gerou), e o histórico de caução pode ser desfeito sequencialmente a partir do evento mais recente
+**Requirements**: CANIMOB-01, CANIMOB-02, CANIMOB-03, CANIMOB-04, CANIMOB-05 (trabalho pós-milestone — ver 14-CONTEXT.md)
 **Depends on:** Phase 13
+**Success Criteria** (what must be TRUE):
+
+  1. A taxa da imobiliária aparece no histórico de lançamentos da parcela, na mesma lista cronológica que pagamento/acréscimo/desconto, com rótulo de origem
+  2. Cada taxa tem seu próprio botão "Cancelar" (mesmo diálogo simples já usado), bloqueado quando a parcela está conciliada
+  3. Cancelar um pagamento cancela automaticamente a taxa vinculada a ele, em vez de deixá-la órfã
+  4. No histórico de caução, só o evento mais recente pode ser cancelado por vez, liberando o anterior a cada cancelamento
+  5. O diálogo de confirmação de cancelamento de taxa/caução segue o mesmo padrão já existente (sem motivo obrigatório)
+
 **Plans:** 0 plans
 
 Plans:
