@@ -3,6 +3,7 @@ import type { AlertStatus, AlertType } from "./alerts"
 import {
   ajustarParcelaAction,
   arquivarCardAction,
+  cancelarEventoCaucaoAction,
   cancelarLancamentoAction,
   cancelarTaxaImobiliariaAction,
   cardTemLancamentoAction,
@@ -178,4 +179,8 @@ export async function registrarEventoCaucao(
   return unwrap(
     registrarEventoCaucaoAction(cardId, tipo, valor, data, observacao)
   )
+}
+
+export async function cancelarEventoCaucao(cardId: string, eventoId: string) {
+  return unwrap(cancelarEventoCaucaoAction(cardId, eventoId))
 }

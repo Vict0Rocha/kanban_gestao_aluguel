@@ -4,7 +4,11 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
-import { cancelarLancamento, cancelarTaxaImobiliaria } from "@/lib/kanban/queries"
+import {
+  cancelarEventoCaucao,
+  cancelarLancamento,
+  cancelarTaxaImobiliaria,
+} from "@/lib/kanban/queries"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,7 +49,7 @@ export function CancelarLancamentoDialog({
   parentId: string
   itemId: string
   rotulo: string
-  acao: "lancamento" | "taxa"
+  acao: "lancamento" | "taxa" | "caucao"
   valor: number
   data: string
   open: boolean
@@ -75,6 +79,8 @@ export function CancelarLancamentoDialog({
     try {
       if (acao === "taxa") {
         await cancelarTaxaImobiliaria(parentId, itemId)
+      } else if (acao === "caucao") {
+        await cancelarEventoCaucao(parentId, itemId)
       } else {
         await cancelarLancamento(parentId, itemId)
       }
@@ -93,7 +99,9 @@ export function CancelarLancamentoDialog({
   const descricaoEfeito =
     acao === "taxa"
       ? "A taxa é apagada e não afeta o valor devido nem o status da parcela."
-      : "O lançamento é apagado e o status da parcela é recalculado a partir do que sobrar."
+      : acao === "caucao"
+        ? "O evento de caução é apagado. Cancelar este evento libera o cancelamento do que ficou mais recente."
+        : "O lançamento é apagado e o status da parcela é recalculado a partir do que sobrar."
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
