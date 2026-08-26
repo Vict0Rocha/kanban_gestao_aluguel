@@ -39,7 +39,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 11: Cancelamento de pagamento** - Reverter uma parcela marcada como paga por engano, sem permitir nenhuma alteração numa parcela conciliada
 - [x] **Phase 12: Cancelamento de ajustes** - Cancelar acréscimo e desconto, mesmo padrão já usado para pagamento
 - [x] **Phase 13: Dinheiro da imobiliária** - Controlar o dinheiro que a própria imobiliária recebe (taxa de administração, primeiro aluguel, caução, taxas de gestão), separado da gestão do valor bruto do aluguel
-- [ ] **Phase 14: Cancelamento de taxas e caução** - Mostrar a taxa da imobiliária no histórico da parcela com opção de cancelar, e permitir cancelar eventos de caução
+- [x] **Phase 14: Cancelamento de taxas e caução** - Mostrar a taxa da imobiliária no histórico da parcela com opção de cancelar, e permitir cancelar eventos de caução
 
 ## Phase Details
 
@@ -326,10 +326,10 @@ Plans:
   1. ✓ A taxa da imobiliária aparece no histórico de lançamentos da parcela, na mesma lista cronológica que pagamento/acréscimo/desconto, com rótulo de origem — confirmado em produção
   2. ✓ Cada taxa tem seu próprio botão "Cancelar" (mesmo diálogo simples já usado), bloqueado quando a parcela está conciliada — confirmado em produção
   3. ✓ Cancelar um pagamento cancela automaticamente a taxa vinculada a ele, em vez de deixá-la órfã — cascata via `on delete cascade` confirmada em produção, ponta a ponta
-  4. No histórico de caução, só o evento mais recente pode ser cancelado por vez, liberando o anterior a cada cancelamento
-  5. O diálogo de confirmação de cancelamento de taxa/caução segue o mesmo padrão já existente (sem motivo obrigatório) — confirmado para taxa; falta caução (plano 14-05)
+  4. ✓ No histórico de caução, só o evento mais recente pode ser cancelado por vez, liberando o anterior a cada cancelamento — confirmado em produção (ciclo recebido→uso→devolução, cancelado sequencialmente a partir do topo três vezes)
+  5. ✓ O diálogo de confirmação de cancelamento de taxa/caução segue o mesmo padrão já existente (sem motivo obrigatório) — confirmado em produção para taxa e caução
 
-**Plans:** 1/5 plans executed
+**Plans:** 5/5 plans executed
 
 Plans:
 
@@ -337,7 +337,7 @@ Plans:
 - [x] 14-02-PLAN.md — Ensaiar a migração no SQL Editor de produção — na prática, o pooling de conexão transformou o ensaio em push real (ver 14-02-SUMMARY.md), aceito pelo usuário
 - [x] 14-03-PLAN.md — Aplicar em produção (checkpoint de decisão, retroativamente confirmado), conferir e documentar em `docs/data-model.md`
 - [x] 14-04-PLAN.md — Fatia vertical: taxa no histórico da parcela, cancelamento isolado e cascata pagamento→taxa
-- [ ] 14-05-PLAN.md — Cancelamento sequencial de caução (evento mais recente), docs finais e verificação de toda a fase
+- [x] 14-05-PLAN.md — Cancelamento sequencial de caução (evento mais recente), docs finais e verificação de toda a fase
 
 ## Progress
 
@@ -358,6 +358,6 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 11. Cancelamento de pagamento | 1/1 | Complete | 2026-08-21 |
 | 12. Cancelamento de ajustes | 1/1 | Complete | 2026-08-22 |
 | 13. Dinheiro da imobiliária | 7/7 | Complete | 2026-08-25 |
-| 14. Cancelamento de taxas e caução | 4/5 | In Progress | - |
+| 14. Cancelamento de taxas e caução | 5/5 | Complete | 2026-08-26 |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13 e 14 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário; Phase 12: capacidade nova pedida pelo usuário; Phase 13: capacidade nova pedida pelo usuário; Phase 14: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § INTEG.

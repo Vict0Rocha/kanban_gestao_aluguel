@@ -35,11 +35,11 @@ key-files:
 
 key-decisions:
   - "Task 2 (documentar em docs/data-model.md) já estava integralmente satisfeita por um commit anterior (b9fa668, docs 14-02/14-03) — o planner do plano 14-03 antecipou a bullet 'Cancelamento de taxa e de caução (D-02/D-04/D-05, Phase 14)' inteira, cobrindo as três operações (taxa isolada, cascata, caução sequencial) e o ponteiro na bullet de caução (Phase 13), byte a byte igual ao que a Task 2 deste plano pedia. Nenhuma mudança de código foi necessária — só verificação (grep + leitura) de que todas as acceptance criteria já estavam cumpridas."
-  - "Seguir o mesmo padrão usado em 14-03-SUMMARY.md/14-04-SUMMARY.md (versão pré-confirmação) para este cenário (checkpoint blocking pendente): status: halted no frontmatter e requirements-completed: [], já que a confirmação em produção (Task 3) é o que efetivamente fecha CANIMOB-04/05 para este plano e para a Phase 14 inteira (última fase pendente)"
+  - "Task 3 (checkpoint:human-verify, gate=blocking) confirmada pelo usuário em produção: 'Fiz os testes, tudo funcionou como o esperado' — ciclo sequencial completo (recebido → uso → devolução) cancelado a partir do topo três vezes, confirmando que só o evento mais recente mostra 'Cancelar' a cada passo. Fecha CANIMOB-04/05 e, por ser o último plano pendente, fecha a Phase 14 inteira (CANIMOB-01 a CANIMOB-05, 5/5 critérios de sucesso do ROADMAP)."
 
 patterns-established: []
 
-requirements-completed: []
+requirements-completed: [CANIMOB-04, CANIMOB-05]
 
 coverage:
   - id: D1
@@ -49,8 +49,11 @@ coverage:
       - kind: other
         ref: "npm run lint && npm run build (código 0) + asserções de fonte do <verify> da Task 1: order by criado_em desc limit 1, maisRecente.id !== eventoId, dois .eq(), ausência de parcela_lancamentos/taxas_imobiliaria no corpo, eventos.map((evento, index) com index === eventos.length - 1 (nunca index === 0) — todas passaram"
         status: pass
+      - kind: manual_procedural
+        ref: "Task 3 (checkpoint:human-verify) — operador confirmou em produção: ciclo recebido → uso → devolução cancelado sequencialmente a partir do topo, três vezes, só o evento mais recente mostrando 'Cancelar' a cada passo"
+        status: pass
     human_judgment: true
-    rationale: "O ciclo sequencial completo (recebido → uso → devolução, cancelar a partir do topo três vezes, nunca um evento do meio) e a reflexão no relatório de reconciliação só são prováveis em produção real — Task 3 (checkpoint:human-verify, gate=blocking), ainda não executada."
+    rationale: "Confirmado em produção pelo usuário — 'Fiz os testes, tudo funcionou como o esperado.'"
   - id: D2
     description: "CancelarLancamentoDialog reusado (acao=\"caucao\") para a confirmação de cancelamento de caução — mesmo padrão sem motivo obrigatório, DELETE real, já usado para lançamento e taxa; fecha CANIMOB-05 (os três domínios no mesmo componente)"
     requirement: CANIMOB-05
@@ -58,8 +61,11 @@ coverage:
       - kind: other
         ref: "asserções de fonte: acao: \"lancamento\" | \"taxa\" | \"caucao\" no union, branch acao === \"caucao\" despachando cancelarEventoCaucao(parentId, itemId), descricaoEfeito com o terceiro caso — todas passaram"
         status: pass
+      - kind: manual_procedural
+        ref: "Task 3 (checkpoint:human-verify) — operador confirmou o diálogo em produção, junto com o ciclo sequencial completo"
+        status: pass
     human_judgment: true
-    rationale: "Confirmação visual do diálogo (rótulo 'Caução · Devolvida', ausência de campo de motivo) em produção é o Passo 2/4 da Task 3, ainda pendente."
+    rationale: "Confirmado em produção pelo usuário — 'Fiz os testes, tudo funcionou como o esperado.'"
   - id: D3
     description: "docs/data-model.md documenta o mecanismo de cancelamento de taxa e de caução desta fase, sem contradizer a bullet de caução da Phase 13"
     verification:
@@ -68,20 +74,20 @@ coverage:
         status: pass
     human_judgment: false
 
-duration: ~25min (Tasks 1-2; Task 3 pendente)
+duration: ~25min (Tasks 1-2) + verificação em produção
 completed: 2026-08-26
-status: halted
+status: complete
 ---
 
 # Phase 14 Plan 05: Cancelar evento de caução mais recente Summary
 
-**O histórico de caução ganha um botão "Cancelar" restrito ao evento mais recente (`eventos[eventos.length - 1]`, ordem ascendente) — cancelar o topo libera o que sobrou no novo topo, permitindo desfazer o ciclo inteiro (recebido → uso → devolução) sequencialmente. `CancelarLancamentoDialog` agora cobre os três domínios (`lancamento`/`taxa`/`caucao`), fechando CANIMOB-05. Tasks 1-2 completas; Task 3 (prova em produção, última verificação da Phase 14 inteira) aguardando o operador.**
+**O histórico de caução ganha um botão "Cancelar" restrito ao evento mais recente (`eventos[eventos.length - 1]`, ordem ascendente) — cancelar o topo libera o que sobrou no novo topo, permitindo desfazer o ciclo inteiro (recebido → uso → devolução) sequencialmente. `CancelarLancamentoDialog` agora cobre os três domínios (`lancamento`/`taxa`/`caucao`), fechando CANIMOB-05. Confirmado em produção pelo usuário — fecha a Phase 14 inteira.**
 
 ## Performance
 
-- **Duration:** ~25 min (Tasks 1-2)
+- **Duration:** ~25 min (Tasks 1-2) + verificação em produção
 - **Completed:** 2026-08-26
-- **Tasks:** 2/3 (Task 3 bloqueada em `checkpoint:human-verify`, `gate="blocking"`)
+- **Tasks:** 3/3
 - **Files modified:** 4
 
 ## Accomplishments
@@ -133,18 +139,12 @@ Task 1 segue literalmente as seções `<action>` do plano — nenhum Rule 1-4 di
 
 ## User Setup Required
 
-**Task 3 pendente** — o operador precisa confirmar em produção (ver `<how-to-verify>`/`<acceptance_criteria>` da Task 3 no `14-05-PLAN.md`):
-1. Registrar 3 eventos de caução num contrato de teste (recebido R$1.000, uso parcial R$300, devolução R$700) e confirmar que **só o último** (devolução) mostra "Cancelar"
-2. Cancelar sequencialmente a partir do topo — devolução, depois uso, depois recebido — confirmando que cada cancelamento libera o novo topo, até a lista esvaziar
-3. Confirmar que nenhum evento do meio mostra "Cancelar" enquanto o topo existir
-4. Reconfirmar rapidamente CANIMOB-01/02/03 (já confirmados nos planos 14-03/14-04) — fecha os 5 critérios de sucesso do ROADMAP da Phase 14
-5. Confirmar que `/relatorios/imobiliaria` reflete os cancelamentos automaticamente, sem código novo
+None — Task 3 confirmada pelo usuário em produção ("Fiz os testes, tudo funcionou como o esperado"): ciclo recebido → uso → devolução, cancelado sequencialmente a partir do topo, só o evento mais recente mostrando "Cancelar" a cada passo.
 
 ## Next Phase Readiness
 
-- O código de Task 1 está pronto e verificado (lint+build limpos, todas as asserções de fonte do plano passaram, incluindo a checagem de índice `eventos.length - 1` vs `index === 0`) — só falta a prova em produção da Task 3
-- Task 2 (documentação) confirmada satisfeita, sem ação necessária
-- Esta é a última fase pendente do Módulo Financeiro (Phase 14) — a Task 3 deste plano fecha não só CANIMOB-04/05 mas os 5 critérios de sucesso do ROADMAP da fase inteira
+- Plano completo: código, documentação e confirmação em produção — nenhuma pendência
+- Esta era a última fase pendente do Módulo Financeiro — a confirmação desta Task 3 fecha CANIMOB-04/05 e os 5 critérios de sucesso do ROADMAP da Phase 14 inteira
 
 ## Self-Check: PASSED
 
@@ -157,4 +157,4 @@ Task 1 segue literalmente as seções `<action>` do plano — nenhum Rule 1-4 di
 
 ---
 *Phase: 14-cancelamento-de-taxas-e-cau-o*
-*Completed (Tasks 1-2 only): 2026-08-26*
+*Completed: 2026-08-26*

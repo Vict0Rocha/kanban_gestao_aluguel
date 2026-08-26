@@ -135,8 +135,8 @@ Phase 13, sem desfazer o isolamento em si. Decisões registradas em
 - [x] **CANIMOB-01**: A taxa da imobiliária aparece no histórico de lançamentos da parcela (`ParcelaHistoricoSheet`), na mesma lista cronológica que pagamento/acréscimo/desconto, com um rótulo indicando a origem (Administração / Comissão 1º aluguel) — confirmado em produção
 - [x] **CANIMOB-02**: Cada taxa no histórico tem seu próprio botão "Cancelar" (mesmo diálogo de confirmação simples já usado para pagamento/acréscimo/desconto), bloqueado quando a parcela está conciliada (mesma trava de CONCIL-02) — confirmado em produção
 - [x] **CANIMOB-03**: Cancelar um lançamento `tipo="pagamento"` (CANPAG) cancela automaticamente a taxa vinculada àquele pagamento específico, em vez de deixá-la órfã — confirmado em produção, ponta a ponta via SQL
-- [ ] **CANIMOB-04**: No histórico de caução, existe um botão "Cancelar" apenas no evento mais recente; cancelar o mais recente libera o cancelamento do evento que ficou no topo, permitindo desfazer o ciclo inteiro sequencialmente — nunca um cancelamento de evento do meio da linha do tempo
-- [ ] **CANIMOB-05**: O diálogo de confirmação de cancelamento de taxa/caução segue o mesmo padrão já existente (sem motivo obrigatório, DELETE real, aviso de que não pode ser desfeito)
+- [x] **CANIMOB-04**: No histórico de caução, existe um botão "Cancelar" apenas no evento mais recente; cancelar o mais recente libera o cancelamento do evento que ficou no topo, permitindo desfazer o ciclo inteiro sequencialmente — nunca um cancelamento de evento do meio da linha do tempo — confirmado em produção
+- [x] **CANIMOB-05**: O diálogo de confirmação de cancelamento de taxa/caução segue o mesmo padrão já existente (sem motivo obrigatório, DELETE real, aviso de que não pode ser desfeito) — confirmado em produção
 
 ## Carried over from v1.0
 
@@ -252,8 +252,8 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | CANIMOB-01 | Phase 14 | Confirmado em produção |
 | CANIMOB-02 | Phase 14 | Confirmado em produção |
 | CANIMOB-03 | Phase 14 | Confirmado em produção |
-| CANIMOB-04 | Phase 14 | Pendente |
-| CANIMOB-05 | Phase 14 | Pendente |
+| CANIMOB-04 | Phase 14 | Confirmado em produção |
+| CANIMOB-05 | Phase 14 | Confirmado em produção |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5

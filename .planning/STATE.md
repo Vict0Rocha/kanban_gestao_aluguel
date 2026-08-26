@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 14
 current_phase_name: cancelamento-de-taxas-e-cau-o
-status: executing
-stopped_at: "Completed 14-05-PLAN.md Tasks 1-2; Task 3 (checkpoint:human-verify, gate=blocking) pendente — última verificação da Phase 14 inteira"
-last_updated: "2026-08-26T18:57:36.745Z"
+status: complete
+stopped_at: "Phase 14 encerrada — CANIMOB-01..05 confirmados em produção, incluindo o ciclo sequencial completo de cancelamento de caução"
+last_updated: "2026-08-26T19:30:00.000Z"
 last_activity: 2026-08-26
-last_activity_desc: "Plano 14-05 (Tasks 1-2) concluído em worktree isolado (agent-a058cbf215686f6e7). cancelarEventoCaucaoAction (nova, actions.ts): reconfirma no servidor (order by criado_em desc limit 1) que o eventoId é o mais recente antes do DELETE condicionado a dois .eq() — nunca toca parcela_lancamentos/taxas_imobiliaria. cancelarEventoCaucao (queries.ts) ao lado de registrarEventoCaucao. CancelarLancamentoDialog ampliado para acao: \"lancamento\" | \"taxa\" | \"caucao\", fechando CANIMOB-05 (os três domínios no mesmo componente). CaucaoHistoricoSheet: botão \"Cancelar\" só no último evento do array (ordem ascendente, index === eventos.length - 1, nunca index === 0 — Pitfall 3 de 14-RESEARCH.md). Task 2 (documentar em docs/data-model.md) já estava integralmente satisfeita por um commit anterior (b9fa668, plano 14-03) — verificado, nenhuma mudança necessária. npm run lint/build verdes (worktree precisou de npm install próprio), todas as asserções de fonte do <verify> confirmadas. Commit: d8dd721 (Task 1). Task 3 (checkpoint:human-verify, gate=blocking) pendente — requer prova em produção do ciclo sequencial completo de caução, última verificação pendente da Phase 14 inteira (CANIMOB-01..05 + os 5 critérios de sucesso do ROADMAP)."
+last_activity_desc: "Plano 14-05 (Task 3, checkpoint:human-verify) confirmado pelo usuário em produção: 'Fiz os testes, tudo funcionou como o esperado.' Ciclo recebido→uso→devolução cancelado sequencialmente a partir do topo três vezes, confirmando a cada passo que só o evento mais recente mostra 'Cancelar'. Fecha CANIMOB-04/05 e, por ser o último plano pendente, fecha a Phase 14 inteira (CANIMOB-01..05, 5/5 critérios de sucesso do ROADMAP). Com isso encerram as 14 fases planejadas do projeto."
 progress:
   total_phases: 14
-  completed_phases: 13
+  completed_phases: 14
   total_plans: 44
-  completed_plans: 43
-  percent: 98
+  completed_plans: 44
+  percent: 100
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Fase 14 (Cancelamento de taxas e caução) — código dos 5 planos completo; falta só a Task 3 do plano 14-05 (verificação em produção, fecha a fase inteira).
+**Current focus:** Nenhum — as 14 fases planejadas do projeto estão completas. Próximo trabalho depende do usuário voltar com feedback (ver `reconciliacao-imobiliaria-vai-ser-refinada.md` na memória).
 
 ## Current Position
 
-Phase: 14 (cancelamento-de-taxas-e-cau-o) — EXECUTING
-Status: Planos 14-01 a 14-05 completos no código; falta a Task 3 (checkpoint:human-verify, gate=blocking) do plano 14-05 — ciclo sequencial de caução + os 5 critérios de sucesso do ROADMAP
-Last activity: 2026-08-26 — Plano 14-05 Tasks 1-2 concluídas (worktree isolado)
+Phase: 14 (cancelamento-de-taxas-e-cau-o) — COMPLETE
+Status: Planos 14-01 a 14-05 completos, CANIMOB-01..05 confirmados em produção — Phase 14 encerrada, nenhuma fase pendente
+Last activity: 2026-08-26 — Plano 14-05 Task 3 confirmada em produção pelo usuário, fechando a Phase 14 e o projeto inteiro
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -86,6 +86,7 @@ Last activity: 2026-08-26 — Plano 14-05 Tasks 1-2 concluídas (worktree isolad
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-26: **Fase 14 encerrada — CANIMOB-01..05 confirmados em produção.** Plano 14-05 (Task 3, `checkpoint:human-verify`) fechou a fase: usuário registrou o ciclo completo de caução (recebido/uso/devolução) num contrato de teste e cancelou sequencialmente a partir do topo três vezes, confirmando a cada passo que só o evento mais recente exibe o botão "Cancelar" — nunca um do meio da linha do tempo. Reconfirmou também CANIMOB-01/02/03 (taxa no histórico unificado, cancelamento isolado, cascata pagamento→taxa via `on delete cascade`), já validados nos planos 14-03/14-04. `CancelarLancamentoDialog` termina a fase cobrindo os três domínios (`lancamento`/`taxa`/`caucao`) com o mesmo padrão de confirmação simples, sem motivo obrigatório. **Incidente notável da fase:** o plano 14-02 (ensaio da migração `taxas_imobiliaria.lancamento_id`) sofreu o mesmo problema de pooling de conexão do SQL Editor do Supabase já visto nas Phases 6.1/6.2 (D-19) — a transação de ensaio não ficou isolada e a migração foi aplicada de verdade em produção antes do checkpoint formal de decisão. Diagnosticado a tempo, confirmado correto por verificação consolidada (coluna nullable, índice, RLS, zero backfill, zero efeito colateral), e aceito retroativamente pelo usuário — mesmo tratamento dado ao precedente idêntico da Phase 6.1. **Com isso encerram as 14 fases planejadas do projeto inteiro** (v2.0 Módulo Financeiro completo + todo o trabalho pós-milestone: Phases 9-14). Não há fase nova planejada; o próximo trabalho conhecido é o usuário eventualmente pedir ajustes no relatório de reconciliação da Phase 13 depois de usá-lo na prática (aviso registrado, não pendência ativa).
 - 2026-08-25: **Fase 13 encerrada — IMOB-01..05 confirmados em produção.** Plano 13-07 (relatório de reconciliação "Dinheiro da imobiliária") fechou a fase: rota `/relatorios/imobiliaria`, alcançada por um segundo botão em `/relatorios` ao lado do já existente (mesmo peso visual, nenhum destacado), com seis `StatTile` (Administração, Comissão 1º aluguel, Total recebido no período, Caução recebida, devolvida, usada) e uma lista unificada de eventos de `taxas_imobiliaria`+`caucao_eventos`, ordenada DESCENDENTE por data (divergência deliberada da ordem ascendente do Relatório Financeiro dedicado — "acabei de receber o extrato, confiro as entradas mais recentes primeiro"). `calcularReconciliacao` (`reconciliacao.ts`, módulo puro espelhando `relatorio-financeiro.ts`) soma `totalRecebido` só com administração+comissão+caução recebida, excluindo deliberadamente devolvida/usada (comentado explicitamente no código — devolvida é saída de caixa, usada é reclassificação, nenhuma das duas é entrada nova) — confirmado por asserção de fonte e por conta manual do usuário em produção. Filtro de período ao vivo, em memória no cliente, sem round-trip ao servidor (D-01). Usuário testou em produção: os cinco totais individuais batendo com a soma SQL do mês testado, mês vazio zerando os seis tiles sem chamada de rede, lista em ordem correta com o tipo certo em cada linha. **Com isso encerram as 13 fases planejadas do projeto inteiro** (v2.0 Módulo Financeiro + todo o trabalho pós-milestone: Phases 9-13) — a ideia de dinheiro da imobiliária, adiada desde a Phase 10, está totalmente entregue. O usuário já avisou que vai querer refinar o relatório de reconciliação depois de usá-lo por um tempo (13-CONTEXT.md) — não é trabalho pendente, é um aviso para quando ele voltar com feedback de uso real.
 - 2026-08-25: **Plano 13-06 concluído e confirmado em produção.** Ciclo completo de caução (recebido/devolvido/usado) via `caucao_eventos` (append-only — `registrarEventoCaucaoAction` só implementa `.insert()`, verificado por asserção de fonte). Botão "Caução" na tela de Configuração financeira abre `CaucaoHistoricoSheet` em ordem cronológica ascendente, rodapé com 0/1/2 botões conforme `saldoCaucao()` (recebido − devolvido − usado, nunca coluna gravada). `RegistrarEventoCaucaoDialog` tipo-aware: campo Valor vazio para recebimento, pré-preenchido com o saldo para devolução/uso, sempre editável. Terceira tabela estruturalmente isolada de `parcela_lancamentos`/`taxas_imobiliaria` (D-04 estendido a caução) — `awk`/`grep` confirmaram zero referência cruzada. Backstop de exclusão do card (`cardTemLancamento`) ampliado desde o plano 13-04 agora exercitado com dado real. Usuário testou em produção: máquina de estados dos botões (0 evento → 1 botão, saldo > 0 → 2 botões, saldo de volta a 0 → 1 botão), ciclo completo recebido→uso parcial (R$300 de R$1.000)→devolução do restante (R$700) gerando três linhas distintas sem nenhuma edição, nenhuma tabela financeira além de `caucao_eventos` afetada, e a trava de exclusão do contrato de teste indicando movimentação financeira. IMOB-04 confirmado em produção. Falta só o plano 13-07 (relatório de reconciliação) para fechar a Phase 13.
 - 2026-08-22: **Fase 12 encerrada — CANAJU-01..04 confirmados em produção.** Usuário testou o botão "Cancelar" para acréscimo e desconto em `ParcelaHistoricoSheet`, confirmou que a composição Sheet+AlertDialog não quebra visualmente a partir dessas duas linhas novas (mesma composição verificada para pagamento na Phase 11), que `tipo='destrava'` nunca mostra o botão e que uma parcela conciliada não aceita cancelamento de nenhum tipo. Com isso encerram as 12 fases planejadas do projeto (v2.0 + trabalho pós-milestone) — a única pendência conhecida é a ideia adiada sobre dinheiro recebido pela própria imobiliária, ainda não discutida.
@@ -134,8 +135,8 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - **Produção com dados reais.** ~46 imóveis em uso; a migração da Phase 4 precisa ser aditiva e retrocompatível — nada de coluna apagada, nada de `ativo` nulo.
 - ~~Correção da aba desatualizada (`buscarParcelasRelatorioAction`) sem confirmação funcional em produção~~ — resolvido, em uso contínuo em produção desde então sem novos relatos.
 - ~~27 parcelas órfãs já existem em produção (2 contratos de teste, "A" e "outro")~~ — resolvido pelo plano 09-02, BLOCO 3 confirmou zero órfãs restantes (2026-08-21).
-- Plano 14-04 Task 3 (checkpoint:human-verify, gate=blocking) pendente: operador precisa confirmar em producao (SQL Editor + navegador) que a taxa aparece no historico unificado, pode ser cancelada isoladamente sem afetar o status da parcela, e que cancelar o pagamento que gerou a taxa remove-a via cascata de banco (on delete cascade).
-- **Plano 14-05 Task 3 (checkpoint:human-verify, gate=blocking) pendente — última verificação da Phase 14 inteira.** Operador precisa: (1) registrar 3 eventos de caução (recebido/uso/devolução) e confirmar que só o último mostra "Cancelar"; (2) cancelar sequencialmente a partir do topo até a lista esvaziar; (3) confirmar que nenhum evento do meio mostra "Cancelar" enquanto o topo existir; (4) reconfirmar CANIMOB-01/02/03 (já confirmados em 14-03/14-04); (5) confirmar que `/relatorios/imobiliaria` reflete os cancelamentos automaticamente. Ver `14-05-PLAN.md` Task 3 e `14-05-SUMMARY.md`.
+- ~~Plano 14-04 Task 3 (checkpoint:human-verify, gate=blocking) pendente~~ — resolvido, usuário confirmou CANIMOB-01..03 em produção (2026-08-26).
+- ~~Plano 14-05 Task 3 (checkpoint:human-verify, gate=blocking) pendente — última verificação da Phase 14 inteira~~ — resolvido, usuário confirmou o ciclo sequencial completo de caução e CANIMOB-04/05 em produção (2026-08-26). Fase 14 encerrada.
 
 ### Roadmap Evolution
 
@@ -161,6 +162,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-26T18:57:36.745Z
-Stopped at: Completed 14-05-PLAN.md Tasks 1-2; Task 3 (checkpoint:human-verify, gate=blocking) pendente — última verificação da Phase 14 inteira
-Resume file: .planning/phases/14-cancelamento-de-taxas-e-cau-o/14-05-PLAN.md
+Last session: 2026-08-26T19:30:00.000Z
+Stopped at: Phase 14 encerrada — CANIMOB-01..05 confirmados em produção. As 14 fases planejadas do projeto estão completas; nenhuma fase pendente.
+Resume file: nenhum — aguardando próximo pedido do usuário
