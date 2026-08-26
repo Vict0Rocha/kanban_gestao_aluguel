@@ -1632,6 +1632,68 @@ export async function registrarEventoCaucaoAction(
   return { ok: true, data: undefined }
 }
 
+/**
+ * CANIMOB-04/D-05 (14-CONTEXT.md): só o evento mais recente de caução pode
+ * ser cancelado por vez — cancelar o mais recente libera o que sobrou no
+ * novo topo, permitindo desfazer o ciclo inteiro sequencialmente, nunca um
+ * evento do meio. A checagem "sou eu o mais recente" é reconfirmada aqui,
+ * no servidor, a cada chamada — nunca confia que o botão só apareceu no
+ * evento certo na tela (mesmo princípio de toda trava financeira deste
+ * arquivo).
+ *
+ * Duas etapas (SELECT decide, DELETE confia na leitura recente por uma
+ * janela pequena) — mesmo padrão de `destravarParcelaAction` acima, que já
+ * documenta essa janela de corrida tolerada. Nunca toca
+ * `parcela_lancamentos`/`taxas_imobiliaria` — `caucao_eventos` continua uma
+ * terceira tabela isolada (D-06, 13-CONTEXT.md).
+ */
+export async function cancelarEventoCaucaoAction(
+  cardId: string,
+  eventoId: string
+): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(cardId, "Imóvel") ?? id(eventoId, "Evento de caução")
+  if (invalido) return { ok: false, error: invalido }
+
+  const { data: maisRecente, error: erroLeitura } = await sessao.supabase
+    .from("caucao_eventos")
+    .select("id")
+    .eq("card_id", cardId)
+    .order("criado_em", { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (erroLeitura || !maisRecente) {
+    console.error("cancelarEventoCaucao (leitura)", erroLeitura)
+    return { ok: false, error: erroDoBanco(erroLeitura?.code, "cancelar o evento de caução") }
+  }
+  if (maisRecente.id !== eventoId) {
+    return {
+      ok: false,
+      error: "Este não é mais o evento mais recente de caução — atualize a página.",
+    }
+  }
+
+  const { data, error } = await sessao.supabase
+    .from("caucao_eventos")
+    .delete()
+    .eq("id", eventoId)
+    .eq("card_id", cardId)
+    .select("id")
+
+  if (error) {
+    console.error("cancelarEventoCaucao (delete)", error)
+    return { ok: false, error: erroDoBanco(error.code, "cancelar o evento de caução") }
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: semLinhas("cancelar o evento de caução") }
+  }
+
+  return { ok: true, data: undefined }
+}
+
 // ------------------------------------------------------------------
 // Relatório financeiro
 // ------------------------------------------------------------------
