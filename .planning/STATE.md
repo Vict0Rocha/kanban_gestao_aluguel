@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 13
-current_phase_name: dinheiro-da-imobili-ria
-status: complete
-stopped_at: Phase 13 encerrada — IMOB-01..05 confirmados em produção
-last_updated: "2026-08-25T16:00:00.000Z"
+current_phase: 14
+current_phase_name: cancelamento-de-taxas-e-cau-o
+status: added
+stopped_at: Phase 14 adicionada — aguardando discuss-phase
+last_updated: "2026-08-25T17:00:00.000Z"
 last_activity: 2026-08-25
-last_activity_desc: "Plano 13-07 (último da fase) confirmado em produção pelo usuário: rota /relatorios/imobiliaria com seis tiles (Administração/Comissão 1º aluguel/Total recebido/Caução recebida/devolvida/usada) e lista unificada taxas+caução em ordem descendente por data, filtro de período ao vivo sem round-trip ao servidor. Os dois botões de entrada em /relatorios com mesmo peso visual, os cinco totais individuais batendo com a soma SQL do mês testado, 'Total recebido no período' excluindo devolvida/usada corretamente, mês vazio zerando os seis tiles sem chamada de rede, lista em ordem correta. IMOB-05 confirmado. Com isso encerram as 13 fases planejadas do projeto (v2.0 + trabalho pós-milestone) — IMOB-01 a IMOB-05 todos entregues e confirmados em produção."
+last_activity_desc: "Phase 14 adicionada ao roadmap: usuário pediu, logo após a Phase 13 fechar, que a taxa da imobiliária apareça no histórico de lançamentos da parcela (hoje invisível ali por D-04 de Phase 13) com opção de cancelar, e que eventos de caução também possam ser cancelados (hoje append-only por D-06 de Phase 13). Ambas reabrem decisões estruturais recém-tomadas — precisa de discuss-phase formal antes de planejar. Próximo: /gsd-discuss-phase 14."
 progress:
   total_phases: 13
   completed_phases: 13
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Nenhum — todas as 13 fases planejadas do projeto estão concluídas e confirmadas em produção. Aguardando próximo pedido do usuário.
+**Current focus:** Fase 14 (Cancelamento de taxas e caução) — recém-adicionada, aguardando discuss-phase.
 
 ## Current Position
 
-Phase: 13 (dinheiro-da-imobili-ria) — COMPLETE
-Status: 7/7 planos executados (13-01..13-07), todos confirmados em produção
-Last activity: 2026-08-25 — Phase 13 encerrada (IMOB-01..05 confirmados em produção)
+Phase: 14 (cancelamento-de-taxas-e-cau-o) — ADDED
+Status: Fase criada no roadmap, ainda sem CONTEXT.md/UI-SPEC/planos
+Last activity: 2026-08-25 — Phase 14 adicionada, pedido do usuário após a Phase 13 fechar
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -131,6 +131,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
 ### Roadmap Evolution
 
+- Phase 14 added: Cancelamento de taxas e caução — pedido do usuário logo após a Phase 13 fechar. Duas capacidades: (1) o histórico de lançamentos da parcela não mostra a taxa da imobiliária registrada junto com o pagamento (D-04, Phase 13, isolamento estrutural de `taxas_imobiliaria`), e o usuário quer vê-la ali e poder cancelá-la, igual ao que já existe para pagamento/acréscimo/desconto (Phases 11/12); (2) eventos de caução (`caucao_eventos`, append-only por decisão deliberada D-06 da Phase 13) também precisam de cancelamento. Ambas revisitam decisões estruturais recém-tomadas na Phase 13 — precisa de discuss-phase formal antes de planejar
 - Phase 06.1 inserted after Phase 6: Consulta financeira e geração por período — feedback do usuário após testar Phase 6 em produção (URGENT)
 - Phase 06.2 inserted after Phase 6.1: Feedback do usuario apos usar Phases 6/6.1 em producao: ativo nao escondia parcelas futuras, mudanca de datas do card nao refletia no Financeiro, e excluir card apagava historico financeiro em cascata sem trava (URGENT)
 - Phase 9 added: Integridade de datas do contrato nas parcelas — feedback do usuário testando a Phase 8 em produção; encontrou parcelas órfãs quando a data de um contrato encolhe. Reverte deliberadamente D-03 (docs/data-model.md)
