@@ -5,16 +5,16 @@ milestone_name: Módulo Financeiro
 current_phase: 14
 current_phase_name: cancelamento-de-taxas-e-cau-o
 status: executing
-stopped_at: "Completed 14-04-PLAN.md Tasks 1-2; Task 3 (checkpoint:human-verify, gate=blocking) pendente"
-last_updated: "2026-08-26T15:32:51.744Z"
+stopped_at: Planos 14-03 e 14-04 completos — confirmados em produção; falta o plano 14-05 (caução)
+last_updated: "2026-08-26T17:00:00.000Z"
 last_activity: 2026-08-26
-last_activity_desc: "Plano 14-04 (Tasks 1-2 de 3, worktree agent-a30e340107bf0bf54, merge no main): taxa da imobiliária passa a aparecer na mesma lista cronológica do histórico da parcela (LinhaHistoricoParcela, união discriminada por kind), com rótulo 'Taxa · Administração'/'Taxa · Comissão 1º aluguel' (TaxaOrigemBadge, promovido de dinheiro-imobiliaria-view.tsx para taxa-origem-label.tsx compartilhado) e botão Cancelar próprio (cancelarTaxaImobiliariaAction, sem recalcularEGravarStatus — D-04 de 13-CONTEXT.md intocado). registrarPagamentoAction agora grava lancamento_id no INSERT de taxas_imobiliaria, o que liga cancelarLancamentoAction (já existente) à cascata on delete cascade que remove a taxa junto quando o pagamento é cancelado (CANIMOB-03). CancelarLancamentoDialog generalizado de tipo:Extract<...> para parentId/itemId/rotulo/acao (\"lancamento\"|\"taxa\"). Falta a Task 3 (checkpoint:human-verify) confirmando em produção: taxa visível, cancelamento isolado, e a cascata pagamento→taxa observada por SQL. Migração taxas_imobiliaria.lancamento_id já aplicada em produção (via incidente de pooling no plano 14-02, aceito pelo usuário); falta também a Task 3 de 14-03 (regressão de Board/Financeiro/Relatórios), a ser feita junto com a verificação de 14-04."
+last_activity_desc: "Planos 14-03 e 14-04 confirmados em produção pelo usuário ('Fiz os teste e tudo se comportou como o esperado.'). 14-04: taxa da imobiliária aparece na mesma lista cronológica do histórico da parcela, rotulada (TaxaOrigemBadge), com botão Cancelar próprio (cancelarTaxaImobiliariaAction, sem recalcularEGravarStatus — D-04 de 13-CONTEXT.md intocado); registrarPagamentoAction grava lancamento_id, o que liga cancelarLancamentoAction (já existente) à cascata on delete cascade que remove a taxa junto quando o pagamento é cancelado — confirmado ponta a ponta por SQL (novo pagamento+taxa, lancamento_id conferido, pagamento cancelado, taxa sumiu). CancelarLancamentoDialog generalizado para parentId/itemId/rotulo/acao, pronto para caução. 14-03: regressão de Board/Financeiro/Relatórios confirmada sem quebra. CANIMOB-01/02/03 confirmados em produção; CANIMOB-05 parcialmente (lançamento+taxa), falta caução. Próximo: plano 14-05 (cancelamento sequencial de caução, evento mais recente)."
 progress:
   total_phases: 14
   completed_phases: 13
   total_plans: 44
-  completed_plans: 41
-  percent: 93
+  completed_plans: 43
+  percent: 98
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Fase 14 (Cancelamento de taxas e caução) — migração aplicada em produção (via incidente de pooling, aceita); falta a verificação de regressão (Task 3, 14-03) e os planos 14-04/14-05.
+**Current focus:** Fase 14 (Cancelamento de taxas e caução) — 4/5 planos confirmados em produção (migração, taxa no histórico, cancelamento isolado, cascata); falta só o plano 14-05 (caução).
 
 ## Current Position
 
 Phase: 14 (cancelamento-de-taxas-e-cau-o) — EXECUTING
-Status: Plano 14-04 Tasks 1-2 mescladas (taxa no histórico da parcela, cancelamento isolado, gravação de `lancamento_id`); falta Task 3 de 14-04 (checkpoint:human-verify, inclui confirmar a cascata pagamento→taxa e a regressão de Board/Financeiro/Relatórios pendente desde 14-03) e o plano 14-05
-Last activity: 2026-08-26 — Plano 14-04 Tasks 1-2 executadas e mescladas (worktree agent-a30e340107bf0bf54)
+Status: Planos 14-01 a 14-04 completos e confirmados em produção; falta o plano 14-05 (cancelamento sequencial de caução)
+Last activity: 2026-08-26 — Planos 14-03/14-04 confirmados em produção pelo usuário
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 

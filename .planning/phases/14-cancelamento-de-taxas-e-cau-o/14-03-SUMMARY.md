@@ -48,25 +48,25 @@ coverage:
     requirement: CANIMOB-03
     verification:
       - kind: manual_procedural
-        ref: "Task 3 (checkpoint:human-verify) — ainda não executada, aguardando o operador confirmar em produção"
-        status: unknown
+        ref: "Task 3 (checkpoint:human-verify) — operador confirmou em produção, junto com a verificação do plano 14-04 (mesmo conjunto de telas)"
+        status: pass
     human_judgment: true
-    rationale: "A regressão de Board/Financeiro/Relatórios só é confirmável testando contra o app real em produção — o checkpoint que faz essa verificação ainda não rodou."
+    rationale: "Confirmado em produção pelo usuário — 'Fiz os teste e tudo se comportou como o esperado.'"
 
-duration: ~10min (Tasks 1-2; Task 3 pendente)
+duration: ~10min (Tasks 1-2) + verificação em produção
 completed: 2026-08-26
-status: halted
+status: complete
 ---
 
 # Phase 14 Plan 03: Aplicar migração + documentar Summary
 
-**Task 1 (checkpoint:decision) e Task 2 (aplicação + documentação) resolvidas — a aplicação em si já tinha acontecido de fato durante o incidente de pooling do plano 14-02, aceita retroativamente pelo usuário. `docs/data-model.md` já documenta a coluna, a relação de cascata e a decisão. Falta só a Task 3 (checkpoint:human-verify confirmando que Board/Financeiro/Relatórios não regrediram) para fechar este plano.**
+**Task 1 (checkpoint:decision) e Task 2 (aplicação + documentação) resolvidas — a aplicação em si já tinha acontecido de fato durante o incidente de pooling do plano 14-02, aceita retroativamente pelo usuário. `docs/data-model.md` já documenta a coluna, a relação de cascata e a decisão. Task 3 confirmada pelo usuário em produção, junto com a verificação do plano 14-04.**
 
 ## Performance
 
-- **Duration:** ~10 min (Tasks 1-2; Task 3 aguardando o operador)
+- **Duration:** ~10 min (Tasks 1-2) + verificação em produção
 - **Completed:** 2026-08-26
-- **Tasks:** 2/3 (Task 3 bloqueada em verificação humana)
+- **Tasks:** 3/3
 - **Files modified:** 1 (`docs/data-model.md`)
 
 ## Accomplishments
@@ -105,16 +105,11 @@ Nenhum issue técnico nesta execução — o único evento fora do previsto (a a
 
 ## User Setup Required
 
-**Task 3 pendente** — o operador precisa confirmar em produção:
-1. `select` das Partes B do runbook (`supabase/verificacao_taxas_imobiliaria_lancamento_id.sql`, BLOCOs 4-6) — já confirmados informalmente durante o incidente do 14-02, mas vale rodar de novo isoladamente para o registro formal
-2. Board carrega com os mesmos contratos de antes, arrastar entre colunas continua funcionando
-3. Financeiro carrega, Pagamento/Ajustar/Histórico continuam abrindo e gravando
-4. `/relatorios/imobiliaria` carrega com os mesmos números de antes
+None - a confirmação em produção (Task 3) já foi feita pelo usuário, junto com a verificação do plano 14-04.
 
 ## Next Phase Readiness
 
-- A migração está aplicada e documentada — os planos 14-04/14-05 podem prosseguir sem bloqueio técnico
-- Falta a confirmação humana (Task 3) de que Board/Financeiro/Relatórios não regrediram — recomendado fechar isso junto com a verificação de produção do plano 14-04, já que ambas exigem abrir o mesmo conjunto de telas
+- Plano completo: migração aplicada, documentada, e confirmada em produção sem regressão em Board/Financeiro/Relatórios
 
 ## Self-Check: PASSED
 
@@ -122,4 +117,4 @@ Nenhum issue técnico nesta execução — o único evento fora do previsto (a a
 
 ---
 *Phase: 14-cancelamento-de-taxas-e-cau-o*
-*Completed (Tasks 1-2 only): 2026-08-26*
+*Completed: 2026-08-26*

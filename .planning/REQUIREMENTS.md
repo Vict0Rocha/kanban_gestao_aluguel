@@ -132,9 +132,9 @@ fechar. Reabre pontualmente D-04 (isolamento estrutural taxa/parcela) e D-06 (ca
 Phase 13, sem desfazer o isolamento em si. Decisões registradas em
 `.planning/phases/14-cancelamento-de-taxas-e-cau-o/14-CONTEXT.md`.
 
-- [ ] **CANIMOB-01**: A taxa da imobiliária aparece no histórico de lançamentos da parcela (`ParcelaHistoricoSheet`), na mesma lista cronológica que pagamento/acréscimo/desconto, com um rótulo indicando a origem (Administração / Comissão 1º aluguel)
-- [ ] **CANIMOB-02**: Cada taxa no histórico tem seu próprio botão "Cancelar" (mesmo diálogo de confirmação simples já usado para pagamento/acréscimo/desconto), bloqueado quando a parcela está conciliada (mesma trava de CONCIL-02)
-- [ ] **CANIMOB-03**: Cancelar um lançamento `tipo="pagamento"` (CANPAG) cancela automaticamente a taxa vinculada àquele pagamento específico, em vez de deixá-la órfã
+- [x] **CANIMOB-01**: A taxa da imobiliária aparece no histórico de lançamentos da parcela (`ParcelaHistoricoSheet`), na mesma lista cronológica que pagamento/acréscimo/desconto, com um rótulo indicando a origem (Administração / Comissão 1º aluguel) — confirmado em produção
+- [x] **CANIMOB-02**: Cada taxa no histórico tem seu próprio botão "Cancelar" (mesmo diálogo de confirmação simples já usado para pagamento/acréscimo/desconto), bloqueado quando a parcela está conciliada (mesma trava de CONCIL-02) — confirmado em produção
+- [x] **CANIMOB-03**: Cancelar um lançamento `tipo="pagamento"` (CANPAG) cancela automaticamente a taxa vinculada àquele pagamento específico, em vez de deixá-la órfã — confirmado em produção, ponta a ponta via SQL
 - [ ] **CANIMOB-04**: No histórico de caução, existe um botão "Cancelar" apenas no evento mais recente; cancelar o mais recente libera o cancelamento do evento que ficou no topo, permitindo desfazer o ciclo inteiro sequencialmente — nunca um cancelamento de evento do meio da linha do tempo
 - [ ] **CANIMOB-05**: O diálogo de confirmação de cancelamento de taxa/caução segue o mesmo padrão já existente (sem motivo obrigatório, DELETE real, aviso de que não pode ser desfeito)
 
@@ -249,9 +249,9 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | IMOB-03 | Phase 13 | Confirmado em produção |
 | IMOB-04 | Phase 13 | Confirmado em produção |
 | IMOB-05 | Phase 13 | Confirmado em produção |
-| CANIMOB-01 | Phase 14 | Pendente |
-| CANIMOB-02 | Phase 14 | Pendente |
-| CANIMOB-03 | Phase 14 | Pendente |
+| CANIMOB-01 | Phase 14 | Confirmado em produção |
+| CANIMOB-02 | Phase 14 | Confirmado em produção |
+| CANIMOB-03 | Phase 14 | Confirmado em produção |
 | CANIMOB-04 | Phase 14 | Pendente |
 | CANIMOB-05 | Phase 14 | Pendente |
 
