@@ -366,8 +366,8 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 
 ### Phase 15: Exclusão de card com destrava e paginação
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Um card com histórico de destrava (mas sem parcela conciliada) pode ser excluído de verdade, e um lançamento de destrava pode ser cancelado individualmente como qualquer outro; e as seis listagens fora do Board (Financeiro, Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) ganham paginação de no máximo 10 itens por página
+**Requirements**: TBD (ver 15-CONTEXT.md — capacidade nova pedida pelo usuário, pós-milestone)
 **Depends on:** Phase 14
 **Plans:** 0 plans
 
