@@ -8,13 +8,13 @@ status: executing
 stopped_at: "Completed 14-04-PLAN.md Tasks 1-2; Task 3 (checkpoint:human-verify, gate=blocking) pendente"
 last_updated: "2026-08-26T15:32:51.744Z"
 last_activity: 2026-08-26
-last_activity_desc: "Planos 14-02 e 14-03 (parcial): durante o ensaio do plano 14-02, o operador colou só a DDL da migração (sem o begin; amarrado no mesmo clique) — o SQL Editor tratou cada statement como autocommit, e a migração 20260826000000_taxas_imobiliaria_lancamento_id.sql foi aplicada e commitada de verdade em produção (mesmo tipo de incidente de pooling já visto na Fase 6.1). Verificado por consulta direta: coluna lancamento_id uuid/nullable/sem default, índice existe, RLS inalterada (1 policy), zero backfill, cards_total=60/cards_updated_at_max idênticos ao baseline anterior. Usuário confirmou explicitamente aceitar como aplicada em vez de desfazer. A cascata de exclusão em si (Prova 2.3) ainda não foi observada — isso fica para o checkpoint de produção do plano 14-04. docs/data-model.md já atualizado (Task 2 de 14-03) com a coluna, a relação de cascata e a bullet de decisão. Falta: Task 3 de 14-03 (checkpoint:human-verify de Board/Financeiro/Relatórios) e os planos 14-04/14-05."
+last_activity_desc: "Plano 14-04 (Tasks 1-2 de 3, worktree agent-a30e340107bf0bf54, merge no main): taxa da imobiliária passa a aparecer na mesma lista cronológica do histórico da parcela (LinhaHistoricoParcela, união discriminada por kind), com rótulo 'Taxa · Administração'/'Taxa · Comissão 1º aluguel' (TaxaOrigemBadge, promovido de dinheiro-imobiliaria-view.tsx para taxa-origem-label.tsx compartilhado) e botão Cancelar próprio (cancelarTaxaImobiliariaAction, sem recalcularEGravarStatus — D-04 de 13-CONTEXT.md intocado). registrarPagamentoAction agora grava lancamento_id no INSERT de taxas_imobiliaria, o que liga cancelarLancamentoAction (já existente) à cascata on delete cascade que remove a taxa junto quando o pagamento é cancelado (CANIMOB-03). CancelarLancamentoDialog generalizado de tipo:Extract<...> para parentId/itemId/rotulo/acao (\"lancamento\"|\"taxa\"). Falta a Task 3 (checkpoint:human-verify) confirmando em produção: taxa visível, cancelamento isolado, e a cascata pagamento→taxa observada por SQL. Migração taxas_imobiliaria.lancamento_id já aplicada em produção (via incidente de pooling no plano 14-02, aceito pelo usuário); falta também a Task 3 de 14-03 (regressão de Board/Financeiro/Relatórios), a ser feita junto com a verificação de 14-04."
 progress:
-  total_phases: 13
-  completed_phases: 12
-  total_plans: 43
-  completed_plans: 42
-  percent: 92
+  total_phases: 14
+  completed_phases: 13
+  total_plans: 44
+  completed_plans: 41
+  percent: 93
 ---
 
 # Project State
@@ -29,8 +29,8 @@ See: .planning/PROJECT.md (updated 2026-08-16)
 ## Current Position
 
 Phase: 14 (cancelamento-de-taxas-e-cau-o) — EXECUTING
-Status: Migração `taxas_imobiliaria.lancamento_id` já aplicada em produção (planos 14-02/14-03, Tasks 1-2); falta Task 3 de 14-03 (regressão) e os planos 14-04/14-05
-Last activity: 2026-08-26 — Migração aplicada por incidente de pooling, aceita pelo usuário, docs/data-model.md atualizado
+Status: Plano 14-04 Tasks 1-2 mescladas (taxa no histórico da parcela, cancelamento isolado, gravação de `lancamento_id`); falta Task 3 de 14-04 (checkpoint:human-verify, inclui confirmar a cascata pagamento→taxa e a regressão de Board/Financeiro/Relatórios pendente desde 14-03) e o plano 14-05
+Last activity: 2026-08-26 — Plano 14-04 Tasks 1-2 executadas e mescladas (worktree agent-a30e340107bf0bf54)
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 

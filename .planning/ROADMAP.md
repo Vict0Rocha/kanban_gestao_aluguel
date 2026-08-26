@@ -336,7 +336,7 @@ Plans:
 - [x] 14-01-PLAN.md — Migração aditiva `taxas_imobiliaria.lancamento_id` (FK cascade) + runbook de ensaio
 - [x] 14-02-PLAN.md — Ensaiar a migração no SQL Editor de produção — na prática, o pooling de conexão transformou o ensaio em push real (ver 14-02-SUMMARY.md), aceito pelo usuário
 - [ ] 14-03-PLAN.md — Aplicar em produção (checkpoint de decisão, retroativamente confirmado), conferir e documentar em `docs/data-model.md` — Tasks 1-2 concluídas, falta Task 3 (checkpoint:human-verify)
-- [ ] 14-04-PLAN.md — Fatia vertical: taxa no histórico da parcela, cancelamento isolado e cascata pagamento→taxa
+- [ ] 14-04-PLAN.md — Fatia vertical: taxa no histórico da parcela, cancelamento isolado e cascata pagamento→taxa — Tasks 1-2 concluídas, falta Task 3 (checkpoint:human-verify)
 - [ ] 14-05-PLAN.md — Cancelamento sequencial de caução (evento mais recente), docs finais e verificação de toda a fase
 
 ## Progress
