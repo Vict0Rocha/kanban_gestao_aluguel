@@ -41,7 +41,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 13: Dinheiro da imobiliária** - Controlar o dinheiro que a própria imobiliária recebe (taxa de administração, primeiro aluguel, caução, taxas de gestão), separado da gestão do valor bruto do aluguel
 - [x] **Phase 14: Cancelamento de taxas e caução** - Mostrar a taxa da imobiliária no histórico da parcela com opção de cancelar, e permitir cancelar eventos de caução
 - [x] **Phase 15: Exclusão de card com destrava e paginação** - Permitir excluir card/cancelar destrava mesmo com histórico de destrava (bloqueado só por conciliação travada), e adicionar paginação (12 itens) em Financeiro, Relatórios e Arquivados
-- [ ] **Phase 16: Reordenação em massa e arquivamento sem coluna** - Botão "Reordenar" no Board move todos os cards para uma coluna escolhida de uma vez; desarquivar sempre devolve o card à primeira coluna ativa, não à coluna antiga
+- [x] **Phase 16: Reordenação em massa e arquivamento sem coluna** - Botão "Reordenar" no Board move todos os cards para uma coluna escolhida de uma vez; desarquivar sempre devolve o card à primeira coluna ativa, não à coluna antiga
 
 ## Phase Details
 
@@ -362,7 +362,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 13. Dinheiro da imobiliária | 7/7 | Complete | 2026-08-25 |
 | 14. Cancelamento de taxas e caução | 5/5 | Complete | 2026-08-26 |
 | 15. Exclusão de card com destrava e paginação | 6/6 | Complete | 2026-08-27 |
-| 16. Reordenação em massa e arquivamento sem coluna | 0/4 | Planned | - |
+| 16. Reordenação em massa e arquivamento sem coluna | 4/4 | Complete | 2026-08-27 |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15 e 16 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-16: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL.
 
@@ -399,18 +399,18 @@ Plans:
 **Depends on:** Phase 15
 **Success Criteria** (what must be TRUE):
 
-  1. Existe um botão "Reordenar" ao lado do campo de busca no Board, que abre um popup listando as colunas existentes
-  2. Escolher uma coluna e confirmar move, numa única ação, todos os cards elegíveis — só os em destaque na busca, se houver busca ativa; todos os cards do board, se não houver — para a coluna escolhida
-  3. Depois do movimento em massa, a ordem dos cards na coluna de destino segue a ordem visual anterior (coluna → posição), com posições novas sequenciais
-  4. `cards.column_id` é nullable no banco; arquivar um card grava `column_id = null` junto com `arquivado_em` — inclusive para cards já arquivados antes desta fase (backfill)
-  5. Desarquivar sempre atribui a primeira coluna (menor `position`) do board, nunca a coluna anterior à qual o card estava vinculado
-  6. Excluir uma coluna nunca mais apaga em cascata um card arquivado sem histórico financeiro — fechado estruturalmente porque um `column_id` nulo nunca é alcançado por `on delete cascade` de `columns`
+  1. ✓ Existe um botão "Reordenar" ao lado do campo de busca no Board, que abre um popup listando as colunas existentes — confirmado em produção
+  2. ✓ Escolher uma coluna e confirmar move, numa única ação, todos os cards elegíveis — só os em destaque na busca, se houver busca ativa; todos os cards do board, se não houver — para a coluna escolhida — confirmado em produção
+  3. ✓ Depois do movimento em massa, a ordem dos cards na coluna de destino segue a ordem visual anterior (coluna → posição), com posições novas sequenciais — confirmado por leitura de código
+  4. ✓ `cards.column_id` é nullable no banco; arquivar um card grava `column_id = null` junto com `arquivado_em` — inclusive para cards já arquivados antes desta fase (backfill) — confirmado em produção
+  5. ✓ Desarquivar sempre atribui a primeira coluna (menor `position`) do board, nunca a coluna anterior à qual o card estava vinculado — confirmado em produção
+  6. ✓ Excluir uma coluna nunca mais apaga em cascata um card arquivado sem histórico financeiro — fechado estruturalmente porque um `column_id` nulo nunca é alcançado por `on delete cascade` de `columns` — confirmado em produção
 
 **Plans:** 4 plans
 
 Plans:
 
-- [ ] 16-01-PLAN.md — Migração aditiva: `cards.column_id` nullable + backfill dos cards já arquivados, com runbook de ensaio (wave 1)
-- [ ] 16-02-PLAN.md — Botão "Reordenar" ponta a ponta: Server Action em lote, diálogo de seleção de coluna, wiring no Board (wave 1, independente da migração)
-- [ ] 16-03-PLAN.md — Ensaiar a migração contra produção (transação revertida) e registrar o resultado (wave 2)
-- [ ] 16-04-PLAN.md — Aplicar a migração em produção (checkpoint de decisão), widenar `arquivarCardAction`/`desarquivarCardAction`, documentar, e confirmar ARQCOL-01/02/03 + REORD-01/02/03 em produção (wave 3)
+- [x] 16-01-PLAN.md — Migração aditiva: `cards.column_id` nullable + backfill dos cards já arquivados, com runbook de ensaio (wave 1)
+- [x] 16-02-PLAN.md — Botão "Reordenar" ponta a ponta: Server Action em lote, diálogo de seleção de coluna, wiring no Board (wave 1, independente da migração)
+- [x] 16-03-PLAN.md — Ensaiar a migração contra produção (transação revertida) e registrar o resultado (wave 2)
+- [x] 16-04-PLAN.md — Aplicar a migração em produção (checkpoint de decisão), widenar `arquivarCardAction`/`desarquivarCardAction`, documentar, e confirmar ARQCOL-01/02/03 + REORD-01/02/03 em produção (wave 3)

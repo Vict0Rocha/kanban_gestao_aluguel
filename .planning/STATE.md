@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 16
 current_phase_name: reordena-o-em-massa-e-arquivamento-sem-coluna
-status: planned
-stopped_at: "Phase 16 planejada (4 planos, 3 ondas) — pronta para /gsd-execute-phase 16"
-last_updated: "2026-08-27T02:00:00.000Z"
+status: complete
+stopped_at: "Phase 16 encerrada — REORD-01..03 e ARQCOL-01..03 confirmados em produção"
+last_updated: "2026-08-27T03:00:00.000Z"
 last_activity: 2026-08-27
-last_activity_desc: "Phase 16 pesquisada, mapeada e planejada. 16-RESEARCH.md (HIGH confidence) resolveu a lacuna central que o CONTEXT.md tinha deixado em aberto: como desarquivarCardAction acha 'a primeira coluna' depois que column_id já está nulo — resposta: o projeto tem um único board, resolvido a frio (sem id passado) pela mesma query em 3 arquivos (page.tsx/financeiro/relatorios); desarquivarCardAction reusa o mesmo idioma, sem precisar de um cards.board_id novo. Achado extra: cards já arquivados antes desta fase precisam de backfill de column_id=null na MESMA migração (Pitfall 1), senão continuam vulneráveis ao risco de cascade que a fase existe pra fechar. 16-PATTERNS.md: 7/7 analogs (2 compostos, sem precedente exato — bulk-write e dialog de seleção de lista são formas novas neste projeto). gsd-planner produziu 4 planos em 3 ondas: Wave 1 (16-01 migração+backfill+runbook, 16-02 botão Reordenar ponta a ponta, paralelos); Wave 2 (16-03 ensaio contra produção, depende de 16-01); Wave 3 (16-04 checkpoint:decision → aplicar → SÓ DEPOIS widenar arquivarCardAction/desarquivarCardAction → docs → checkpoint:human-verify, depende de 16-03). REORD-01..03/ARQCOL-01..03 adicionados a REQUIREMENTS.md e ao Requirements: do ROADMAP.md. Seção Success Criteria adicionada manualmente ao ROADMAP.md (ausente no template do planner, mesma lacuna da Phase 15). Commits: 60c2c77 (research), 2710756 (requirement IDs), 92daabe (plans), c2c20fc (pattern map)."
+last_activity_desc: "Phase 16 encerrada. Plano 16-04: migração aplicada em produção ('Success. No rows returned'), arquivarCardAction/desarquivarCardAction/types.ts widenados SÓ DEPOIS da confirmação (mesma disciplina banco-primeiro-app-depois das Phases 13-15), docs/data-model.md atualizado. Teste ponta a ponta confirmado pelo usuário: card arquivado sem coluna, desarquivar vai para a primeira coluna do board, card arquivado sobrevive à exclusão da coluna anterior, contrato com dinheiro real continua bloqueando exclusão de coluna (regressão negativa), botão Reordenar (plano 16-02) reconfirmado funcionando. Com isso encerram as 16 fases planejadas do projeto inteiro. **Achado novo levantado pelo usuário durante a verificação, fora do escopo desta fase:** excluir uma coluna com cards ATIVOS ainda apaga esses cards em cascata (on delete cascade de columns→cards, comportamento existente desde o schema inicial do projeto) — distinto do que a Phase 16 fechou (cards ARQUIVADOS sobrevivem). Usuário quer que excluir uma coluna com cards ativos só seja possível depois de move-los para outra coluna, nunca em cascata. Vira Phase 17."
 progress:
   total_phases: 16
-  completed_phases: 15
+  completed_phases: 16
   total_plans: 54
-  completed_plans: 50
-  percent: 93
+  completed_plans: 54
+  percent: 100
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 16 (Reordenação em massa e arquivamento sem coluna) — planejada (4 planos, 3 ondas), pronta para execução.
+**Current focus:** Nenhum — as 16 fases planejadas do projeto estão completas. Próximo trabalho: Phase 17 (excluir coluna com cards ativos deixa de fazer cascade), ainda não iniciada.
 
 ## Current Position
 
-Phase: 16 (reordenação-em-massa-e-arquivamento-sem-coluna) — PLANNED
-Status: 16-01 a 16-04-PLAN.md escritos; falta rodar /gsd-execute-phase 16
-Last activity: 2026-08-27 — research + pattern-mapping + planning da Phase 16 concluídos
+Phase: 16 (reordenação-em-massa-e-arquivamento-sem-coluna) — COMPLETE
+Status: Planos 16-01 a 16-04 completos, REORD-01..03/ARQCOL-01..03 confirmados em produção — Phase 16 encerrada
+Last activity: 2026-08-27 — usuário confirmou o teste ponta a ponta em produção, fechando a Phase 16; levantou um novo achado (cascade em coluna com cards ativos) que vira Phase 17
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -85,6 +85,8 @@ Last activity: 2026-08-27 — research + pattern-mapping + planning da Phase 16 
 ### Decisions
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
+
+- 2026-08-27: **Fase 16 encerrada — REORD-01..03 e ARQCOL-01..03 confirmados em produção.** Plano 16-04 fechou a metade de arquivamento: migração `20260827000000_arquivamento_sem_coluna` aplicada em produção via SQL Editor (`alter table cards alter column column_id drop not null` + backfill dos cards já arquivados, primeira migração deste projeto que relaxa uma constraint `not null` em vez de `create or replace function` sobre trigger), `arquivarCardAction`/`desarquivarCardAction`/`Card.column_id` widenados SÓ DEPOIS da confirmação de aplicação real — mesma disciplina banco-primeiro-app-depois já usada nas Phases 13/14/15. Ensaio (plano 16-03) e verificação pós-push confirmaram as quatro provas: constraint relaxada, backfill seletivo (nunca toca card ativo), e a prova central — um card arquivado com `column_id` nulo sobrevive à exclusão da coluna que apontava antes, contra o contraste de um card com `column_id` ainda vinculado sendo apagado em cascata. `desarquivarCardAction` resolve "o board" pela mesma consulta já usada em `page.tsx`/`financeiro/page.tsx`/`relatorios/page.tsx` (este projeto tem um único board), sem precisar de uma coluna `board_id` nova em `cards`. O botão "Reordenar" (plano 16-02, já em produção desde a Wave 1) foi reconfirmado funcionando depois da migração. Teste ponta a ponta em produção confirmado pelo usuário: "Fiz os teste e tudo se comportou como o esperado." **Achado real levantado pelo próprio usuário durante essa verificação, fora do escopo desta fase:** excluir uma coluna com cards ATIVOS (não arquivados) ainda apaga esses cards em cascata (`on delete cascade` de `columns → cards`, comportamento existente desde o schema inicial do projeto, `20260728000000_init_schema.sql` — nunca coberto por nenhuma fase anterior). O usuário quer que isso pare de acontecer: excluir uma coluna com cards ativos só deve ser possível depois de mover esses cards para outra coluna, nunca em cascata. Vira Phase 17, ainda não formalizada. **Com isso encerram as 16 fases planejadas do projeto inteiro** (v2.0 Módulo Financeiro completo + todo o trabalho pós-milestone: Phases 9-16).
 
 - 2026-08-27: **Fase 15 encerrada — CANDEST-01..03 e PAGIN-01..03 confirmados em produção.** Plano 15-06 fechou a metade destrava: migração `20260826010000_relaxar_exclusao_destrava` aplicada em produção via SQL Editor (`create or replace function` sobre `impedir_exclusao_de_card_com_lancamento`, terceira vez que este trigger muda por esse caminho — Phase 6.2 criou, Phase 13 ampliou, Phase 15 relaxou), `cardTemLancamento` (app) widenado SÓ DEPOIS da confirmação de aplicação real — nunca antes, pela mesma disciplina de "banco primeiro, app depois" já usada nas Phases 13/14 (Pitfall 1, 15-RESEARCH.md). Teste ponta a ponta em produção confirmado pelo usuário: card com histórico só-`destrava` excluído de verdade, lançamento `destrava` cancelado pelo histórico sem afetar status da parcela, contrato com pagamento real continuando bloqueado (regressão negativa). **Achado real durante essa mesma verificação:** a paginação (planos 15-03/15-05, já em produção) tinha um bug de UX genuíno — `/relatorios/financeiro` sem filtro (502 parcelas, 51 páginas de 10) mostrava os 51 números de página de uma vez, visualmente inviável; a estimativa de volume do CONTEXT.md (~46-48 registros/listagem) não previa uma tela sem nenhum filtro aplicado. Corrigido fora de plano formal, num único arquivo compartilhado (`web/src/components/pagination.tsx`, consumido pelas 6 listagens): janela de no máximo 5 números visíveis, um par de botões (`ChevronsLeft`/`ChevronsRight`) que desliza a janela sem trocar a página atual, um campo "Ir para" que aparece só quando há mais páginas que a janela mostra, e `TAMANHO_PAGINA` trocado de 10 para 12 a pedido explícito do usuário. `npx tsc --noEmit`/`npm run lint`/`npm run build` limpos; usuário confirmou visualmente em produção depois do deploy automático do Vercel: "Deu certo, ficou como eu imaginei". Ressalva honesta: o teste interativo específico de "editar/desarquivar um item fora da página 1 não reseta a página" nas duas telas sem filtro (Configuração financeira, Arquivados) não foi re-executado manualmente depois do fix — coberto por leitura de código (`resetKey` constante nas duas) e pelos mesmos `grep`/`tsc` que já passavam antes; risco baixo, o usuário optou explicitamente por não bloquear o fechamento da fase por esse item. **Com isso encerram as 15 fases planejadas do projeto inteiro** (v2.0 Módulo Financeiro completo + todo o trabalho pós-milestone: Phases 9-15). Não há fase nova planejada; o próximo trabalho conhecido é o usuário eventualmente pedir ajustes no relatório de reconciliação da Phase 13 depois de usá-lo na prática (aviso registrado, não pendência ativa).
 - 2026-08-26: **Fase 14 encerrada — CANIMOB-01..05 confirmados em produção.** Plano 14-05 (Task 3, `checkpoint:human-verify`) fechou a fase: usuário registrou o ciclo completo de caução (recebido/uso/devolução) num contrato de teste e cancelou sequencialmente a partir do topo três vezes, confirmando a cada passo que só o evento mais recente exibe o botão "Cancelar" — nunca um do meio da linha do tempo. Reconfirmou também CANIMOB-01/02/03 (taxa no histórico unificado, cancelamento isolado, cascata pagamento→taxa via `on delete cascade`), já validados nos planos 14-03/14-04. `CancelarLancamentoDialog` termina a fase cobrindo os três domínios (`lancamento`/`taxa`/`caucao`) com o mesmo padrão de confirmação simples, sem motivo obrigatório. **Incidente notável da fase:** o plano 14-02 (ensaio da migração `taxas_imobiliaria.lancamento_id`) sofreu o mesmo problema de pooling de conexão do SQL Editor do Supabase já visto nas Phases 6.1/6.2 (D-19) — a transação de ensaio não ficou isolada e a migração foi aplicada de verdade em produção antes do checkpoint formal de decisão. Diagnosticado a tempo, confirmado correto por verificação consolidada (coluna nullable, índice, RLS, zero backfill, zero efeito colateral), e aceito retroativamente pelo usuário — mesmo tratamento dado ao precedente idêntico da Phase 6.1. **Com isso encerram as 14 fases planejadas do projeto inteiro** (v2.0 Módulo Financeiro completo + todo o trabalho pós-milestone: Phases 9-14). Não há fase nova planejada; o próximo trabalho conhecido é o usuário eventualmente pedir ajustes no relatório de reconciliação da Phase 13 depois de usá-lo na prática (aviso registrado, não pendência ativa).
@@ -165,6 +167,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-27T00:00:00.000Z
-Stopped at: Phase 15 encerrada — CANDEST-01..03/PAGIN-01..03 confirmados em produção. As 15 fases planejadas do projeto estão completas; nenhuma fase pendente.
-Resume file: nenhum — aguardando próximo pedido do usuário
+Last session: 2026-08-27T03:00:00.000Z
+Stopped at: Phase 16 encerrada — REORD-01..03/ARQCOL-01..03 confirmados em produção. Phase 17 (exclusão de coluna sem cascade para cards ativos) identificada, ainda não formalizada.
+Resume file: nenhum — aguardando /gsd-phase para formalizar a Phase 17

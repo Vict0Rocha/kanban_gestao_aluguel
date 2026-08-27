@@ -166,9 +166,9 @@ fechar. Estritamente aditiva: não altera o drag-and-drop individual já existen
 só acrescenta um caminho novo de movimentação em lote. Decisões registradas em
 `.planning/phases/16-reordena-o-em-massa-e-arquivamento-sem-coluna/16-CONTEXT.md`.
 
-- [ ] **REORD-01**: Existe um botão "Reordenar" ao lado do campo de busca no Board, que abre um popup listando as colunas existentes
-- [ ] **REORD-02**: Escolher uma coluna e confirmar move, numa única ação, todos os cards elegíveis — só os em destaque na busca, se houver busca ativa; todos os cards do board, se não houver — para a coluna escolhida
-- [ ] **REORD-03**: Depois do movimento em massa, a ordem dos cards na coluna de destino segue a ordem visual anterior (coluna → posição), com posições novas sequenciais
+- [x] **REORD-01**: Existe um botão "Reordenar" ao lado do campo de busca no Board, que abre um popup listando as colunas existentes — confirmado em produção
+- [x] **REORD-02**: Escolher uma coluna e confirmar move, numa única ação, todos os cards elegíveis — só os em destaque na busca, se houver busca ativa; todos os cards do board, se não houver — para a coluna escolhida — confirmado em produção
+- [x] **REORD-03**: Depois do movimento em massa, a ordem dos cards na coluna de destino segue a ordem visual anterior (coluna → posição), com posições novas sequenciais — confirmado por leitura de código
 
 ### ARQCOL — Arquivamento sem vínculo de coluna (pós-milestone, Phase 16)
 
@@ -177,9 +177,9 @@ REORD. Reabre pontualmente D-12 (06.2-CONTEXT.md, "desarquivar devolve ao funcio
 incluir `column_id` na mesma lógica. Decisões registradas em
 `.planning/phases/16-reordena-o-em-massa-e-arquivamento-sem-coluna/16-CONTEXT.md`.
 
-- [ ] **ARQCOL-01**: `cards.column_id` é nullable no banco; arquivar um card grava `column_id = null` junto com `arquivado_em`
-- [ ] **ARQCOL-02**: Desarquivar sempre atribui a primeira coluna (menor `position`) do board, nunca a coluna anterior à qual o card estava vinculado
-- [ ] **ARQCOL-03**: Excluir uma coluna nunca mais apaga em cascata um card arquivado sem histórico financeiro — fechado estruturalmente por ARQCOL-01 (um `column_id` nulo nunca é alcançado por `on delete cascade` de `columns`)
+- [x] **ARQCOL-01**: `cards.column_id` é nullable no banco; arquivar um card grava `column_id = null` junto com `arquivado_em` — confirmado em produção
+- [x] **ARQCOL-02**: Desarquivar sempre atribui a primeira coluna (menor `position`) do board, nunca a coluna anterior à qual o card estava vinculado — confirmado em produção
+- [x] **ARQCOL-03**: Excluir uma coluna nunca mais apaga em cascata um card arquivado sem histórico financeiro — fechado estruturalmente por ARQCOL-01 (um `column_id` nulo nunca é alcançado por `on delete cascade` de `columns`) — confirmado em produção
 
 ## Carried over from v1.0
 
@@ -303,12 +303,12 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | PAGIN-01 | Phase 15 | Confirmado em produção |
 | PAGIN-02 | Phase 15 | Confirmado em produção |
 | PAGIN-03 | Phase 15 | Confirmado em produção |
-| REORD-01 | Phase 16 | Pendente |
-| REORD-02 | Phase 16 | Pendente |
-| REORD-03 | Phase 16 | Pendente |
-| ARQCOL-01 | Phase 16 | Pendente |
-| ARQCOL-02 | Phase 16 | Pendente |
-| ARQCOL-03 | Phase 16 | Pendente |
+| REORD-01 | Phase 16 | Confirmado em produção |
+| REORD-02 | Phase 16 | Confirmado em produção |
+| REORD-03 | Phase 16 | Confirmado em produção |
+| ARQCOL-01 | Phase 16 | Confirmado em produção |
+| ARQCOL-02 | Phase 16 | Confirmado em produção |
+| ARQCOL-03 | Phase 16 | Confirmado em produção |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
