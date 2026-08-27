@@ -42,6 +42,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 14: Cancelamento de taxas e caução** - Mostrar a taxa da imobiliária no histórico da parcela com opção de cancelar, e permitir cancelar eventos de caução
 - [x] **Phase 15: Exclusão de card com destrava e paginação** - Permitir excluir card/cancelar destrava mesmo com histórico de destrava (bloqueado só por conciliação travada), e adicionar paginação (12 itens) em Financeiro, Relatórios e Arquivados
 - [x] **Phase 16: Reordenação em massa e arquivamento sem coluna** - Botão "Reordenar" no Board move todos os cards para uma coluna escolhida de uma vez; desarquivar sempre devolve o card à primeira coluna ativa, não à coluna antiga
+- [ ] **Phase 17: Exclusão de coluna sem cascade para cards ativos** - Excluir uma coluna com cards ativos deixa de apagar esses cards em cascata; só é permitido depois de movê-los para outra coluna
 
 ## Phase Details
 
@@ -344,7 +345,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16
+Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -363,6 +364,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 14. Cancelamento de taxas e caução | 5/5 | Complete | 2026-08-26 |
 | 15. Exclusão de card com destrava e paginação | 6/6 | Complete | 2026-08-27 |
 | 16. Reordenação em massa e arquivamento sem coluna | 4/4 | Complete | 2026-08-27 |
+| 17. Exclusão de coluna sem cascade para cards ativos | 0/TBD | Not Started | - |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15 e 16 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-16: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL.
 
@@ -414,3 +416,14 @@ Plans:
 - [x] 16-02-PLAN.md — Botão "Reordenar" ponta a ponta: Server Action em lote, diálogo de seleção de coluna, wiring no Board (wave 1, independente da migração)
 - [x] 16-03-PLAN.md — Ensaiar a migração contra produção (transação revertida) e registrar o resultado (wave 2)
 - [x] 16-04-PLAN.md — Aplicar a migração em produção (checkpoint de decisão), widenar `arquivarCardAction`/`desarquivarCardAction`, documentar, e confirmar ARQCOL-01/02/03 + REORD-01/02/03 em produção (wave 3)
+
+### Phase 17: Exclusão de coluna sem cascade para cards ativos
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 16
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 17 to break down)
