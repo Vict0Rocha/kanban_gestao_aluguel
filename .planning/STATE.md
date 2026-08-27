@@ -4,11 +4,11 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 18
 current_phase_name: filtro-na-configura-o-financeira
-status: added
-stopped_at: Fase 18 adicionada ao roadmap — falta discuss-phase
-last_updated: "2026-08-27T21:45:00.000Z"
+status: discussed
+stopped_at: Fase 18 discutida — CONTEXT.md pronto, falta plan-phase
+last_updated: "2026-08-27T22:00:00.000Z"
 last_activity: 2026-08-27
-last_activity_desc: "Fase 18 (Filtro na Configuração financeira) adicionada ao ROADMAP.md via /gsd-phase, diretório .planning/phases/18-filtro-na-configura-o-financeira/ criado. Pedido do usuário: filtro na listagem de /financeiro/configuracao, igual ao já existente em Relatórios. Falta discuss-phase para decidir entre os dois padrões de filtro do projeto (drawer+URL de FiltroParcelas vs. ao vivo em memória de FiltroRelatorioFinanceiroLive) e os campos exatos."
+last_activity_desc: "Fase 18 (Filtro na Configuração financeira) discutida. Nenhuma das duas áreas pré-formuladas (drawer+URL vs. filtro ao vivo multi-campo) batia com o que o usuário tinha em mente — ele queria um terceiro padrão: reusar o SearchField (campo único, ao vivo, sem botão) já usado no Board e no relatório 'Situação dos contratos' de /relatorios, não os componentes de filtro multi-campo. Confirmado: busca olha número do contrato, endereço e proprietário — os três campos já visíveis na tabela de ConfiguracaoFinanceiraView. buildMatcher/searchableText existentes em search.ts são tipados para Card e não se aplicam direto a ContratoConfig — precisa de matcher próprio. 18-CONTEXT.md e 18-DISCUSSION-LOG.md escritos e commitados (f57b685)."
 progress:
   total_phases: 18
   completed_phases: 17
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 18 (Filtro na Configuração financeira) — adicionada ao roadmap, ainda não discutida/planejada.
+**Current focus:** Phase 18 (Filtro na Configuração financeira) — CONTEXT.md pronto, falta plan-phase.
 
 ## Current Position
 
-Phase: 18 (filtro-na-configura-o-financeira) — ADICIONADA AO ROADMAP
-Status: `.planning/phases/18-filtro-na-configura-o-financeira/` criado; falta discuss-phase para decidir o padrão de filtro (drawer com URL vs. ao vivo em memória) e os campos exatos, depois plan-phase e execute-phase.
-Last activity: 2026-08-27 — usuário pediu um filtro em `/financeiro/configuracao` igual ao já existente em Relatórios; fase 18 formalizada via `/gsd-phase`.
+Phase: 18 (filtro-na-configura-o-financeira) — DISCUTIDA
+Status: `18-CONTEXT.md`/`18-DISCUSSION-LOG.md` escritos e commitados. Falta `/gsd-plan-phase 18`.
+Last activity: 2026-08-27 — discuss-phase concluído: busca reusa `SearchField` (Board/Relatórios), campos número/endereço/proprietário.
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -172,6 +172,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-27T21:45:00.000Z
-Stopped at: Fase 18 (Filtro na Configuração financeira) adicionada ao roadmap — falta discuss-phase
-Resume file: .planning/phases/18-filtro-na-configura-o-financeira/
+Last session: 2026-08-27T22:00:00.000Z
+Stopped at: Fase 18 discutida — CONTEXT.md pronto, falta plan-phase
+Resume file: .planning/phases/18-filtro-na-configura-o-financeira/18-CONTEXT.md
