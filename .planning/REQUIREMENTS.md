@@ -145,9 +145,9 @@ fechar. Reabre pontualmente D-14 (06.2-CONTEXT.md, "qualquer lançamento trava a
 D-01 (12-CONTEXT.md, "destrava fica fora do cancelamento") só para este caso específico. Decisões
 registradas em `.planning/phases/15-exclus-o-de-card-com-destrava-e-pagina-o/15-CONTEXT.md`.
 
-- [ ] **CANDEST-01**: Um card com histórico de destrava, mas sem nenhuma parcela conciliada, pode ser excluído de verdade — nem o pré-voo do app (`cardTemLancamento`) nem o trigger de banco (`impedir_exclusao_de_card_com_lancamento`) bloqueiam mais por causa só de `tipo='destrava'`
-- [ ] **CANDEST-02**: Um lançamento `tipo='destrava'` ganha o mesmo botão "Cancelar" já usado para pagamento/acréscimo/desconto/taxa/caução, usando o mesmo `CancelarLancamentoDialog` — cancelar não reabre a conciliação nem altera o status da parcela, só remove o registro de auditoria
-- [ ] **CANDEST-03**: Uma parcela conciliada continua bloqueando tanto a exclusão do card quanto o cancelamento de qualquer lançamento seu (incluindo destrava) — mesma trava já existente (`exigirParcelaNaoConciliada`)
+- [x] **CANDEST-01**: Um card com histórico de destrava, mas sem nenhuma parcela conciliada, pode ser excluído de verdade — nem o pré-voo do app (`cardTemLancamento`) nem o trigger de banco (`impedir_exclusao_de_card_com_lancamento`) bloqueiam mais por causa só de `tipo='destrava'` — confirmado em produção
+- [x] **CANDEST-02**: Um lançamento `tipo='destrava'` ganha o mesmo botão "Cancelar" já usado para pagamento/acréscimo/desconto/taxa/caução, usando o mesmo `CancelarLancamentoDialog` — cancelar não reabre a conciliação nem altera o status da parcela, só remove o registro de auditoria — confirmado em produção
+- [x] **CANDEST-03**: Uma parcela conciliada continua bloqueando tanto a exclusão do card quanto o cancelamento de qualquer lançamento seu (incluindo destrava) — mesma trava já existente (`exigirParcelaNaoConciliada`) — confirmado em produção
 
 ### PAGIN — Paginação de listagens (pós-milestone, Phase 15)
 
@@ -155,8 +155,8 @@ Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuár
 CANDEST. Estritamente aditiva na camada de apresentação — nenhuma mudança de query/Server Action.
 Decisões registradas em `.planning/phases/15-exclus-o-de-card-com-destrava-e-pagina-o/15-CONTEXT.md`.
 
-- [ ] **PAGIN-01**: As seis listagens fora do Board (Financeiro, Relatórios → Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) mostram no máximo 10 itens por página
-- [ ] **PAGIN-02**: A navegação entre páginas é numerada (1, 2, 3… + setas anterior/próxima), não apenas Anterior/Próxima
+- [ ] **PAGIN-01**: As seis listagens fora do Board (Financeiro, Relatórios → Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) mostram no máximo 12 itens por página (corrigido de 10 — ver ROADMAP.md § Phase 15, Correção pós-verificação)
+- [ ] **PAGIN-02**: A navegação entre páginas é numerada (janela de até 5 números por vez + setas anterior/próxima), não apenas Anterior/Próxima; quando há mais páginas do que a janela mostra, um botão desliza a janela sem trocar de página e um campo "Ir para" pula direto a qualquer página
 - [ ] **PAGIN-03**: Mudar um filtro em qualquer uma das seis telas volta a listagem para a página 1 — mas uma ação que não muda o filtro (cancelar/conciliar/desarquivar um item) nunca reseta a página do usuário
 
 ## Carried over from v1.0
@@ -275,9 +275,9 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | CANIMOB-03 | Phase 14 | Confirmado em produção |
 | CANIMOB-04 | Phase 14 | Confirmado em produção |
 | CANIMOB-05 | Phase 14 | Confirmado em produção |
-| CANDEST-01 | Phase 15 | Pendente |
-| CANDEST-02 | Phase 15 | Pendente |
-| CANDEST-03 | Phase 15 | Pendente |
+| CANDEST-01 | Phase 15 | Confirmado em produção |
+| CANDEST-02 | Phase 15 | Confirmado em produção |
+| CANDEST-03 | Phase 15 | Confirmado em produção |
 | PAGIN-01 | Phase 15 | Pendente |
 | PAGIN-02 | Phase 15 | Pendente |
 | PAGIN-03 | Phase 15 | Pendente |

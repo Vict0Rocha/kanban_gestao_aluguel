@@ -1,12 +1,24 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
-/** Tamanho fixo de página — não configurável pelo usuário final (D-05, 15-CONTEXT.md). */
-const TAMANHO_PAGINA = 10
+/**
+ * Tamanho fixo de página — não configurável pelo usuário final (D-05,
+ * 15-CONTEXT.md). Corrigido de 10 para 12 depois de uso real em produção
+ * (correção pós-verificação, ver ROADMAP.md § Phase 15).
+ */
+const TAMANHO_PAGINA = 12
+
+/** Quantos números de página ficam visíveis de uma vez — o resto vira
+ * janela deslizante (ver `Pagination` abaixo). Correção pós-verificação:
+ * o desenho original (D-05) não previa lista com centenas de páginas
+ * (ex.: Relatório Financeiro dedicado sem filtro, 502 parcelas / 10 por
+ * página = 51 botões) — visualmente inviável. */
+const TAMANHO_JANELA = 5
 
 /**
  * Hook genérico de paginação em memória. Fatiamento é 100% client-side sobre
@@ -43,11 +55,23 @@ export function usePagination<T>(itens: T[], resetKey: unknown) {
   return { itensDaPagina, pagina: paginaEfetiva, totalPaginas, setPagina }
 }
 
+/** Primeiro número da janela de `TAMANHO_JANELA` botões que contém `pagina`,
+ * sempre dentro de `[1, totalPaginas]`. */
+function inicioDaJanela(pagina: number, totalPaginas: number): number {
+  const meio = Math.floor(TAMANHO_JANELA / 2)
+  const tetoInicio = Math.max(1, totalPaginas - TAMANHO_JANELA + 1)
+  return Math.min(Math.max(1, pagina - meio), tetoInicio)
+}
+
 /**
- * Navegação numerada (1, 2, 3… + setas anterior/próxima) — nunca só
- * Anterior/Próxima (D-05, 15-CONTEXT.md). Sem lógica de elipse/truncamento:
- * no volume atual do projeto (~46-48 registros / 10 por página ≈ 5 páginas)
- * uma lista simples de botões numerados cobre o caso real.
+ * Navegação numerada (D-05, 15-CONTEXT.md) — nunca só Anterior/Próxima.
+ * Correção pós-verificação (ROADMAP.md § Phase 15): o desenho original não
+ * truncava a lista de números, o que ficou visualmente inviável em listas
+ * com muitas páginas (ex.: 51 páginas sem filtro no Relatório Financeiro
+ * dedicado). Agora mostra no máximo `TAMANHO_JANELA` (5) números por vez,
+ * com um controle próprio para deslizar a janela (busca visual, não muda a
+ * página atual) e um campo para pular direto a uma página quando a lista
+ * está truncada.
  */
 export function Pagination({
   pagina,
@@ -58,10 +82,46 @@ export function Pagination({
   totalPaginas: number
   onPaginaChange: (pagina: number) => void
 }) {
+  const [janelaInicio, setJanelaInicio] = React.useState(() =>
+    inicioDaJanela(pagina, totalPaginas)
+  )
+  const [paginaSincronizada, setPaginaSincronizada] = React.useState(pagina)
+  const [valorBusca, setValorBusca] = React.useState("")
+
+  // Ajusta a janela durante a própria renderização quando a página muda por
+  // navegação real (seta, clique num número, campo "Ir para") e a página
+  // nova sai da janela atual — nunca quando só a janela é deslizada pelos
+  // botões »/« (esses tocam só `janelaInicio`, sem passar por aqui), mesmo
+  // padrão de comparação em render do reset de `usePagination` acima, para
+  // nunca perder um frame mostrando a janela errada.
+  if (pagina !== paginaSincronizada) {
+    setPaginaSincronizada(pagina)
+    if (pagina < janelaInicio || pagina >= janelaInicio + TAMANHO_JANELA) {
+      setJanelaInicio(inicioDaJanela(pagina, totalPaginas))
+    }
+  }
+
   if (totalPaginas <= 1) return null
 
+  const fimJanela = Math.min(janelaInicio + TAMANHO_JANELA - 1, totalPaginas)
+  const numeros: number[] = []
+  for (let n = janelaInicio; n <= fimJanela; n++) numeros.push(n)
+
+  const temJanelaAnterior = janelaInicio > 1
+  const temJanelaSeguinte = fimJanela < totalPaginas
+  const mostrarBusca = totalPaginas > TAMANHO_JANELA
+
+  function irParaPaginaDigitada(evento: React.FormEvent) {
+    evento.preventDefault()
+    const alvo = Number(valorBusca)
+    if (Number.isInteger(alvo) && alvo >= 1 && alvo <= totalPaginas) {
+      onPaginaChange(alvo)
+      setValorBusca("")
+    }
+  }
+
   return (
-    <div className="mt-4 flex items-center justify-center gap-1">
+    <div className="mt-4 flex flex-wrap items-center justify-center gap-1">
       <Button
         variant="ghost"
         size="icon"
@@ -71,7 +131,22 @@ export function Pagination({
       >
         <ChevronLeft className="size-4" />
       </Button>
-      {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((n) => (
+
+      {temJanelaAnterior && (
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`Ver páginas ${Math.max(1, janelaInicio - TAMANHO_JANELA)} a ${janelaInicio - 1}`}
+          title="Ver páginas anteriores"
+          onClick={() =>
+            setJanelaInicio(Math.max(1, janelaInicio - TAMANHO_JANELA))
+          }
+        >
+          <ChevronsLeft className="size-4" />
+        </Button>
+      )}
+
+      {numeros.map((n) => (
         <Button
           key={n}
           variant={n === pagina ? "default" : "ghost"}
@@ -82,6 +157,23 @@ export function Pagination({
           {n}
         </Button>
       ))}
+
+      {temJanelaSeguinte && (
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`Ver páginas ${fimJanela + 1} a ${Math.min(totalPaginas, fimJanela + TAMANHO_JANELA)}`}
+          title="Ver mais páginas"
+          onClick={() =>
+            setJanelaInicio(
+              Math.min(totalPaginas - TAMANHO_JANELA + 1, janelaInicio + TAMANHO_JANELA)
+            )
+          }
+        >
+          <ChevronsRight className="size-4" />
+        </Button>
+      )}
+
       <Button
         variant="ghost"
         size="icon"
@@ -91,6 +183,26 @@ export function Pagination({
       >
         <ChevronRight className="size-4" />
       </Button>
+
+      {mostrarBusca && (
+        <form
+          className="ml-2 flex items-center gap-1.5"
+          onSubmit={irParaPaginaDigitada}
+        >
+          <span className="text-xs text-muted-foreground">Ir para</span>
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={totalPaginas}
+            value={valorBusca}
+            onChange={(evento) => setValorBusca(evento.target.value)}
+            placeholder={String(pagina)}
+            aria-label={`Ir para a página, de 1 a ${totalPaginas}`}
+            className="h-8 w-16 text-center"
+          />
+        </form>
+      )}
     </div>
   )
 }

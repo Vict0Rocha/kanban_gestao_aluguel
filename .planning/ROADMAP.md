@@ -366,24 +366,26 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 
 ### Phase 15: Exclusão de card com destrava e paginação
 
-**Goal:** Um card com histórico de destrava (mas sem parcela conciliada) pode ser excluído de verdade, e um lançamento de destrava pode ser cancelado individualmente como qualquer outro; e as seis listagens fora do Board (Financeiro, Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) ganham paginação de no máximo 10 itens por página
+**Goal:** Um card com histórico de destrava (mas sem parcela conciliada) pode ser excluído de verdade, e um lançamento de destrava pode ser cancelado individualmente como qualquer outro; e as seis listagens fora do Board (Financeiro, Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) ganham paginação de no máximo 12 itens por página (corrigido de 10 — ver "Correção pós-verificação" abaixo)
 **Requirements**: CANDEST-01, CANDEST-02, CANDEST-03, PAGIN-01, PAGIN-02, PAGIN-03 (trabalho pós-milestone — ver 15-CONTEXT.md)
 **Depends on:** Phase 14
 **Success Criteria** (what must be TRUE):
 
-  1. Um card com histórico de destrava, mas sem nenhuma parcela conciliada, pode ser excluído de verdade — nem o pré-voo do app (`cardTemLancamento`) nem o trigger de banco (`impedir_exclusao_de_card_com_lancamento`) bloqueiam mais só por causa de `tipo='destrava'`
-  2. Um lançamento `tipo='destrava'` ganha o mesmo botão "Cancelar" já usado para pagamento/acréscimo/desconto/taxa/caução — cancelar remove só o registro de auditoria, sem alterar o status da parcela
-  3. Uma parcela conciliada continua bloqueando tanto a exclusão do card quanto o cancelamento de qualquer lançamento seu, incluindo destrava — nenhuma trava nova, a existente (`exigirParcelaNaoConciliada`) já cobre
-  4. As seis listagens fora do Board (Financeiro, Relatórios → Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) mostram no máximo 10 itens por página, com navegação numerada (1, 2, 3… + setas anterior/próxima)
+  1. ✓ Um card com histórico de destrava, mas sem nenhuma parcela conciliada, pode ser excluído de verdade — nem o pré-voo do app (`cardTemLancamento`) nem o trigger de banco (`impedir_exclusao_de_card_com_lancamento`) bloqueiam mais só por causa de `tipo='destrava'` — confirmado em produção
+  2. ✓ Um lançamento `tipo='destrava'` ganha o mesmo botão "Cancelar" já usado para pagamento/acréscimo/desconto/taxa/caução — cancelar remove só o registro de auditoria, sem alterar o status da parcela — confirmado em produção
+  3. ✓ Uma parcela conciliada continua bloqueando tanto a exclusão do card quanto o cancelamento de qualquer lançamento seu, incluindo destrava — nenhuma trava nova, a existente (`exigirParcelaNaoConciliada`) já cobre — confirmado em produção
+  4. As seis listagens fora do Board (Financeiro, Relatórios → Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) mostram no máximo 12 itens por página, com navegação numerada (janela de até 5 números por vez + setas anterior/próxima + controle de deslizar a janela + campo "Ir para" quando há mais páginas que a janela mostra — ver "Correção pós-verificação")
   5. Mudar um filtro em qualquer uma das seis telas volta a listagem para a página 1; uma ação que não muda o filtro (cancelar/conciliar/desarquivar um item) nunca reseta a página em que o usuário está
 
 **Plans:** 6 plans
 
 Plans:
 
-- [ ] 15-01-PLAN.md — Migração — relaxar `impedir_exclusao_de_card_com_lancamento()` para excluir `destrava` do predicado de bloqueio, + runbook de ensaio
-- [ ] 15-02-PLAN.md — Cancelar lançamento `destrava` (widen do allowlist de `cancelarLancamentoAction` + botão no histórico) e correção de `docs/data-model.md`
-- [ ] 15-03-PLAN.md — Componente `Pagination`/`usePagination` + paginação da lista de parcelas do Financeiro (tracer)
-- [ ] 15-04-PLAN.md — Ensaiar a migração de relaxamento contra produção (transação revertida) e registrar o resultado
-- [ ] 15-05-PLAN.md — Paginação das cinco listagens restantes (contratos, relatório financeiro dedicado, relatório da imobiliária, configuração financeira, arquivados)
-- [ ] 15-06-PLAN.md — Aplicar a migração em produção (checkpoint de decisão), relaxar `cardTemLancamento` no app, documentar, e confirmar CANDEST-01/02/03 em produção
+- [x] 15-01-PLAN.md — Migração — relaxar `impedir_exclusao_de_card_com_lancamento()` para excluir `destrava` do predicado de bloqueio, + runbook de ensaio
+- [x] 15-02-PLAN.md — Cancelar lançamento `destrava` (widen do allowlist de `cancelarLancamentoAction` + botão no histórico) e correção de `docs/data-model.md`
+- [x] 15-03-PLAN.md — Componente `Pagination`/`usePagination` + paginação da lista de parcelas do Financeiro (tracer)
+- [x] 15-04-PLAN.md — Ensaiar a migração de relaxamento contra produção (transação revertida) e registrar o resultado
+- [x] 15-05-PLAN.md — Paginação das cinco listagens restantes (contratos, relatório financeiro dedicado, relatório da imobiliária, configuração financeira, arquivados)
+- [x] 15-06-PLAN.md — Aplicar a migração em produção (checkpoint de decisão), relaxar `cardTemLancamento` no app, documentar, e confirmar CANDEST-01/02/03 em produção
+
+**Correção pós-verificação:** o usuário encontrou, ao testar `/relatorios/financeiro` sem filtro em produção (502 parcelas, 51 páginas de 10), que a lista de botões numerados ficava visualmente inviável — o desenho original de PAGIN-02 (D-05, `15-CONTEXT.md`) não previa truncamento porque a estimativa de volume do CONTEXT.md (~46-48 registros por listagem) não se aplicava a uma listagem sem filtro nenhum aplicado. Corrigido fora de um plano formal (mudança contida a um único arquivo compartilhado, `web/src/components/pagination.tsx`, consumido pelas seis listagens): a navegação numerada agora mostra no máximo 5 números por vez (`TAMANHO_JANELA`), com um par de botões de deslizar a janela (ícone de chevron duplo, ChevronsLeft/ChevronsRight) que muda só quais números aparecem, sem trocar a página atual, e um campo "Ir para" (aparece só quando há mais páginas que a janela mostra) para pular direto a qualquer página digitando o número. Aproveitado o mesmo pedido para trocar `TAMANHO_PAGINA` de 10 para 12 itens por página. `npx tsc --noEmit`/`npm run lint` limpos; verificação visual em produção pendente de confirmação do usuário (o app exige login real, sem credencial compartilhada com o assistente).
