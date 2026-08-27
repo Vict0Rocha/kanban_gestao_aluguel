@@ -155,9 +155,9 @@ Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuár
 CANDEST. Estritamente aditiva na camada de apresentação — nenhuma mudança de query/Server Action.
 Decisões registradas em `.planning/phases/15-exclus-o-de-card-com-destrava-e-pagina-o/15-CONTEXT.md`.
 
-- [ ] **PAGIN-01**: As seis listagens fora do Board (Financeiro, Relatórios → Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) mostram no máximo 12 itens por página (corrigido de 10 — ver ROADMAP.md § Phase 15, Correção pós-verificação)
-- [ ] **PAGIN-02**: A navegação entre páginas é numerada (janela de até 5 números por vez + setas anterior/próxima), não apenas Anterior/Próxima; quando há mais páginas do que a janela mostra, um botão desliza a janela sem trocar de página e um campo "Ir para" pula direto a qualquer página
-- [ ] **PAGIN-03**: Mudar um filtro em qualquer uma das seis telas volta a listagem para a página 1 — mas uma ação que não muda o filtro (cancelar/conciliar/desarquivar um item) nunca reseta a página do usuário
+- [x] **PAGIN-01**: As seis listagens fora do Board (Financeiro, Relatórios → Situação dos contratos, Relatório Financeiro dedicado, Relatório da imobiliária, Configuração financeira, Arquivados) mostram no máximo 12 itens por página (corrigido de 10 — ver ROADMAP.md § Phase 15, Correção pós-verificação) — confirmado em produção
+- [x] **PAGIN-02**: A navegação entre páginas é numerada (janela de até 5 números por vez + setas anterior/próxima), não apenas Anterior/Próxima; quando há mais páginas do que a janela mostra, um botão desliza a janela sem trocar de página e um campo "Ir para" pula direto a qualquer página — confirmado em produção
+- [x] **PAGIN-03**: Mudar um filtro em qualquer uma das seis telas volta a listagem para a página 1 — mas uma ação que não muda o filtro (cancelar/conciliar/desarquivar um item) nunca reseta a página do usuário — confirmado por leitura de código (`resetKey` por tela) em todas as seis; teste interativo de mutação-sem-reset feito diretamente só nas telas com filtro
 
 ## Carried over from v1.0
 
@@ -278,9 +278,9 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | CANDEST-01 | Phase 15 | Confirmado em produção |
 | CANDEST-02 | Phase 15 | Confirmado em produção |
 | CANDEST-03 | Phase 15 | Confirmado em produção |
-| PAGIN-01 | Phase 15 | Pendente |
-| PAGIN-02 | Phase 15 | Pendente |
-| PAGIN-03 | Phase 15 | Pendente |
+| PAGIN-01 | Phase 15 | Confirmado em produção |
+| PAGIN-02 | Phase 15 | Confirmado em produção |
+| PAGIN-03 | Phase 15 | Confirmado em produção |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
