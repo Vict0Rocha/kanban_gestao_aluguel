@@ -795,15 +795,24 @@ export async function arquivarCardAction(cardId: string): Promise<ActionResult> 
   const invalido = id(cardId, "Imóvel")
   if (invalido) return { ok: false, error: invalido }
 
-  // Grava só `arquivado_em`. Arquivamento e situação do contrato (`ativo`)
-  // são ortogonais de propósito: se arquivar também desativasse,
-  // desarquivar teria de adivinhar se o contrato estava ativo antes dessa
-  // gravação — e essa informação já teria sido perdida. D-12 diz que
-  // desarquivar devolve o contrato ao funcionamento normal, não a um
-  // estado inventado, então esta action nunca toca `ativo`.
+  // Arquivamento e situação do contrato (`ativo`) são ortogonais de
+  // propósito: se arquivar também desativasse, desarquivar teria de
+  // adivinhar se o contrato estava ativo antes dessa gravação — e essa
+  // informação já teria sido perdida. D-12 diz que desarquivar devolve o
+  // contrato ao funcionamento normal, não a um estado inventado, então
+  // esta action nunca toca `ativo`.
+  //
+  // D-01/D-02 (16-CONTEXT.md): a partir da Phase 16, arquivar também
+  // desvincula o card de qualquer coluna (`column_id: null`) — antes,
+  // o card continuava apontando para a coluna em que estava, e excluir
+  // essa coluna apagava o card arquivado em cascata (`on delete cascade`
+  // de `columns`), sem aviso nenhum, sempre que ele não tinha nenhum
+  // lançamento financeiro real. Um `column_id` nulo nunca é alcançado por
+  // esse cascade — o risco fecha por construção, não por checagem de
+  // aplicação.
   const { data, error } = await sessao.supabase
     .from("cards")
-    .update({ arquivado_em: new Date().toISOString() })
+    .update({ arquivado_em: new Date().toISOString(), column_id: null })
     .eq("id", cardId)
     .select("id")
 
@@ -824,14 +833,30 @@ export async function desarquivarCardAction(cardId: string): Promise<ActionResul
   const invalido = id(cardId, "Imóvel")
   if (invalido) return { ok: false, error: invalido }
 
-  // Idêntica a `arquivarCardAction`, gravando nulo. Nada é regenerado
-  // aqui: as parcelas que a regra de D-01 escondia enquanto o contrato
-  // estava arquivado simplesmente voltam a passar em
-  // `avaliarVisibilidadeParcela` (visibilidade.ts), porque nunca foram
-  // apagadas (D-03/D-12) — só ficaram fora do que a query/regra mostrava.
+  // Nada é regenerado aqui (D-01/D-03/D-12, visibilidade.ts). D-02/D-04
+  // (16-CONTEXT.md, Phase 16): card arquivado não tem mais column_id —
+  // desarquivar sempre atribui a primeira coluna do board, nunca a antiga.
+  const { data: board, error: erroBoard } = await sessao.supabase
+    .from("boards").select("id").order("created_at").limit(1).maybeSingle()
+  if (erroBoard || !board) {
+    console.error("desarquivarCard (board)", erroBoard)
+    return { ok: false, error: erroDoBanco(erroBoard?.code, "desarquivar o imóvel") }
+  }
+
+  const { data: primeiraColuna, error: erroColuna } = await sessao.supabase
+    .from("columns").select("id").eq("board_id", board.id)
+    .order("position", { ascending: true }).limit(1).maybeSingle()
+  if (erroColuna) {
+    console.error("desarquivarCard (coluna)", erroColuna)
+    return { ok: false, error: erroDoBanco(erroColuna.code, "desarquivar o imóvel") }
+  }
+  if (!primeiraColuna) {
+    return { ok: false, error: "Crie uma coluna antes de desarquivar." }
+  }
+
   const { data, error } = await sessao.supabase
     .from("cards")
-    .update({ arquivado_em: null })
+    .update({ arquivado_em: null, column_id: primeiraColuna.id })
     .eq("id", cardId)
     .select("id")
 

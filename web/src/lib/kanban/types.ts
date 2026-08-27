@@ -1,6 +1,11 @@
 export type Card = {
   id: string
-  column_id: string
+  // Nulo enquanto o contrato está arquivado (D-01/D-05, 16-CONTEXT.md) —
+  // arquivar desvincula o card de qualquer coluna de propósito, fechando o
+  // risco de exclusão em cascata de D-02. Sempre preenchido enquanto o
+  // contrato está em operação normal (não arquivado); o Board nunca vê um
+  // `column_id` nulo porque sua query já filtra `arquivado_em is null`.
+  column_id: string | null
   position: number
   numero: number
   proprietario: string
