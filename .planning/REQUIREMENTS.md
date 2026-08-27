@@ -181,6 +181,18 @@ incluir `column_id` na mesma lógica. Decisões registradas em
 - [x] **ARQCOL-02**: Desarquivar sempre atribui a primeira coluna (menor `position`) do board, nunca a coluna anterior à qual o card estava vinculado — confirmado em produção
 - [x] **ARQCOL-03**: Excluir uma coluna nunca mais apaga em cascata um card arquivado sem histórico financeiro — fechado estruturalmente por ARQCOL-01 (um `column_id` nulo nunca é alcançado por `on delete cascade` de `columns`) — confirmado em produção
 
+### EXCOL — Exclusão de coluna sem cascade para cards ativos (pós-milestone, Phase 17)
+
+Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário durante a verificação em
+produção da Phase 16. `columns → cards` continua `on delete cascade` no schema (rede de segurança), mas a
+aplicação passa a garantir que a coluna está sempre vazia antes do `delete` — nenhuma migração necessária.
+Decisões registradas em `.planning/phases/17-exclus-o-de-coluna-sem-cascade-para-cards-ativos/17-CONTEXT.md`.
+
+- [ ] **EXCOL-01**: Excluir uma coluna vazia (0 cards) continua funcionando exatamente como hoje — confirmação simples, sem seletor de destino
+- [ ] **EXCOL-02**: Excluir uma coluna com pelo menos 1 card oferece um seletor de coluna de destino; confirmar move todos os cards da coluna para o destino escolhido e só então exclui a coluna, numa única ação
+- [ ] **EXCOL-03**: Se a coluna sendo excluída for a única do board (nenhuma outra coluna disponível como destino) e tiver pelo menos 1 card, a exclusão é bloqueada com mensagem clara
+- [ ] **EXCOL-04**: Nenhum card ativo é apagado em cascata ao excluir uma coluna — garantido tanto pela camada de aplicação (a coluna é garantidamente esvaziada antes do delete) quanto por uma trava server-side em `deleteColumnAction` que recusa excluir uma coluna não vazia mesmo se chamada fora da UI
+
 ## Carried over from v1.0
 
 Requisito não concluído na v1.0, mantido visível para não se perder. **Não faz parte do escopo de fases da v2.0** — é uma ação de painel, não trabalho de código, adiada por escolha do usuário.
@@ -309,12 +321,16 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | ARQCOL-01 | Phase 16 | Confirmado em produção |
 | ARQCOL-02 | Phase 16 | Confirmado em produção |
 | ARQCOL-03 | Phase 16 | Confirmado em produção |
+| EXCOL-01 | Phase 17 | Pendente |
+| EXCOL-02 | Phase 17 | Pendente |
+| EXCOL-03 | Phase 17 | Pendente |
+| EXCOL-04 | Phase 17 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
 - Mapped to phases: 39
 - Unmapped: 0
-- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05), Phase 15 (CANDEST-01..03, PAGIN-01..03) e Phase 16 (REORD-01..03, ARQCOL-01..03) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST`, `### PAGIN`, `### REORD` e `### ARQCOL` acima
+- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05), Phase 15 (CANDEST-01..03, PAGIN-01..03), Phase 16 (REORD-01..03, ARQCOL-01..03) e Phase 17 (EXCOL-01..04) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST`, `### PAGIN`, `### REORD`, `### ARQCOL` e `### EXCOL` acima
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 - VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 
