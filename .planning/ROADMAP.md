@@ -42,7 +42,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 14: Cancelamento de taxas e caução** - Mostrar a taxa da imobiliária no histórico da parcela com opção de cancelar, e permitir cancelar eventos de caução
 - [x] **Phase 15: Exclusão de card com destrava e paginação** - Permitir excluir card/cancelar destrava mesmo com histórico de destrava (bloqueado só por conciliação travada), e adicionar paginação (12 itens) em Financeiro, Relatórios e Arquivados
 - [x] **Phase 16: Reordenação em massa e arquivamento sem coluna** - Botão "Reordenar" no Board move todos os cards para uma coluna escolhida de uma vez; desarquivar sempre devolve o card à primeira coluna ativa, não à coluna antiga
-- [ ] **Phase 17: Exclusão de coluna sem cascade para cards ativos** - Excluir uma coluna com cards ativos deixa de apagar esses cards em cascata; só é permitido depois de movê-los para outra coluna
+- [x] **Phase 17: Exclusão de coluna sem cascade para cards ativos** - Excluir uma coluna com cards ativos deixa de apagar esses cards em cascata; só é permitido depois de movê-los para outra coluna
 
 ## Phase Details
 
@@ -364,7 +364,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 14. Cancelamento de taxas e caução | 5/5 | Complete | 2026-08-26 |
 | 15. Exclusão de card com destrava e paginação | 6/6 | Complete | 2026-08-27 |
 | 16. Reordenação em massa e arquivamento sem coluna | 4/4 | Complete | 2026-08-27 |
-| 17. Exclusão de coluna sem cascade para cards ativos | 1/1 | In Progress|  |
+| 17. Exclusão de coluna sem cascade para cards ativos | 1/1 | Complete | ~20min |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15 e 16 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-16: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL.
 
@@ -424,11 +424,11 @@ Plans:
 **Depends on:** Phase 16
 **Success Criteria** (what must be TRUE):
 
-  1. Excluir uma coluna vazia (0 cards) continua funcionando exatamente como hoje — confirmação simples, sem seletor de destino
-  2. Excluir uma coluna com pelo menos 1 card oferece um seletor de coluna de destino; confirmar move todos os cards da coluna para o destino escolhido e só então exclui a coluna, numa única ação
-  3. Se a coluna sendo excluída for a única do board (nenhuma outra coluna disponível como destino) e tiver pelo menos 1 card, a exclusão é bloqueada com mensagem clara
-  4. Nenhum card ativo é apagado em cascata — garantido tanto pela camada de aplicação (a coluna é garantidamente esvaziada antes do delete) quanto por uma trava server-side em `deleteColumnAction` que recusa excluir uma coluna não vazia mesmo se chamada fora da UI
-  5. Nenhuma migração de banco foi necessária — `columns → cards on delete cascade` permanece exatamente como está no schema, servindo só como rede de segurança
+  1. ✓ Excluir uma coluna vazia (0 cards) continua funcionando exatamente como hoje — confirmação simples, sem seletor de destino — confirmado em produção
+  2. ✓ Excluir uma coluna com pelo menos 1 card oferece um seletor de coluna de destino; confirmar move todos os cards da coluna para o destino escolhido e só então exclui a coluna, numa única ação — confirmado em produção
+  3. ✓ Se a coluna sendo excluída for a única do board (nenhuma outra coluna disponível como destino) e tiver pelo menos 1 card, a exclusão é bloqueada com mensagem clara — confirmado em produção
+  4. ✓ Nenhum card ativo é apagado em cascata — garantido tanto pela camada de aplicação (a coluna é garantidamente esvaziada antes do delete) quanto por uma trava server-side em `deleteColumnAction` que recusa excluir uma coluna não vazia mesmo se chamada fora da UI — confirmado em produção (regressão de card com lançamento financeiro real testada e continua bloqueada pelo trigger de banco)
+  5. ✓ Nenhuma migração de banco foi necessária — `columns → cards on delete cascade` permanece exatamente como está no schema, servindo só como rede de segurança
 
 **Plans:** 1/1 plans executed
 

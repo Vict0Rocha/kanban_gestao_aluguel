@@ -188,10 +188,10 @@ produção da Phase 16. `columns → cards` continua `on delete cascade` no sche
 aplicação passa a garantir que a coluna está sempre vazia antes do `delete` — nenhuma migração necessária.
 Decisões registradas em `.planning/phases/17-exclus-o-de-coluna-sem-cascade-para-cards-ativos/17-CONTEXT.md`.
 
-- [ ] **EXCOL-01**: Excluir uma coluna vazia (0 cards) continua funcionando exatamente como hoje — confirmação simples, sem seletor de destino
-- [ ] **EXCOL-02**: Excluir uma coluna com pelo menos 1 card oferece um seletor de coluna de destino; confirmar move todos os cards da coluna para o destino escolhido e só então exclui a coluna, numa única ação
-- [ ] **EXCOL-03**: Se a coluna sendo excluída for a única do board (nenhuma outra coluna disponível como destino) e tiver pelo menos 1 card, a exclusão é bloqueada com mensagem clara
-- [ ] **EXCOL-04**: Nenhum card ativo é apagado em cascata ao excluir uma coluna — garantido tanto pela camada de aplicação (a coluna é garantidamente esvaziada antes do delete) quanto por uma trava server-side em `deleteColumnAction` que recusa excluir uma coluna não vazia mesmo se chamada fora da UI
+- [x] **EXCOL-01**: Excluir uma coluna vazia (0 cards) continua funcionando exatamente como hoje — confirmação simples, sem seletor de destino
+- [x] **EXCOL-02**: Excluir uma coluna com pelo menos 1 card oferece um seletor de coluna de destino; confirmar move todos os cards da coluna para o destino escolhido e só então exclui a coluna, numa única ação
+- [x] **EXCOL-03**: Se a coluna sendo excluída for a única do board (nenhuma outra coluna disponível como destino) e tiver pelo menos 1 card, a exclusão é bloqueada com mensagem clara
+- [x] **EXCOL-04**: Nenhum card ativo é apagado em cascata ao excluir uma coluna — garantido tanto pela camada de aplicação (a coluna é garantidamente esvaziada antes do delete) quanto por uma trava server-side em `deleteColumnAction` que recusa excluir uma coluna não vazia mesmo se chamada fora da UI
 
 ## Carried over from v1.0
 
@@ -321,10 +321,10 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | ARQCOL-01 | Phase 16 | Confirmado em produção |
 | ARQCOL-02 | Phase 16 | Confirmado em produção |
 | ARQCOL-03 | Phase 16 | Confirmado em produção |
-| EXCOL-01 | Phase 17 | Pendente |
-| EXCOL-02 | Phase 17 | Pendente |
-| EXCOL-03 | Phase 17 | Pendente |
-| EXCOL-04 | Phase 17 | Pendente |
+| EXCOL-01 | Phase 17 | Confirmado em produção |
+| EXCOL-02 | Phase 17 | Confirmado em produção |
+| EXCOL-03 | Phase 17 | Confirmado em produção |
+| EXCOL-04 | Phase 17 | Confirmado em produção |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
