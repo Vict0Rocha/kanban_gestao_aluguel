@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 15
-current_phase_name: exclus-o-de-card-com-destrava-e-pagina-o
-status: complete
-stopped_at: "Phase 15 encerrada — CANDEST-01..03 e PAGIN-01..03 confirmados em produção, incluindo correção pós-verificação da paginação (janela de 5 + campo Ir para + 12 itens)"
-last_updated: "2026-08-27T00:00:00.000Z"
+current_phase: 16
+current_phase_name: reordena-o-em-massa-e-arquivamento-sem-coluna
+status: planning
+stopped_at: "Phase 16 context gathered — pronto para /gsd-plan-phase 16"
+last_updated: "2026-08-27T01:00:00.000Z"
 last_activity: 2026-08-27
-last_activity_desc: "Phase 15 encerrada. Plano 15-06: migração aplicada em produção ('Success. No rows returned'), cardTemLancamento widenado SÓ DEPOIS da confirmação (Pitfall 1), docs/data-model.md atualizado. Teste ponta a ponta confirmado pelo usuário: card só-destrava excluído, lançamento destrava cancelado sem afetar status, contrato com pagamento real continua bloqueado (regressão negativa). Durante essa mesma verificação, o usuário encontrou um bug de UX real na paginação: /relatorios/financeiro sem filtro tem 502 parcelas / 51 páginas de 10, e a lista de botões numerados ficava visualmente inviável — o volume da fase (~46-48 registros/listagem) não previa uma tela sem filtro nenhum. Corrigido fora de plano formal em web/src/components/pagination.tsx (único arquivo, consumido pelas 6 listagens): janela de no máximo 5 números visíveis por vez, par de botões ChevronsLeft/ChevronsRight que desliza a janela sem trocar a página atual, campo 'Ir para' (aparece só quando há mais páginas que a janela) para pular direto digitando o número, e TAMANHO_PAGINA trocado de 10 para 12 a pedido do usuário. Usuário confirmou visualmente em produção: 'Deu certo, ficou como eu imaginei'. Com isso encerram as 15 fases planejadas do projeto inteiro."
+last_activity_desc: "Phase 16 (Reordenação em massa e arquivamento sem coluna) adicionada ao roadmap e discuss-phase concluído. Duas capacidades: (1) botão 'Reordenar' no Board, ao lado da busca — popup lista as colunas, usuário escolhe uma e confirma, move todos os cards em destaque na busca (ou todos, se não houver busca ativa — resolvido reusando matchingIds(columns, query) sem branch extra) para a coluna escolhida; (2) card arquivado passa a ter column_id nulo de verdade no banco (migração: alter column column_id drop not null) em vez de manter a coluna antiga — desarquivar sempre atribui a primeira coluna do board (menor position). Achado real durante a discussão: hoje excluir uma coluna com um card arquivado sem histórico financeiro apontando pra ela apaga esse card em cascata, sem aviso — motivou a decisão de desvincular de verdade, não só mudar o comportamento de desarquivar. 16-CONTEXT.md e 16-DISCUSSION-LOG.md escritos e commitados (20f98a7). Requer migração de banco (relaxar not null) — mesmo ciclo ensaio→apply→verify de sempre."
 progress:
-  total_phases: 15
+  total_phases: 16
   completed_phases: 15
   total_plans: 50
   completed_plans: 50
-  percent: 100
+  percent: 94
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Nenhum — as 15 fases planejadas do projeto estão completas. Próximo trabalho depende do usuário voltar com feedback (ver `reconciliacao-imobiliaria-vai-ser-refinada.md` na memória).
+**Current focus:** Phase 16 (Reordenação em massa e arquivamento sem coluna) — contexto capturado, pronta para planejamento.
 
 ## Current Position
 
-Phase: 15 (exclusão-de-card-com-destrava-e-paginação) — COMPLETE
-Status: Planos 15-01 a 15-06 completos, CANDEST-01..03/PAGIN-01..03 confirmados em produção — Phase 15 encerrada, nenhuma fase pendente
-Last activity: 2026-08-27 — usuário confirmou visualmente a correção da paginação em produção, fechando a Phase 15 e o projeto inteiro
+Phase: 16 (reordenação-em-massa-e-arquivamento-sem-coluna) — CONTEXT GATHERED
+Status: 16-CONTEXT.md e 16-DISCUSSION-LOG.md escritos; falta rodar /gsd-plan-phase 16
+Last activity: 2026-08-27 — discuss-phase da Phase 16 concluído
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
