@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import type { ActionResult, Card, CardDetailsInput } from "./types"
 import type { AlertStatus, AlertType } from "./alerts"
+import { GAP } from "./position"
 import {
   parcelaOrfaApagavel,
   somarLancamentos,
@@ -569,6 +570,66 @@ export async function moveCardAction(
   }
   if (!data || data.length === 0) {
     return { ok: false, error: semLinhas("mover o imóvel") }
+  }
+  return { ok: true, data: undefined }
+}
+
+const CARDIDS_VAZIO = "Nenhum imóvel selecionado."
+const CARDIDS_DEMAIS = "Muitos imóveis selecionados de uma vez."
+
+/**
+ * Reordenação em massa (REORD-01..03, 16-CONTEXT.md): move todos os
+ * `cardIds` recebidos para `columnId`, na ordem em que chegam, com posições
+ * novas sequenciais via `GAP` — o cliente decide a ordem visual (coluna a
+ * coluna, cima a baixo), esta action só grava.
+ *
+ * Cap defensivo de `cardIds.length > 200` ANTES de qualquer chamada ao
+ * banco — mesma filosofia "fail closed" de `deleteCardAction` acima, aqui
+ * contra DoS via array artificialmente grande (T-16-06).
+ *
+ * Supabase-js não expressa valores diferentes por linha numa única query;
+ * por isso `Promise.all` de updates individuais, não um único `update ...
+ * where id = any(...)`.
+ */
+export async function reordenarCardsAction(
+  cardIds: string[],
+  columnId: string
+): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalidoColuna = id(columnId, "Coluna")
+  if (invalidoColuna) return { ok: false, error: invalidoColuna }
+
+  if (!Array.isArray(cardIds) || cardIds.length === 0) {
+    return { ok: false, error: CARDIDS_VAZIO }
+  }
+  if (cardIds.length > 200) {
+    return { ok: false, error: CARDIDS_DEMAIS }
+  }
+  for (const cardId of cardIds) {
+    const invalidoCard = id(cardId, "Imóvel")
+    if (invalidoCard) return { ok: false, error: invalidoCard }
+  }
+
+  const resultados = await Promise.all(
+    cardIds.map((cardId, index) =>
+      sessao.supabase
+        .from("cards")
+        .update({ column_id: columnId, position: (index + 1) * GAP })
+        .eq("id", cardId)
+        .select("id")
+    )
+  )
+
+  const comErro = resultados.find((resultado) => resultado.error)
+  if (comErro?.error) {
+    console.error("reordenarCards", comErro.error)
+    return { ok: false, error: erroDoBanco(comErro.error.code, "reordenar os imóveis") }
+  }
+  const semLinha = resultados.some((resultado) => !resultado.data || resultado.data.length === 0)
+  if (semLinha) {
+    return { ok: false, error: semLinhas("reordenar os imóveis") }
   }
   return { ok: true, data: undefined }
 }

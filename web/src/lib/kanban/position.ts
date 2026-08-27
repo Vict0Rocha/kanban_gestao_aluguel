@@ -1,4 +1,4 @@
-const GAP = 1000
+export const GAP = 1000
 
 /**
  * Fractional-indexing helper: returns a position between two neighbors so
