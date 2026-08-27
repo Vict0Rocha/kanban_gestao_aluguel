@@ -299,6 +299,30 @@ export async function deleteColumnAction(columnId: string): Promise<ActionResult
   const invalido = id(columnId, "Coluna")
   if (invalido) return { ok: false, error: invalido }
 
+  // D-03/EXCOL-04 (17-CONTEXT.md): esta é a trava real de "coluna sempre
+  // vazia antes do delete" — não uma conveniência de UI. Sem ela,
+  // deleteColumnAction continuaria alcançável fora da interface (Server
+  // Actions são endpoints POST de verdade) contra uma coluna não vazia sem
+  // lançamento financeiro, cascateando cards ativos de verdade — o mesmo
+  // buraco que esta fase existe para fechar. O único caminho de UI para uma
+  // coluna não vazia já passa por excluirColunaComMovimentoAction; esta
+  // mensagem só é alcançável fora da interface, é puro backstop.
+  const { data: algumCard, error: erroCard } = await sessao.supabase
+    .from("cards")
+    .select("id")
+    .eq("column_id", columnId)
+    .limit(1)
+  if (erroCard) {
+    console.error("deleteColumn (precheck)", erroCard)
+    return { ok: false, error: erroDoBanco(erroCard.code, "excluir a coluna") }
+  }
+  if ((algumCard?.length ?? 0) > 0) {
+    return {
+      ok: false,
+      error: "Esta coluna ainda tem imóveis. Mova-os para outra coluna antes de excluir.",
+    }
+  }
+
   const { data, error } = await sessao.supabase
     .from("columns")
     .delete()
@@ -307,14 +331,6 @@ export async function deleteColumnAction(columnId: string): Promise<ActionResult
 
   if (error) {
     console.error("deleteColumn", error)
-    // Nenhuma pré-checagem própria é acrescentada aqui — o trigger de banco
-    // `cards_impede_exclusao_com_lancamento` (migration
-    // 20260819000000_cards_arquivado_em.sql) já cobre este caminho de
-    // cascade atomicamente, com o predicado exato de D-14, inclusive para
-    // CADA card da coluna. Uma pré-checagem por coluna seria uma segunda
-    // consulta e uma segunda cópia da regra; o que faltava não era a
-    // trava, era a mensagem — por isso só o SQLSTATE do trigger é mapeado
-    // aqui.
     if (error.code === "P0001") {
       return { ok: false, error: EXCLUSAO_COLUNA_BLOQUEADA_POR_LANCAMENTO }
     }
