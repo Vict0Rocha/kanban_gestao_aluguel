@@ -364,7 +364,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 14. Cancelamento de taxas e caução | 5/5 | Complete | 2026-08-26 |
 | 15. Exclusão de card com destrava e paginação | 6/6 | Complete | 2026-08-27 |
 | 16. Reordenação em massa e arquivamento sem coluna | 4/4 | Complete | 2026-08-27 |
-| 17. Exclusão de coluna sem cascade para cards ativos | 0/TBD | Not Started | - |
+| 17. Exclusão de coluna sem cascade para cards ativos | 0/1 | Planned | - |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15 e 16 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-16: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL.
 
@@ -422,8 +422,16 @@ Plans:
 **Goal:** Excluir uma coluna que ainda tem cards ativos deixa de apagá-los em cascata — o próprio diálogo de exclusão passa a oferecer para qual coluna mover os cards, movendo e excluindo numa única ação; sem nenhuma outra coluna disponível, a exclusão é bloqueada com mensagem clara
 **Requirements**: EXCOL-01, EXCOL-02, EXCOL-03, EXCOL-04 (trabalho pós-milestone — ver 17-CONTEXT.md)
 **Depends on:** Phase 16
-**Plans:** 0 plans
+**Success Criteria** (what must be TRUE):
+
+  1. Excluir uma coluna vazia (0 cards) continua funcionando exatamente como hoje — confirmação simples, sem seletor de destino
+  2. Excluir uma coluna com pelo menos 1 card oferece um seletor de coluna de destino; confirmar move todos os cards da coluna para o destino escolhido e só então exclui a coluna, numa única ação
+  3. Se a coluna sendo excluída for a única do board (nenhuma outra coluna disponível como destino) e tiver pelo menos 1 card, a exclusão é bloqueada com mensagem clara
+  4. Nenhum card ativo é apagado em cascata — garantido tanto pela camada de aplicação (a coluna é garantidamente esvaziada antes do delete) quanto por uma trava server-side em `deleteColumnAction` que recusa excluir uma coluna não vazia mesmo se chamada fora da UI
+  5. Nenhuma migração de banco foi necessária — `columns → cards on delete cascade` permanece exatamente como está no schema, servindo só como rede de segurança
+
+**Plans:** 1 plan
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 17 to break down)
+- [ ] 17-01-PLAN.md — Excluir coluna com movimento de cards ponta a ponta (Server Action combinada, diálogo com 3 ramos, hardening de `deleteColumnAction`, documentação)
