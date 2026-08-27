@@ -263,7 +263,7 @@ select max(updated_at) as cards_updated_at_max from public.cards;
 -- da função voltou a ser o antigo, sem o filtro de tipo novo.
 
 select
-  pg_get_functiondef('public.impedir_exclusao_de_card_com_lancamento'::regprocedure) as corpo_atual_da_funcao;
+  pg_get_functiondef('public.impedir_exclusao_de_card_com_lancamento()'::regprocedure) as corpo_atual_da_funcao;
 -- esperado: o corpo NÃO contém "pl.tipo in ('pagamento', 'acrescimo',
 -- 'desconto')" — se esse filtro ainda estiver presente aqui, fora da
 -- transação, o ensaio virou push: o operador deve PARAR e reportar
@@ -281,7 +281,7 @@ select
 -- ============================================================
 
 select
-  pg_get_functiondef('public.impedir_exclusao_de_card_com_lancamento'::regprocedure) as corpo_atual_da_funcao;
+  pg_get_functiondef('public.impedir_exclusao_de_card_com_lancamento()'::regprocedure) as corpo_atual_da_funcao;
 -- esperado: o corpo CONTÉM "pl.tipo in ('pagamento', 'acrescimo',
 -- 'desconto')" — o filtro de tipo está de verdade em produção
 
