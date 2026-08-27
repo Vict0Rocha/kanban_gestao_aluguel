@@ -1401,21 +1401,24 @@ export async function destravarParcelaAction(
 }
 
 /**
- * CANAJU-01..04: desfaz um acréscimo, desconto ou pagamento marcado por
- * engano — D-01 (11-CONTEXT.md)/D-02 (12-CONTEXT.md) apaga de verdade a linha
- * em `parcela_lancamentos`, reversão deliberada do livro-razão append-only
- * que o resto deste arquivo segue (mesmo trade-off já confirmado pelo
- * usuário, sem checkpoint novo). Cada lançamento (`pagamento`/`acrescimo`/
- * `desconto`) tem seu próprio botão (D-02, 11-CONTEXT.md), então o DELETE é
- * condicionado ao `id` daquele lançamento específico, nunca a todos os
- * lançamentos da parcela de uma vez.
+ * CANAJU-01..04/CANDEST-02: desfaz um acréscimo, desconto, pagamento ou
+ * destrava marcado por engano — D-01 (11-CONTEXT.md)/D-02 (12-CONTEXT.md)
+ * apaga de verdade a linha em `parcela_lancamentos`, reversão deliberada do
+ * livro-razão append-only que o resto deste arquivo segue (mesmo trade-off
+ * já confirmado pelo usuário, sem checkpoint novo). Cada lançamento
+ * (`pagamento`/`acrescimo`/`desconto`/`destrava`) tem seu próprio botão
+ * (D-02, 11-CONTEXT.md), então o DELETE é condicionado ao `id` daquele
+ * lançamento específico, nunca a todos os lançamentos da parcela de uma vez.
  *
  * A trava de corrida real (D-06/race safety) é o próprio DELETE condicionado
  * aos três `.eq()`/`.in()` — id do lançamento, parcela_id e o allowlist de
  * tipo — mesmo formato do `.eq("status","paga")` de `conciliarParcelaAction`,
- * nunca uma leitura seguida de escrita separada. O allowlist de três tipos
- * também impede cancelar por engano um lançamento `destrava` — D-01
- * (12-CONTEXT.md), CONCIL-04 continua intocado.
+ * nunca uma leitura seguida de escrita separada. O allowlist era de três
+ * tipos e excluía `destrava` de propósito (D-01, 12-CONTEXT.md); a Phase 15
+ * reabre pontualmente essa exceção (D-01/D-02, 15-CONTEXT.md) e amplia para
+ * quatro tipos — CONCIL-04 continua intocado, porque cancelar remove só a
+ * linha de auditoria (quem destravou, quando, por quê), nunca desfaz o
+ * destravamento em si.
  */
 export async function cancelarLancamentoAction(
   parcelaId: string,
@@ -1438,7 +1441,7 @@ export async function cancelarLancamentoAction(
     .delete()
     .eq("id", lancamentoId)
     .eq("parcela_id", parcelaId)
-    .in("tipo", ["pagamento", "acrescimo", "desconto"])
+    .in("tipo", ["pagamento", "acrescimo", "desconto", "destrava"])
     .select("id")
 
   if (error) {

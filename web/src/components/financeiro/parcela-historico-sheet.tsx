@@ -125,7 +125,7 @@ export function ParcelaHistoricoSheet({
                         {item.motivo}
                       </p>
                     )}
-                    {(item.kind === "taxa" || ["pagamento", "acrescimo", "desconto"].includes(item.tipo)) && !parcelaConciliada && (
+                    {(item.kind === "taxa" || ["pagamento", "acrescimo", "desconto", "destrava"].includes(item.tipo)) && !parcelaConciliada && (
                       <div className="flex justify-end">
                         <Button
                           variant="ghost"
