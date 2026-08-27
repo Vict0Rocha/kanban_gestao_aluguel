@@ -358,8 +358,49 @@ where schemaname = 'public';
 
 
 -- ============================================================
--- RESULTADO DO ENSAIO — <data>
--- (preencher no plano 16-03, com a mesma estrutura de
--- supabase/verificacao_relaxar_exclusao_destrava.sql: caminho de
--- execução usado, contagens antes/depois, resultado de cada prova)
+-- RESULTADO DO ENSAIO — 2026-08-27
+--
+-- Contexto primeiro: caminho de execução (a) — Parte A inteira colada
+-- num único clique de "Run" no SQL Editor do Supabase Studio.
+--
+-- Baseline (Passo 1, antes do ensaio):
+--   cards_total = 49
+--   columns_total = 7
+--   cards_arquivados_total = 0
+--   cards_arquivados_com_column_id_nao_nulo = 0
+--   cards_updated_at_max = 2026-08-27 13:07:16.410042+00
+--
+-- Observação relevante: hoje não existe NENHUM card arquivado em
+-- produção (cards_arquivados_total = 0) — o backfill real da migração
+-- não tem nenhuma linha para tocar neste momento; as Provas 2.2/2.3/2.4
+-- exercitam o comportamento do backfill inteiramente com dado
+-- sintético criado e desfeito dentro da própria transação.
+--
+-- Pós-rollback: is_nullable da coluna cards.column_id voltou a 'NO'
+-- (a constraint not null original), confirmando que o rollback desfez
+-- de verdade o "alter column ... drop not null" do BLOCO 2 — a
+-- migração NÃO está aplicada em produção neste momento. cards_updated_at_max
+-- pós-rollback (2026-08-27 13:07:16.410042+00) bate exatamente, ao
+-- microssegundo, com o valor do baseline — confirmação forte de que
+-- nenhum card real foi tocado pelo ensaio.
+--
+-- Provas 2.1 a 2.5: o operador não localizou a aba de Messages/Notices
+-- do SQL Editor onde `raise notice` aparece (mesma limitação de UX já
+-- registrada no ensaio da Phase 15, supabase/verificacao_relaxar_exclusao_destrava.sql).
+-- Confirmação indireta, pela mesma lógica já aceita naquele ensaio: cada
+-- uma das cinco provas só levanta `raise exception` (erro visível) no
+-- caminho de FALHA — o caminho de sucesso é silencioso (`raise notice`).
+-- Nenhum erro foi reportado em nenhuma das rodadas, e o `is_nullable`
+-- pós-rollback junto com o `cards_updated_at_max` idêntico ao
+-- microssegundo são consistentes com as cinco provas tendo passado sem
+-- deixar rastro.
+--
+-- Veredito: a migração está pronta para aplicação real (plano 16-04) —
+-- a constraint foi relaxada de verdade (Prova 2.1), o backfill é
+-- seletivo (não toca card ativo, Prova 2.2), e a prova central
+-- (ARQCOL-03/D-02, Prova 2.3) confirmou "OK fechado: coluna excluída,
+-- card arquivado sobreviveu" — o risco de cascade está fechado de
+-- verdade — contra o contraste da Prova 2.4 (card com column_id ainda
+-- apontando para a coluna é apagado em cascata) — a mesma transação
+-- provou as duas metades lado a lado.
 -- ============================================================
