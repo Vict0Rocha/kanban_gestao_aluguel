@@ -26,7 +26,7 @@ import type {
   CardDetailsInput,
   Column as ColumnType,
 } from "@/lib/kanban/types"
-import { positionBetween } from "@/lib/kanban/position"
+import { GAP, positionBetween } from "@/lib/kanban/position"
 import { countCards, isSearching, matchingIds } from "@/lib/kanban/search"
 import { SearchField } from "@/components/search-field"
 import {
@@ -35,6 +35,7 @@ import {
   deleteColumn,
   moveCard,
   renameColumn,
+  reordenarCards,
   setCardAtivo,
   updateCard,
   updateColumnPosition,
@@ -42,6 +43,7 @@ import {
 import { Column } from "@/components/kanban/column"
 import { CardItem } from "@/components/kanban/card-item"
 import { AddColumnForm } from "@/components/kanban/add-column-form"
+import { ReordenarDialog } from "@/components/kanban/reordenar-dialog"
 import { WriteErrorToast } from "@/components/kanban/write-error-toast"
 
 function findColumnOf(columns: ColumnType[], id: string): ColumnType | undefined {
@@ -346,6 +348,43 @@ export function Board({
     )
   }
 
+  /**
+   * Botão "Reordenar" (D-06..D-11, 16-CONTEXT.md): move todos os cards
+   * elegíveis para `targetColumnId` numa única ação, preservando a ordem
+   * visual anterior (coluna a coluna, de cima a baixo). Elegibilidade
+   * reusa `matchedIds` sem nenhum branch novo — busca ativa restringe aos
+   * destacados, sem busca `matchedIds` já contém todo mundo (D-08,
+   * `matchingIds` com query vazia). Cada card elegível ganha posição nova
+   * via `GAP`, inclusive os que já estavam na coluna de destino (D-10).
+   */
+  function handleReordenar(targetColumnId: string) {
+    const ordered = columns.flatMap((column) =>
+      column.cards.filter((card) => matchedIds.has(card.id))
+    )
+    const cardIds = ordered.map((card) => card.id)
+    if (cardIds.length === 0) return
+
+    const optimistic = columns.map((column) => {
+      const mantidos = column.cards.filter((card) => !matchedIds.has(card.id))
+      if (column.id !== targetColumnId) {
+        return { ...column, cards: mantidos }
+      }
+      const movidos = ordered.map((card, index) => ({
+        ...card,
+        column_id: targetColumnId,
+        position: (index + 1) * GAP,
+      }))
+      return { ...column, cards: [...mantidos, ...movidos] }
+    })
+
+    persistOrRevert(
+      optimistic,
+      columns,
+      () => reordenarCards(cardIds, targetColumnId),
+      "Não foi possível reordenar os imóveis."
+    )
+  }
+
   return (
     <DndContext
       // dnd-kit derives the drag handles' aria-describedby from a
@@ -370,6 +409,7 @@ export function Board({
               : undefined
           }
         />
+        <ReordenarDialog columns={columns} onConfirm={async (columnId) => handleReordenar(columnId)} />
         {searching && (
           <p className="text-xs text-muted-foreground">
             {matchCount === 0 ? (

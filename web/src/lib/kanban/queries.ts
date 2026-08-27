@@ -21,6 +21,7 @@ import {
   registrarEventoCaucaoAction,
   registrarPagamentoAction,
   renameColumnAction,
+  reordenarCardsAction,
   resolveAlertAction,
   salvarPercentuaisAction,
   setCardAtivoAction,
@@ -79,6 +80,10 @@ export async function moveCard(id: string, columnId: string, position: number) {
 
 export async function deleteCard(id: string) {
   return unwrap(deleteCardAction(id))
+}
+
+export async function reordenarCards(cardIds: string[], columnId: string) {
+  return unwrap(reordenarCardsAction(cardIds, columnId))
 }
 
 export async function setCardAtivo(id: string, ativo: boolean) {
