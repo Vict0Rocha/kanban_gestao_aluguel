@@ -15,6 +15,7 @@ import { IdPill } from "@/components/financeiro/id-pill"
 import { ParcelaHistoricoSheet } from "@/components/financeiro/parcela-historico-sheet"
 import { ParcelaSituacaoBadge } from "@/components/financeiro/parcela-situacao-badge"
 import { RegistrarPagamentoDialog } from "@/components/financeiro/registrar-pagamento-dialog"
+import { usePagination, Pagination } from "@/components/pagination"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -188,6 +189,7 @@ export function ParcelasTable({
   todayISO,
   mensagemVazia,
   primeiraCompetenciaPorCard,
+  resetKey,
 }: {
   linhas: LinhaParcela[]
   erro?: boolean
@@ -202,8 +204,17 @@ export function ParcelasTable({
    * vez em financeiro/page.tsx para todos os contratos — `AcoesCell` usa
    * para decidir a `origem` da taxa sugerida (D-08). */
   primeiraCompetenciaPorCard: Record<string, string>
+  /** Chave de identidade do filtro ativo — decide quando a paginação volta
+   * para a página 1. Mutações que disparam `router.refresh()` sem mudar o
+   * filtro (conciliar, cancelar lançamento) NÃO resetam a página do
+   * usuário (PAGIN-03, Pitfall 3 de 15-RESEARCH.md). */
+  resetKey: unknown
 }) {
   const [conciliarErro, setConciliarErro] = React.useState<string | null>(null)
+  const { itensDaPagina, pagina, totalPaginas, setPagina } = usePagination(
+    linhas,
+    resetKey
+  )
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
@@ -231,7 +242,7 @@ export function ParcelasTable({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {linhas.map((linha) => (
+              {itensDaPagina.map((linha) => (
                 <TableRow key={linha.id}>
                   <TableCell>
                     <IdPill numero={linha.numero} />
@@ -264,6 +275,11 @@ export function ParcelasTable({
               ))}
             </TableBody>
           </Table>
+          <Pagination
+            pagina={pagina}
+            totalPaginas={totalPaginas}
+            onPaginaChange={setPagina}
+          />
           <ConciliarFalhaToast
             message={conciliarErro}
             onDismiss={() => setConciliarErro(null)}
