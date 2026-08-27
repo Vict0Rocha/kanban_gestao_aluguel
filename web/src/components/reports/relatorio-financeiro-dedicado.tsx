@@ -66,6 +66,19 @@ export function RelatorioFinanceiroDedicado({
     [parcelas, filtro, hojeISO]
   )
 
+  // PAGIN-03: chave de identidade do filtro ativo, para o reset de página de
+  // `RelatorioFinanceiroLista`. `filtro.situacoes` é um `Set`, que
+  // `JSON.stringify` serializa como `{}` — convertido para array ordenado
+  // antes, senão a chave nunca mudaria quando só a situação fosse trocada.
+  const listaResetKey = React.useMemo(
+    () =>
+      JSON.stringify({
+        ...filtro,
+        situacoes: [...filtro.situacoes].sort(),
+      }),
+    [filtro]
+  )
+
   const linhasFiltradas = React.useMemo(() => {
     return parcelas
       .filter((p) => {
@@ -191,7 +204,11 @@ export function RelatorioFinanceiroDedicado({
           })}
         </div>
 
-        <RelatorioFinanceiroLista linhas={linhasFiltradas} hojeISO={hojeISO} />
+        <RelatorioFinanceiroLista
+          linhas={linhasFiltradas}
+          hojeISO={hojeISO}
+          resetKey={listaResetKey}
+        />
       </div>
     </Collapsible>
   )

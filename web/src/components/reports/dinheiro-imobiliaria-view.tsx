@@ -21,6 +21,7 @@ import { StatTile } from "@/components/reports/stat-tile"
 import { CaucaoEventoLabel } from "@/components/financeiro/caucao-evento-label"
 import { IdPill } from "@/components/financeiro/id-pill"
 import { TaxaOrigemBadge } from "@/components/financeiro/taxa-origem-label"
+import { usePagination, Pagination } from "@/components/pagination"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -97,6 +98,10 @@ export function DinheiroImobiliariaView({
     )
   }, [taxas, caucaoEventos, periodo])
 
+  // PAGIN-03: `periodo` já é o único filtro desta tela — usado direto como
+  // resetKey, sem prop nova.
+  const { itensDaPagina, pagina, totalPaginas, setPagina } = usePagination(linhas, periodo)
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -163,7 +168,7 @@ export function DinheiroImobiliariaView({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {linhas.map((linha) => (
+              {itensDaPagina.map((linha) => (
                 <TableRow key={linha.id}>
                   <TableCell className="tabular-nums text-muted-foreground">
                     {formatDate(linha.data)}
@@ -188,6 +193,11 @@ export function DinheiroImobiliariaView({
             </TableBody>
           </Table>
         )}
+        <Pagination
+          pagina={pagina}
+          totalPaginas={totalPaginas}
+          onPaginaChange={setPagina}
+        />
       </div>
     </div>
   )
