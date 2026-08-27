@@ -159,6 +159,28 @@ Decisões registradas em `.planning/phases/15-exclus-o-de-card-com-destrava-e-pa
 - [x] **PAGIN-02**: A navegação entre páginas é numerada (janela de até 5 números por vez + setas anterior/próxima), não apenas Anterior/Próxima; quando há mais páginas do que a janela mostra, um botão desliza a janela sem trocar de página e um campo "Ir para" pula direto a qualquer página — confirmado em produção
 - [x] **PAGIN-03**: Mudar um filtro em qualquer uma das seis telas volta a listagem para a página 1 — mas uma ação que não muda o filtro (cancelar/conciliar/desarquivar um item) nunca reseta a página do usuário — confirmado por leitura de código (`resetKey` por tela) em todas as seis; teste interativo de mutação-sem-reset feito diretamente só nas telas com filtro
 
+### REORD — Reordenação em massa no Board (pós-milestone, Phase 16)
+
+Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário logo após a Phase 15
+fechar. Estritamente aditiva: não altera o drag-and-drop individual já existente (`moveCardAction`),
+só acrescenta um caminho novo de movimentação em lote. Decisões registradas em
+`.planning/phases/16-reordena-o-em-massa-e-arquivamento-sem-coluna/16-CONTEXT.md`.
+
+- [ ] **REORD-01**: Existe um botão "Reordenar" ao lado do campo de busca no Board, que abre um popup listando as colunas existentes
+- [ ] **REORD-02**: Escolher uma coluna e confirmar move, numa única ação, todos os cards elegíveis — só os em destaque na busca, se houver busca ativa; todos os cards do board, se não houver — para a coluna escolhida
+- [ ] **REORD-03**: Depois do movimento em massa, a ordem dos cards na coluna de destino segue a ordem visual anterior (coluna → posição), com posições novas sequenciais
+
+### ARQCOL — Arquivamento sem vínculo de coluna (pós-milestone, Phase 16)
+
+Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário na mesma conversa que
+REORD. Reabre pontualmente D-12 (06.2-CONTEXT.md, "desarquivar devolve ao funcionamento normal") para
+incluir `column_id` na mesma lógica. Decisões registradas em
+`.planning/phases/16-reordena-o-em-massa-e-arquivamento-sem-coluna/16-CONTEXT.md`.
+
+- [ ] **ARQCOL-01**: `cards.column_id` é nullable no banco; arquivar um card grava `column_id = null` junto com `arquivado_em`
+- [ ] **ARQCOL-02**: Desarquivar sempre atribui a primeira coluna (menor `position`) do board, nunca a coluna anterior à qual o card estava vinculado
+- [ ] **ARQCOL-03**: Excluir uma coluna nunca mais apaga em cascata um card arquivado sem histórico financeiro — fechado estruturalmente por ARQCOL-01 (um `column_id` nulo nunca é alcançado por `on delete cascade` de `columns`)
+
 ## Carried over from v1.0
 
 Requisito não concluído na v1.0, mantido visível para não se perder. **Não faz parte do escopo de fases da v2.0** — é uma ação de painel, não trabalho de código, adiada por escolha do usuário.
@@ -281,12 +303,18 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | PAGIN-01 | Phase 15 | Confirmado em produção |
 | PAGIN-02 | Phase 15 | Confirmado em produção |
 | PAGIN-03 | Phase 15 | Confirmado em produção |
+| REORD-01 | Phase 16 | Pendente |
+| REORD-02 | Phase 16 | Pendente |
+| REORD-03 | Phase 16 | Pendente |
+| ARQCOL-01 | Phase 16 | Pendente |
+| ARQCOL-02 | Phase 16 | Pendente |
+| ARQCOL-03 | Phase 16 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
 - Mapped to phases: 39
 - Unmapped: 0
-- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05) e Phase 15 (CANDEST-01..03, PAGIN-01..03) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST` e `### PAGIN` acima
+- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05), Phase 15 (CANDEST-01..03, PAGIN-01..03) e Phase 16 (REORD-01..03, ARQCOL-01..03) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST`, `### PAGIN`, `### REORD` e `### ARQCOL` acima
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 - VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 

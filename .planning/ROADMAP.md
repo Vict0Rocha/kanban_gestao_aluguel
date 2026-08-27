@@ -395,7 +395,7 @@ Plans:
 ### Phase 16: Reordenação em massa e arquivamento sem coluna
 
 **Goal:** Um botão "Reordenar" ao lado da busca do Board move de uma vez todos os cards elegíveis (ou só os em destaque, se houver busca ativa) para uma coluna escolhida; e um card arquivado fica sem nenhuma coluna vinculada no banco, voltando sempre à primeira coluna do board ao ser desarquivado
-**Requirements**: TBD (ver 16-CONTEXT.md — capacidade nova pedida pelo usuário, pós-milestone)
+**Requirements**: REORD-01, REORD-02, REORD-03, ARQCOL-01, ARQCOL-02, ARQCOL-03 (trabalho pós-milestone — ver 16-CONTEXT.md)
 **Depends on:** Phase 15
 **Plans:** 0 plans
 
