@@ -93,6 +93,7 @@ export function FinanceiroView({
         todayISO={todayISO}
         mensagemVazia={linhas.length === 0 ? (nota ?? undefined) : undefined}
         primeiraCompetenciaPorCard={primeiraCompetenciaPorCard}
+        resetKey={JSON.stringify(filtroInicial)}
       />
     </div>
   )
