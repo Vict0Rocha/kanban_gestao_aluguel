@@ -419,8 +419,8 @@ Plans:
 
 ### Phase 17: Exclusão de coluna sem cascade para cards ativos
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Excluir uma coluna que ainda tem cards ativos deixa de apagá-los em cascata — o próprio diálogo de exclusão passa a oferecer para qual coluna mover os cards, movendo e excluindo numa única ação; sem nenhuma outra coluna disponível, a exclusão é bloqueada com mensagem clara
+**Requirements**: TBD (ver 17-CONTEXT.md — capacidade nova pedida pelo usuário, pós-milestone)
 **Depends on:** Phase 16
 **Plans:** 0 plans
 
