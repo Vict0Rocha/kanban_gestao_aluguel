@@ -574,11 +574,15 @@ export async function moveCardAction(
 }
 
 /**
- * Predicado de D-14 (qualquer lançamento de qualquer tipo trava a exclusão),
- * numa única implementação. `deleteCardAction` (a trava) e
- * `cardTemLancamentoAction` (o pré-voo do diálogo, plano 06.2-06) chamam
- * exatamente esta função — nenhum dos dois consulta por conta própria, pela
- * mesma disciplina de ponto único de verdade que `visibilidade.ts` documenta.
+ * Predicado de D-14 (06.2-CONTEXT.md), reaberto pontualmente pela Phase 15
+ * (D-01/D-03, 15-CONTEXT.md): um lançamento `tipo='destrava'` nunca soma
+ * valor (é registro de auditoria, não dinheiro se movendo — mesma razão que
+ * já o excluía do cancelamento em `cancelarLancamentoAction`, D-01
+ * 12-CONTEXT.md, reaberto também pela Phase 15) e por isso deixa de travar a
+ * exclusão do card. `deleteCardAction` (a trava) e `cardTemLancamentoAction`
+ * (o pré-voo do diálogo, plano 06.2-06) chamam exatamente esta função —
+ * nenhum dos dois consulta por conta própria, pela mesma disciplina de ponto
+ * único de verdade que `visibilidade.ts` documenta.
  *
  * `.limit(1)` faz a consulta parar no primeiro acerto, sem contar tudo — só
  * "existe" importa, não "quantos". `!inner` é obrigatório para filtrar por
@@ -591,14 +595,17 @@ export async function moveCardAction(
  *
  * A-04 (13-04-PLAN.md): amplia para checar também `taxas_imobiliaria` e
  * `caucao_eventos` — o backstop de banco (`impedir_exclusao_de_card_com_lancamento`,
- * plano 13-01) já verifica as três; deixar este pré-voo do app checando só
+ * plano 13-01, relaxado pela Phase 15 só para `parcela_lancamentos`) já
+ * verifica as três; deixar este pré-voo do app checando só
  * `parcela_lancamentos` criaria uma janela em que o diálogo de exclusão
  * mostra "pode excluir" e o banco recusa. `card_id` é direto nas duas tabelas
  * novas (sem FK indireta via `parcelas`), então cada checagem é um
  * `select("id").eq("card_id", cardId).limit(1)` simples — mais simples que a
- * consulta de `parcela_lancamentos` acima, que precisa do `!inner`.
- * Curto-circuita: se a primeira consulta já achar linha, devolve `true` sem
- * rodar as outras duas.
+ * consulta de `parcela_lancamentos` acima, que precisa do `!inner`. Nenhuma
+ * das duas ganha filtro de tipo — `taxas_imobiliaria`/`caucao_eventos` não
+ * têm coluna `tipo` equivalente a `destrava`, cada linha já É dinheiro de
+ * verdade. Curto-circuita: se a primeira consulta já achar linha, devolve
+ * `true` sem rodar as outras duas.
  */
 async function tabelaTemCard(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -622,6 +629,7 @@ async function cardTemLancamento(
     .from("parcela_lancamentos")
     .select("id, parcelas!inner(card_id)")
     .eq("parcelas.card_id", cardId)
+    .in("tipo", ["pagamento", "acrescimo", "desconto"])
     .limit(1)
 
   if (error) {
