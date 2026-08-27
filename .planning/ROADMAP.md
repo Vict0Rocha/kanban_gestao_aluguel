@@ -362,7 +362,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 13. Dinheiro da imobiliária | 7/7 | Complete | 2026-08-25 |
 | 14. Cancelamento de taxas e caução | 5/5 | Complete | 2026-08-26 |
 | 15. Exclusão de card com destrava e paginação | 6/6 | Complete | 2026-08-27 |
-| 16. Reordenação em massa e arquivamento sem coluna | 0/TBD | Not Started | - |
+| 16. Reordenação em massa e arquivamento sem coluna | 0/4 | Planned | - |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14 e 15 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário; Phase 12: capacidade nova pedida pelo usuário; Phase 13: capacidade nova pedida pelo usuário; Phase 14: capacidade nova pedida pelo usuário; Phase 15: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN.
 
@@ -397,8 +397,11 @@ Plans:
 **Goal:** Um botão "Reordenar" ao lado da busca do Board move de uma vez todos os cards elegíveis (ou só os em destaque, se houver busca ativa) para uma coluna escolhida; e um card arquivado fica sem nenhuma coluna vinculada no banco, voltando sempre à primeira coluna do board ao ser desarquivado
 **Requirements**: REORD-01, REORD-02, REORD-03, ARQCOL-01, ARQCOL-02, ARQCOL-03 (trabalho pós-milestone — ver 16-CONTEXT.md)
 **Depends on:** Phase 15
-**Plans:** 0 plans
+**Plans:** 4 plans
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 16 to break down)
+- [ ] 16-01-PLAN.md — Migração aditiva: `cards.column_id` nullable + backfill dos cards já arquivados, com runbook de ensaio (wave 1)
+- [ ] 16-02-PLAN.md — Botão "Reordenar" ponta a ponta: Server Action em lote, diálogo de seleção de coluna, wiring no Board (wave 1, independente da migração)
+- [ ] 16-03-PLAN.md — Ensaiar a migração contra produção (transação revertida) e registrar o resultado (wave 2)
+- [ ] 16-04-PLAN.md — Aplicar a migração em produção (checkpoint de decisão), widenar `arquivarCardAction`/`desarquivarCardAction`, documentar, e confirmar ARQCOL-01/02/03 + REORD-01/02/03 em produção (wave 3)
