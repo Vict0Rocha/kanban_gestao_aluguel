@@ -4,33 +4,24 @@ import * as React from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { GripVertical, Trash2 } from "lucide-react"
+import { GripVertical } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import type { Column as ColumnType } from "@/lib/kanban/types"
 import type { CardDetailsInput } from "@/lib/kanban/types"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CardItem } from "@/components/kanban/card-item"
 import { AddCardDialog } from "@/components/kanban/add-card-dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { ExcluirColunaDialog } from "@/components/kanban/excluir-coluna-dialog"
 
 export function Column({
   column,
+  columns,
   searching,
   matchedIds,
   onRename,
   onDeleteColumn,
+  onDeleteColumnComMovimento,
   onDeleteCard,
   onArquivarCard,
   onUpdateCard,
@@ -39,11 +30,13 @@ export function Column({
   registerRef,
 }: {
   column: ColumnType
+  columns: ColumnType[]
   searching: boolean
   /** Cards que batem com a busca — realçados, nunca removidos da lista. */
   matchedIds: Set<string>
   onRename: (id: string, name: string) => void
   onDeleteColumn: (id: string) => void
+  onDeleteColumnComMovimento: (id: string, destinoId: string) => void
   onDeleteCard: (id: string) => void
   /** Opcional pelo mesmo motivo do `onArquivado` de `CardItem` — ver comentário lá. */
   onArquivarCard?: (id: string) => void
@@ -140,39 +133,12 @@ export function Column({
             : column.cards.length}
         </span>
 
-        <AlertDialog>
-          <AlertDialogTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-                aria-label="Excluir coluna"
-              />
-            }
-          >
-            <Trash2 className="size-3.5" />
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Excluir a coluna &quot;{column.name}&quot;?</AlertDialogTitle>
-              <AlertDialogDescription>
-                {column.cards.length > 0
-                  ? `Os ${column.cards.length} imóveis dessa coluna também serão excluídos. Essa ação não pode ser desfeita.`
-                  : "Essa ação não pode ser desfeita."}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction
-                variant="destructive"
-                onClick={() => onDeleteColumn(column.id)}
-              >
-                Excluir
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <ExcluirColunaDialog
+          column={column}
+          outrasColunas={columns.filter((c) => c.id !== column.id)}
+          onExcluirVazia={onDeleteColumn}
+          onExcluirComMovimento={onDeleteColumnComMovimento}
+        />
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 pb-2">

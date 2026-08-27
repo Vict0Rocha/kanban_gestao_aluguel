@@ -16,6 +16,7 @@ import {
   deleteColumnAction,
   desarquivarCardAction,
   destravarParcelaAction,
+  excluirColunaComMovimentoAction,
   moveCardAction,
   moveColumnAction,
   registrarEventoCaucaoAction,
@@ -84,6 +85,10 @@ export async function deleteCard(id: string) {
 
 export async function reordenarCards(cardIds: string[], columnId: string) {
   return unwrap(reordenarCardsAction(cardIds, columnId))
+}
+
+export async function excluirColunaComMovimento(id: string, destinoId: string) {
+  return unwrap(excluirColunaComMovimentoAction(id, destinoId))
 }
 
 export async function setCardAtivo(id: string, ativo: boolean) {
