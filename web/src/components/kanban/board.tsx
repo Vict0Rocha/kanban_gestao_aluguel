@@ -33,6 +33,7 @@ import {
   createCard,
   createColumn,
   deleteColumn,
+  excluirColunaComMovimento,
   moveCard,
   renameColumn,
   reordenarCards,
@@ -285,6 +286,38 @@ export function Board({
     )
   }
 
+  /**
+   * Excluir coluna com cards, movendo-os antes (EXCOL-02, D-01
+   * `17-CONTEXT.md`): monta a lista otimista do destino com o mesmo formato
+   * `base + (index+1)*GAP` que a Server Action usa server-side
+   * (`excluirColunaComMovimentoAction`), espelhando `handleReordenar` para o
+   * cálculo de posição e `handleDeleteColumn` para o envelope
+   * `persistOrRevert`.
+   */
+  function handleDeleteColumnComMovimento(columnId: string, destinoColumnId: string) {
+    const origem = columns.find((c) => c.id === columnId)
+    if (!origem) return
+
+    const destinoAtual = columns.find((c) => c.id === destinoColumnId)
+    const base = destinoAtual?.cards.reduce((max, c) => Math.max(max, c.position), 0) ?? 0
+    const movidos = origem.cards.map((card, index) => ({
+      ...card,
+      column_id: destinoColumnId,
+      position: base + (index + 1) * GAP,
+    }))
+
+    const optimistic = columns
+      .filter((c) => c.id !== columnId)
+      .map((c) => (c.id === destinoColumnId ? { ...c, cards: [...c.cards, ...movidos] } : c))
+
+    persistOrRevert(
+      optimistic,
+      columns,
+      () => excluirColunaComMovimento(columnId, destinoColumnId),
+      "Não foi possível excluir a coluna."
+    )
+  }
+
   async function handleCreateCard(
     columnId: string,
     input: { proprietario: string; valor: number; endereco: string }
@@ -435,10 +468,12 @@ export function Board({
             <Column
               key={column.id}
               column={column}
+              columns={columns}
               searching={searching}
               matchedIds={matchedIds}
               onRename={handleRenameColumn}
               onDeleteColumn={handleDeleteColumn}
+              onDeleteColumnComMovimento={handleDeleteColumnComMovimento}
               onDeleteCard={handleDeleteCard}
               onArquivarCard={handleArquivarCard}
               onUpdateCard={handleUpdateCard}

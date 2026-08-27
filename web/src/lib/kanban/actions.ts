@@ -299,6 +299,30 @@ export async function deleteColumnAction(columnId: string): Promise<ActionResult
   const invalido = id(columnId, "Coluna")
   if (invalido) return { ok: false, error: invalido }
 
+  // D-03/EXCOL-04 (17-CONTEXT.md): esta é a trava real de "coluna sempre
+  // vazia antes do delete" — não uma conveniência de UI. Sem ela,
+  // deleteColumnAction continuaria alcançável fora da interface (Server
+  // Actions são endpoints POST de verdade) contra uma coluna não vazia sem
+  // lançamento financeiro, cascateando cards ativos de verdade — o mesmo
+  // buraco que esta fase existe para fechar. O único caminho de UI para uma
+  // coluna não vazia já passa por excluirColunaComMovimentoAction; esta
+  // mensagem só é alcançável fora da interface, é puro backstop.
+  const { data: algumCard, error: erroCard } = await sessao.supabase
+    .from("cards")
+    .select("id")
+    .eq("column_id", columnId)
+    .limit(1)
+  if (erroCard) {
+    console.error("deleteColumn (precheck)", erroCard)
+    return { ok: false, error: erroDoBanco(erroCard.code, "excluir a coluna") }
+  }
+  if ((algumCard?.length ?? 0) > 0) {
+    return {
+      ok: false,
+      error: "Esta coluna ainda tem imóveis. Mova-os para outra coluna antes de excluir.",
+    }
+  }
+
   const { data, error } = await sessao.supabase
     .from("columns")
     .delete()
@@ -307,14 +331,112 @@ export async function deleteColumnAction(columnId: string): Promise<ActionResult
 
   if (error) {
     console.error("deleteColumn", error)
-    // Nenhuma pré-checagem própria é acrescentada aqui — o trigger de banco
-    // `cards_impede_exclusao_com_lancamento` (migration
-    // 20260819000000_cards_arquivado_em.sql) já cobre este caminho de
-    // cascade atomicamente, com o predicado exato de D-14, inclusive para
-    // CADA card da coluna. Uma pré-checagem por coluna seria uma segunda
-    // consulta e uma segunda cópia da regra; o que faltava não era a
-    // trava, era a mensagem — por isso só o SQLSTATE do trigger é mapeado
-    // aqui.
+    if (error.code === "P0001") {
+      return { ok: false, error: EXCLUSAO_COLUNA_BLOQUEADA_POR_LANCAMENTO }
+    }
+    return { ok: false, error: erroDoBanco(error.code, "excluir a coluna") }
+  }
+  if (!data || data.length === 0) {
+    return { ok: false, error: semLinhas("excluir a coluna") }
+  }
+  return { ok: true, data: undefined }
+}
+
+const CARDIDS_DEMAIS_COLUNA = "Muitos imóveis nesta coluna para mover de uma vez."
+
+/**
+ * Combina "mover todos os cards da coluna para outra" + "excluir a coluna"
+ * numa única chamada de servidor (D-01/D-03, 17-CONTEXT.md). Nunca aceita
+ * a lista de cardIds do cliente — reconsulta os cards da coluna de origem
+ * no momento da escrita, mesma disciplina de podarParcelasOrfas — e nunca
+ * confia que `destinoColumnId` pertence ao mesmo board sem reconferir.
+ */
+export async function excluirColunaComMovimentoAction(
+  columnId: string,
+  destinoColumnId: string
+): Promise<ActionResult> {
+  const sessao = await requireUser()
+  if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
+
+  const invalido = id(columnId, "Coluna") ?? id(destinoColumnId, "Coluna de destino")
+  if (invalido) return { ok: false, error: invalido }
+
+  if (columnId === destinoColumnId) {
+    return { ok: false, error: "A coluna de destino precisa ser diferente da coluna sendo excluída." }
+  }
+
+  // Server-authoritative: reconsulta as duas colunas, confirma que existem
+  // e pertencem ao mesmo board — nunca confia num destino vindo do cliente.
+  const { data: colunas, error: erroColunas } = await sessao.supabase
+    .from("columns")
+    .select("id, board_id")
+    .in("id", [columnId, destinoColumnId])
+  if (erroColunas) {
+    console.error("excluirColunaComMovimento (colunas)", erroColunas)
+    return { ok: false, error: erroDoBanco(erroColunas.code, "excluir a coluna") }
+  }
+  const origem = colunas?.find((c) => c.id === columnId)
+  const destino = colunas?.find((c) => c.id === destinoColumnId)
+  if (!origem || !destino) return { ok: false, error: semLinhas("excluir a coluna") }
+  if (origem.board_id !== destino.board_id) {
+    return { ok: false, error: "A coluna de destino precisa estar no mesmo board." }
+  }
+
+  // Reconsulta os cards da coluna de origem, na ordem visual atual — nunca
+  // recebe essa lista de fora (mesmo motivo de podarParcelasOrfas).
+  const { data: cards, error: erroCards } = await sessao.supabase
+    .from("cards")
+    .select("id")
+    .eq("column_id", columnId)
+    .order("position", { ascending: true })
+  if (erroCards) {
+    console.error("excluirColunaComMovimento (cards)", erroCards)
+    return { ok: false, error: erroDoBanco(erroCards.code, "excluir a coluna") }
+  }
+
+  const cardIds = (cards ?? []).map((c) => c.id)
+  if (cardIds.length > 200) return { ok: false, error: CARDIDS_DEMAIS_COLUNA }
+
+  if (cardIds.length > 0) {
+    // Base = maior position já usada no destino, para não colidir com
+    // cards que já estavam lá (mesmo cuidado de handleCreateCard).
+    const { data: ultimoDestino } = await sessao.supabase
+      .from("cards")
+      .select("position")
+      .eq("column_id", destinoColumnId)
+      .order("position", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    const base = ultimoDestino?.position ?? 0
+
+    const resultados = await Promise.all(
+      cardIds.map((cardId, index) =>
+        sessao.supabase
+          .from("cards")
+          .update({ column_id: destinoColumnId, position: base + (index + 1) * GAP })
+          .eq("id", cardId)
+          .select("id")
+      )
+    )
+    const comErro = resultados.find((r) => r.error)
+    if (comErro?.error) {
+      console.error("excluirColunaComMovimento (mover)", comErro.error)
+      return { ok: false, error: erroDoBanco(comErro.error.code, "mover os imóveis") }
+    }
+    const semLinha = resultados.some((r) => !r.data || r.data.length === 0)
+    if (semLinha) return { ok: false, error: semLinhas("mover os imóveis") }
+  }
+
+  // A coluna está agora garantidamente vazia — mesmo caminho de
+  // deleteColumnAction (P0001 mapeado do mesmo jeito, defesa em
+  // profundidade mesmo sem cards restantes para cascatear).
+  const { data, error } = await sessao.supabase
+    .from("columns")
+    .delete()
+    .eq("id", columnId)
+    .select("id")
+  if (error) {
+    console.error("excluirColunaComMovimento (delete)", error)
     if (error.code === "P0001") {
       return { ok: false, error: EXCLUSAO_COLUNA_BLOQUEADA_POR_LANCAMENTO }
     }
