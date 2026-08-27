@@ -43,6 +43,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 15: Exclusão de card com destrava e paginação** - Permitir excluir card/cancelar destrava mesmo com histórico de destrava (bloqueado só por conciliação travada), e adicionar paginação (12 itens) em Financeiro, Relatórios e Arquivados
 - [x] **Phase 16: Reordenação em massa e arquivamento sem coluna** - Botão "Reordenar" no Board move todos os cards para uma coluna escolhida de uma vez; desarquivar sempre devolve o card à primeira coluna ativa, não à coluna antiga
 - [x] **Phase 17: Exclusão de coluna sem cascade para cards ativos** - Excluir uma coluna com cards ativos deixa de apagar esses cards em cascata; só é permitido depois de movê-los para outra coluna
+- [ ] **Phase 18: Filtro na Configuração financeira** - Filtro na listagem de contratos em /financeiro/configuracao, mesmo padrão dos filtros já usados em Relatórios
 
 ## Phase Details
 
@@ -345,7 +346,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17
+Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -364,9 +365,10 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 14. Cancelamento de taxas e caução | 5/5 | Complete | 2026-08-26 |
 | 15. Exclusão de card com destrava e paginação | 6/6 | Complete | 2026-08-27 |
 | 16. Reordenação em massa e arquivamento sem coluna | 4/4 | Complete | 2026-08-27 |
-| 17. Exclusão de coluna sem cascade para cards ativos | 1/1 | Complete | ~20min |
+| 17. Exclusão de coluna sem cascade para cards ativos | 1/1 | Complete | 2026-08-27 |
+| 18. Filtro na Configuração financeira | 0/TBD | Planned | - |
 
-**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15 e 16 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-16: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL.
+**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17 e 18 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-18: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL.
 
 ### Phase 15: Exclusão de card com destrava e paginação
 
@@ -435,3 +437,14 @@ Plans:
 Plans:
 
 - [x] 17-01-PLAN.md — Excluir coluna com movimento de cards ponta a ponta (Server Action combinada, diálogo com 3 ramos, hardening de `deleteColumnAction`, documentação)
+
+### Phase 18: Filtro na Configuração financeira
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 17
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 18 to break down)

@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 17
-current_phase_name: exclus-o-de-coluna-sem-cascade-para-cards-ativos
-status: complete
-stopped_at: Fase 17 encerrada — EXCOL-01..04 confirmados em produção pelo usuário
-last_updated: "2026-08-27T21:30:00.000Z"
+current_phase: 18
+current_phase_name: filtro-na-configura-o-financeira
+status: added
+stopped_at: Fase 18 adicionada ao roadmap — falta discuss-phase
+last_updated: "2026-08-27T21:45:00.000Z"
 last_activity: 2026-08-27
-last_activity_desc: "Fase 17 encerrada. Usuário testou em produção os dois human-checks do plano 17-01 e confirmou: 'Testei e tudo funcionou como o esperado.' (1) Os três ramos do diálogo de exclusão de coluna no Board real — vazia (confirmação simples inalterada), com cards e destino disponível (seletor de coluna + mover-e-excluir numa ação só), sem destino disponível (bloqueada com 'Crie outra coluna antes de excluir esta.'). (2) Regressão negativa — card com lançamento financeiro real continua bloqueado pelo trigger cards_impede_exclusao_com_lancamento ao tentar excluir sua coluna, comportamento inalterado por esta fase. EXCOL-01..04 marcados 'Confirmado em produção' em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table atualizados para Complete."
+last_activity_desc: "Fase 18 (Filtro na Configuração financeira) adicionada ao ROADMAP.md via /gsd-phase, diretório .planning/phases/18-filtro-na-configura-o-financeira/ criado. Pedido do usuário: filtro na listagem de /financeiro/configuracao, igual ao já existente em Relatórios. Falta discuss-phase para decidir entre os dois padrões de filtro do projeto (drawer+URL de FiltroParcelas vs. ao vivo em memória de FiltroRelatorioFinanceiroLive) e os campos exatos."
 progress:
-  total_phases: 17
+  total_phases: 18
   completed_phases: 17
   total_plans: 55
   completed_plans: 55
-  percent: 100
+  percent: 94
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Nenhuma fase nova planejada. Fase 17 (Exclusão de coluna sem cascade para cards ativos) encerrada — EXCOL-01..04 confirmados em produção. Todas as 17 fases planejadas do projeto estão completas.
+**Current focus:** Phase 18 (Filtro na Configuração financeira) — adicionada ao roadmap, ainda não discutida/planejada.
 
 ## Current Position
 
-Phase: 17 (exclusão-de-coluna-sem-cascade-para-cards-ativos) — ENCERRADA
-Status: 17-01-PLAN.md executado e confirmado em produção. EXCOL-01..04 marcados "Confirmado em produção" em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table em Complete.
-Last activity: 2026-08-27 — usuário confirmou os dois human-checks do plano 17-01 em produção ("Testei e tudo funcionou como o esperado"): os três ramos do diálogo de exclusão de coluna (vazia/seletor/bloqueada) e a regressão do trigger de lançamento financeiro. Fase 17 encerrada.
+Phase: 18 (filtro-na-configura-o-financeira) — ADICIONADA AO ROADMAP
+Status: `.planning/phases/18-filtro-na-configura-o-financeira/` criado; falta discuss-phase para decidir o padrão de filtro (drawer com URL vs. ao vivo em memória) e os campos exatos, depois plan-phase e execute-phase.
+Last activity: 2026-08-27 — usuário pediu um filtro em `/financeiro/configuracao` igual ao já existente em Relatórios; fase 18 formalizada via `/gsd-phase`.
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -146,6 +146,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
 ### Roadmap Evolution
 
+- Phase 18 added: Filtro na Configuração financeira — pedido do usuário logo após a Fase 17 fechar. Adicionar um filtro na listagem de contratos em `/financeiro/configuracao`, no mesmo padrão dos filtros que já existem em Relatórios (o projeto tem dois padrões distintos: `FiltroParcelas` — drawer colapsável, navega via URL, servidor re-consulta; `FiltroRelatorioFinanceiroLive` — filtro ao vivo em memória, sem botão de submit, usado em `/relatorios/financeiro`). `/financeiro/configuracao` já carrega todos os contratos de uma vez no servidor sem filtro de visibilidade (A-02, decisão deliberada) e sem round-trip por clique (paginação client-side desde a Phase 15) — precisa de discuss-phase para decidir qual dos dois padrões usar e quais campos fazem sentido para uma tela de configuração de contrato (não há "situação de parcela" aqui, mas há status de caução, que é um enum fixo como `situacoes` no filtro ao vivo)
 - Phase 17 added: Exclusão de coluna sem cascade para cards ativos — achado do usuário durante a verificação em produção da Phase 16 (checkpoint:human-verify do plano 16-04). `columns → cards` é `on delete cascade` desde o schema inicial (`20260728000000_init_schema.sql`) — hoje excluir uma coluna apaga em cascata todo card ATIVO (não arquivado) que ainda está nela, sem trava nenhuma além do trigger de lançamento financeiro (que só bloqueia se existir dinheiro real). A Phase 16 fechou o risco equivalente para cards ARQUIVADOS (column_id nulo); este é o mesmo risco, mas para o caminho principal do Board. Usuário quer que excluir uma coluna com cards ativos só seja possível depois de mover esses cards para outra coluna — nunca em cascata. Precisa de discuss-phase para decidir o mecanismo exato (bloquear e pedir que o usuário mova manualmente antes, vs. um diálogo que já oferece mover os cards para outra coluna como parte do próprio fluxo de exclusão — o botão "Reordenar" recém-construído na Phase 16 é um candidato natural de reuso)
 - Phase 16 added: Reordenação em massa e arquivamento sem coluna — pedido do usuário logo após a Phase 15 fechar. Duas capacidades: (1) botão "Reordenar" no Board, ao lado do campo de busca, abre um popup listando as colunas existentes; usuário escolhe uma e confirma, movendo todos os cards do board para essa coluna de uma vez; (2) hoje `desarquivarCardAction` nunca toca `column_id` — o card volta para a mesma coluna em que estava antes de arquivar. Usuário quer que arquivar signifique "sem relação nenhuma com nenhuma coluna" e que desarquivar sempre devolva à primeira coluna ativa, não à antiga — precisa de discuss-phase para decidir se isso é mudança de schema (`column_id` nullable) ou só mudança de comportamento em `desarquivarCardAction`
 - Phase 15 added: Exclusão de card com destrava e paginação — pedido do usuário logo após a Phase 14 fechar. Duas capacidades: (1) hoje a trava de exclusão de card (`cardTemLancamento`, Phase 6.2) conta qualquer lançamento — incluindo `tipo='destrava'` — como impeditivo; o usuário quer excluir o card mesmo com histórico de destrava, e também poder cancelar um lançamento de destrava individualmente (igual pagamento/ajuste/taxa), só continuando bloqueado quando a parcela está `conciliada` (travada); confirmado com o usuário: cancelar a destrava não reabre a conciliação, só remove o registro de auditoria; (2) paginação (máx. 10 itens por página) nas listagens de Financeiro, Relatórios (dedicado e reconciliação da imobiliária) e Arquivados — Board fica de fora
@@ -171,6 +172,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-27T21:30:00.000Z
-Stopped at: Fase 17 encerrada — EXCOL-01..04 confirmados em produção. Todas as 17 fases planejadas do projeto estão completas. Nenhuma fase nova planejada.
-Resume file: .planning/phases/17-exclus-o-de-coluna-sem-cascade-para-cards-ativos/17-01-SUMMARY.md
+Last session: 2026-08-27T21:45:00.000Z
+Stopped at: Fase 18 (Filtro na Configuração financeira) adicionada ao roadmap — falta discuss-phase
+Resume file: .planning/phases/18-filtro-na-configura-o-financeira/
