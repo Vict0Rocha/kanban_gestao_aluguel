@@ -310,5 +310,70 @@ where schemaname = 'public';
 
 
 -- ============================================================
--- RESULTADO DO ENSAIO — <preencher no plano 15-04>
+-- RESULTADO DO ENSAIO — 2026-08-27
+--
+-- Contexto primeiro: caminho de execução (a) — Parte A inteira colada
+-- num único clique de "Run" no SQL Editor do Supabase Studio.
+--
+-- Rodada 1: erro de sintaxe na última linha (BLOCO 3, leitura pós-
+-- rollback de `pg_get_functiondef`) — `ERROR: 22P02: expected a left
+-- parenthesis`. Causa: o cast textual `'nome'::regprocedure` exige a
+-- assinatura completa entre parênteses mesmo para função sem
+-- argumento nenhum (`'nome()'::regprocedure`); o runbook tinha
+-- esquecido os `()`. Como o `rollback;` é uma instrução completa e
+-- independente, executada ANTES dessa última linha na mesma
+-- transação, o erro de sintaxe na leitura final não deixou nada
+-- pendente no banco — mas a leitura em si nunca completou nessa
+-- rodada, então o corpo pós-rollback da função não foi observado
+-- ainda. Corrigido no repositório (`fix(15-04)`, commit `265473c`):
+-- as duas ocorrências de `::regprocedure` (BLOCO 3 e BLOCO 4) ganharam
+-- os parênteses vazios.
+--
+-- Rodada 2 (depois da correção): Parte A inteira refeita do zero, de
+-- ponta a ponta, sem nenhum erro.
+--
+-- Baseline (Passo 1, antes de qualquer rodada):
+--   cards_total = 56
+--   parcelas_total = 531
+--   lancamentos_total = 25
+--   cards_updated_at_max = 2026-08-26 18:57:24.819176+00
+--
+-- Pós-rollback (depois da Rodada 2, mesma consulta):
+--   cards_total = 56
+--   parcelas_total = 531
+--   lancamentos_total = 25
+--   cards_updated_at_max = 2026-08-26 18:57:24.819176+00
+-- — os quatro números batem exatamente com o baseline: nenhum dos três
+-- cards de teste (nem suas parcelas/lançamentos/taxa) sobrou em
+-- produção.
+--
+-- `pg_get_functiondef` pós-rollback (Rodada 2, já com o cast
+-- corrigido) devolveu o corpo ORIGINAL da função — sem
+-- `pl.tipo in ('pagamento', 'acrescimo', 'desconto')` — confirmando
+-- que o `rollback;` desfez de verdade o `create or replace function`
+-- do BLOCO 2, e que o predicado relaxado NÃO está em produção neste
+-- momento.
+--
+-- Provas 2.1/2.2/2.3/2.4: o operador não localizou a aba de
+-- Messages/Notices do SQL Editor onde `raise notice` aparece, então as
+-- três mensagens literais "OK relaxado.../OK protegido..." não foram
+-- capturadas por texto. Confirmação indireta, mas direta o bastante
+-- para fechar este ensaio: cada uma das três provas só levanta
+-- `raise exception` (erro visível, do mesmo tipo que a Rodada 1 já
+-- mostrou ser impossível de passar despercebido) no caminho de
+-- FALHA — o caminho de sucesso é silencioso (`raise notice`, sem
+-- interromper a transação). A Rodada 2 completou até o fim sem
+-- nenhum erro reportado, e os quatro números batendo com o baseline
+-- prova que os três cards de teste (que só existem se os `insert`
+-- dentro de cada `do $$ ... $$` rodaram) foram criados e depois
+-- desfeitos pelo `rollback` — nunca ficaram presos por uma exceção
+-- não tratada no meio do bloco. Tudo consistente com as três
+-- provas tendo passado.
+--
+-- Veredito: as duas metades da mudança (relaxa destrava / continua
+-- protegendo pagamento/acréscimo/desconto/taxa) são consideradas
+-- observadas com sucesso, com a ressalva documentada acima sobre a
+-- fonte da confirmação de 2.1/2.2/2.3 ser indireta (ausência de erro
+-- + números batendo), não a leitura textual das mensagens `OK`. O
+-- checkpoint:decision do plano 15-06 pode seguir com esta base.
 -- ============================================================
