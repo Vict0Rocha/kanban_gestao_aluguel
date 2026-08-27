@@ -1,6 +1,7 @@
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
 import type { ContractRow } from "@/lib/kanban/report"
 import { ContractStatusBadge } from "@/components/reports/contract-status-badge"
+import { usePagination, Pagination } from "@/components/pagination"
 import {
   Table,
   TableBody,
@@ -10,7 +11,20 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-export function ContractsTable({ rows }: { rows: ContractRow[] }) {
+export function ContractsTable({
+  rows,
+  resetKey,
+}: {
+  rows: ContractRow[]
+  /** Chave de identidade do filtro ativo em `ReportsView` — decide quando a
+   * paginação volta para a página 1 (PAGIN-03). */
+  resetKey: unknown
+}) {
+  const { itensDaPagina, pagina, totalPaginas, setPagina } = usePagination(
+    rows,
+    resetKey
+  )
+
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
       <h2 className="font-heading text-base font-bold text-foreground">
@@ -39,7 +53,7 @@ export function ContractsTable({ rows }: { rows: ContractRow[] }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map(({ card, columnName, status, daysLeft }) => (
+              {itensDaPagina.map(({ card, columnName, status, daysLeft }) => (
                 <TableRow key={card.id}>
                   <TableCell className="font-medium text-foreground">
                     {card.endereco}
@@ -66,6 +80,11 @@ export function ContractsTable({ rows }: { rows: ContractRow[] }) {
               ))}
             </TableBody>
           </Table>
+          <Pagination
+            pagina={pagina}
+            totalPaginas={totalPaginas}
+            onPaginaChange={setPagina}
+          />
         </div>
       )}
     </div>

@@ -8,6 +8,7 @@ import { formatCurrency, formatInstantDate } from "@/lib/kanban/format"
 import type { Card } from "@/lib/kanban/types"
 import { desarquivarCard } from "@/lib/kanban/queries"
 import { IdPill } from "@/components/financeiro/id-pill"
+import { usePagination, Pagination } from "@/components/pagination"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -47,6 +48,13 @@ export function ArquivadosView({
   )
   const [erroDesarquivar, setErroDesarquivar] = React.useState<string | null>(
     null
+  )
+  // PAGIN-03: tela sem filtro — chave constante, para o `router.refresh()`
+  // de desarquivar nunca resetar a posição do usuário (Pitfall 3,
+  // 15-RESEARCH.md).
+  const { itensDaPagina, pagina, totalPaginas, setPagina } = usePagination(
+    contratos,
+    "arquivados"
   )
 
   async function handleDesarquivar(id: string) {
@@ -111,7 +119,7 @@ export function ArquivadosView({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {contratos.map((contrato) => {
+                  {itensDaPagina.map((contrato) => {
                     const desarquivando = desarquivandoId === contrato.id
                     return (
                       <TableRow key={contrato.id}>
@@ -149,6 +157,11 @@ export function ArquivadosView({
                   })}
                 </TableBody>
               </Table>
+              <Pagination
+                pagina={pagina}
+                totalPaginas={totalPaginas}
+                onPaginaChange={setPagina}
+              />
             </div>
           )}
         </>

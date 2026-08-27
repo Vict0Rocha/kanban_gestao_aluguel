@@ -8,6 +8,7 @@ import { statusCaucao, type CaucaoEventoDetalhado, type StatusCaucao } from "@/l
 import { CaucaoHistoricoSheet } from "@/components/financeiro/caucao-historico-sheet"
 import { ConfigurarPercentuaisDialog } from "@/components/financeiro/configurar-percentuais-dialog"
 import { IdPill } from "@/components/financeiro/id-pill"
+import { usePagination, Pagination } from "@/components/pagination"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -140,6 +141,14 @@ export function ConfiguracaoFinanceiraView({
   todayISO: string
   erro?: boolean
 }) {
+  // PAGIN-03: tela sem filtro — chave constante, para o `router.refresh()`
+  // de editar percentuais/caução nunca resetar a posição do usuário
+  // (Pitfall 3, 15-RESEARCH.md).
+  const { itensDaPagina, pagina, totalPaginas, setPagina } = usePagination(
+    linhas,
+    "config"
+  )
+
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
       {erro ? (
@@ -151,42 +160,49 @@ export function ConfiguracaoFinanceiraView({
           Nenhum contrato cadastrado ainda.
         </p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Imóvel</TableHead>
-              <TableHead>Proprietário</TableHead>
-              <TableHead className="text-right">Administração</TableHead>
-              <TableHead className="text-right">Comissão 1º aluguel</TableHead>
-              <TableHead>Caução</TableHead>
-              <TableHead>Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {linhas.map((linha) => (
-              <TableRow key={linha.id}>
-                <TableCell>
-                  <IdPill numero={linha.numero} />
-                </TableCell>
-                <TableCell className="text-sm font-semibold text-foreground">
-                  {linha.endereco}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {linha.proprietario}
-                </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {linha.percentualAdministracao}%
-                </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {linha.percentualComissaoPrimeiroAluguel}%
-                </TableCell>
-                <CaucaoStatusCell eventos={linha.caucaoEventos} />
-                <AcoesCell linha={linha} todayISO={todayISO} />
+        <div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Imóvel</TableHead>
+                <TableHead>Proprietário</TableHead>
+                <TableHead className="text-right">Administração</TableHead>
+                <TableHead className="text-right">Comissão 1º aluguel</TableHead>
+                <TableHead>Caução</TableHead>
+                <TableHead>Ações</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {itensDaPagina.map((linha) => (
+                <TableRow key={linha.id}>
+                  <TableCell>
+                    <IdPill numero={linha.numero} />
+                  </TableCell>
+                  <TableCell className="text-sm font-semibold text-foreground">
+                    {linha.endereco}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {linha.proprietario}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {linha.percentualAdministracao}%
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {linha.percentualComissaoPrimeiroAluguel}%
+                  </TableCell>
+                  <CaucaoStatusCell eventos={linha.caucaoEventos} />
+                  <AcoesCell linha={linha} todayISO={todayISO} />
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <Pagination
+            pagina={pagina}
+            totalPaginas={totalPaginas}
+            onPaginaChange={setPagina}
+          />
+        </div>
       )}
     </div>
   )

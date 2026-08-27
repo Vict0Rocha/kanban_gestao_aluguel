@@ -126,6 +126,12 @@ export function ReportsView({
   const isFiltered =
     statusFilters.size > 0 || columnFilters.size > 0 || query.trim() !== ""
 
+  // PAGIN-03: chave de identidade do filtro ativo — volta a paginação de
+  // ContractsTable para a página 1 quando busca/status/coluna mudam, mas
+  // nunca reseta por causa de um `router.refresh()` não relacionado (Pitfall
+  // 3, 15-RESEARCH.md).
+  const contractsResetKey = `${query}|${[...statusFilters].sort().join(",")}|${[...columnFilters].sort().join(",")}`
+
   function clearFilters() {
     setStatusFilters(new Set())
     setColumnFilters(new Set())
@@ -244,7 +250,7 @@ export function ReportsView({
 
       <ColumnBarChart data={report.porColuna} />
 
-      <ContractsTable rows={report.contratos} />
+      <ContractsTable rows={report.contratos} resetKey={contractsResetKey} />
     </div>
   )
 }
