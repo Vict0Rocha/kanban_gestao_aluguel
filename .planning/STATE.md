@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 16
-current_phase_name: reordena-o-em-massa-e-arquivamento-sem-coluna
-status: complete
-stopped_at: "Phase 16 encerrada — REORD-01..03 e ARQCOL-01..03 confirmados em produção"
-last_updated: "2026-08-27T03:00:00.000Z"
+current_phase: 17
+current_phase_name: exclus-o-de-coluna-sem-cascade-para-cards-ativos
+status: planning
+stopped_at: "Phase 17 context gathered — pronto para /gsd-plan-phase 17"
+last_updated: "2026-08-27T04:00:00.000Z"
 last_activity: 2026-08-27
-last_activity_desc: "Phase 16 encerrada. Plano 16-04: migração aplicada em produção ('Success. No rows returned'), arquivarCardAction/desarquivarCardAction/types.ts widenados SÓ DEPOIS da confirmação (mesma disciplina banco-primeiro-app-depois das Phases 13-15), docs/data-model.md atualizado. Teste ponta a ponta confirmado pelo usuário: card arquivado sem coluna, desarquivar vai para a primeira coluna do board, card arquivado sobrevive à exclusão da coluna anterior, contrato com dinheiro real continua bloqueando exclusão de coluna (regressão negativa), botão Reordenar (plano 16-02) reconfirmado funcionando. Com isso encerram as 16 fases planejadas do projeto inteiro. **Achado novo levantado pelo usuário durante a verificação, fora do escopo desta fase:** excluir uma coluna com cards ATIVOS ainda apaga esses cards em cascata (on delete cascade de columns→cards, comportamento existente desde o schema inicial do projeto) — distinto do que a Phase 16 fechou (cards ARQUIVADOS sobrevivem). Usuário quer que excluir uma coluna com cards ativos só seja possível depois de move-los para outra coluna, nunca em cascata. Vira Phase 17."
+last_activity_desc: "Phase 17 (Exclusão de coluna sem cascade para cards ativos) adicionada ao roadmap e discuss-phase concluído. Achado durante a verificação da Phase 16: hoje excluir uma coluna apaga em cascata os cards ATIVOS que ainda estão nela (columns→cards on delete cascade, comportamento deliberado desde o schema inicial — o AlertDialog atual até avisa 'Os N imóveis dessa coluna também serão excluídos'). Decisão: o diálogo de exclusão passa a oferecer um seletor de coluna de destino (mesmo padrão do ReordenarDialog, Phase 16) quando a coluna tem cards — mover e excluir numa ação só; sem outra coluna disponível, bloqueia com mensagem. Achado relevante: nenhuma migração de banco é necessária — a fase garante, na aplicação, que a coluna está vazia antes do delete, então o cascade nunca chega a apagar um card de verdade; o FK on delete cascade não precisa mudar. 17-CONTEXT.md e 17-DISCUSSION-LOG.md escritos e commitados (7f93f3e)."
 progress:
-  total_phases: 16
+  total_phases: 17
   completed_phases: 16
   total_plans: 54
   completed_plans: 54
-  percent: 100
+  percent: 94
 ---
 
 # Project State
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Nenhum — as 16 fases planejadas do projeto estão completas. Próximo trabalho: Phase 17 (excluir coluna com cards ativos deixa de fazer cascade), ainda não iniciada.
+**Current focus:** Phase 17 (Exclusão de coluna sem cascade para cards ativos) — contexto capturado, pronta para planejamento.
 
 ## Current Position
 
-Phase: 16 (reordenação-em-massa-e-arquivamento-sem-coluna) — COMPLETE
-Status: Planos 16-01 a 16-04 completos, REORD-01..03/ARQCOL-01..03 confirmados em produção — Phase 16 encerrada
-Last activity: 2026-08-27 — usuário confirmou o teste ponta a ponta em produção, fechando a Phase 16; levantou um novo achado (cascade em coluna com cards ativos) que vira Phase 17
+Phase: 17 (exclusão-de-coluna-sem-cascade-para-cards-ativos) — CONTEXT GATHERED
+Status: 17-CONTEXT.md e 17-DISCUSSION-LOG.md escritos; falta rodar /gsd-plan-phase 17
+Last activity: 2026-08-27 — discuss-phase da Phase 17 concluído
 
-**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15. A numeração continua da v1.0 (Phases 1-3), não reinicia.
+**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
 ## Performance Metrics
 
@@ -168,6 +168,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-27T03:00:00.000Z
-Stopped at: Phase 16 encerrada — REORD-01..03/ARQCOL-01..03 confirmados em produção. Phase 17 (exclusão de coluna sem cascade para cards ativos) identificada, ainda não formalizada.
-Resume file: nenhum — aguardando /gsd-phase para formalizar a Phase 17
+Last session: 2026-08-27T04:00:00.000Z
+Stopped at: Phase 17 context gathered — pronto para /gsd-plan-phase 17
+Resume file: .planning/phases/17-exclus-o-de-coluna-sem-cascade-para-cards-ativos/17-CONTEXT.md
