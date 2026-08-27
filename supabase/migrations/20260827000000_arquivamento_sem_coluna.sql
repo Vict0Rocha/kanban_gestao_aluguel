@@ -1,0 +1,113 @@
+-- ============================================================
+-- Arquivamento sem coluna — Kanban Aluguel (Phase 16)
+--
+-- Relaxa public.cards.column_id de "not null" para nullable
+-- (ARQCOL-01, D-01 de 16-CONTEXT.md, rated `one-way` naquele
+-- documento). A partir desta migração, arquivar um card (plano 16-04,
+-- arquivarCardAction) passa a gravar column_id = null junto com
+-- arquivado_em — hoje só grava arquivado_em, deixando o card ainda
+-- vinculado à coluna em que estava. Um card já arquivado ANTES desta
+-- fase é zerado pelo backfill logo abaixo, na MESMA migração (nunca
+-- um follow-up separado — Pitfall 1, 16-RESEARCH.md).
+--
+-- ESTA MIGRAÇÃO É ESTRITAMENTE ADITIVA. O app está em produção no
+-- Vercel + Supabase com dados reais e nenhum ambiente de staging.
+-- Nada aqui apaga coluna, apaga tabela, renomeia ou troca tipo de
+-- coluna existente, nenhuma FK muda de "on delete cascade" para outra
+-- coisa, e nenhuma policy de RLS é criada ou derrubada — só a
+-- obrigatoriedade de valor de uma coluna já existente é relaxada, mais
+-- um update de backfill escopado por arquivado_em is not null.
+--
+-- Também é REEXECUTÁVEL: "alter column ... drop not null" não erra se
+-- a coluna já for nullable (Postgres trata como no-op idempotente), e
+-- o update do backfill é idempotente por construção — rodar de novo
+-- não muda nada além do que já mudou da primeira vez, porque volta a
+-- gravar column_id = null nas mesmas linhas que já estão null.
+--
+-- Runbook operacional que ensaia e prova esta mudança contra o banco
+-- real, com ensaio em transação revertida e verificação pós-push:
+-- supabase/verificacao_arquivamento_sem_coluna.sql
+-- ============================================================
+
+
+-- ------------------------------------------------------------
+-- Comentário-guarda — por que desvincular column_id fecha o risco de
+-- cascade por construção (D-01/D-02/D-05 de 16-CONTEXT.md)
+--
+-- D-01 (rated `one-way`): column_id em public.cards passa a ser
+-- nullable. Esta é a primeira migração deste projeto que relaxa uma
+-- constraint "not null" — todas as anteriores foram
+-- "create or replace function" sobre triggers já existentes (Phase
+-- 6.2, Phase 13, Phase 15). Desfazer esta mudança depois de cards já
+-- arquivados com column_id nulo exigiria um backfill inverso antes de
+-- poder recolocar o "not null" — por isso o rating `one-way`.
+--
+-- D-02 — a motivação real, confirmada durante a discussão: hoje, se
+-- uma coluna com um card arquivado ainda apontando pra ela for
+-- excluída, esse card arquivado é apagado de verdade EM CASCATA
+-- (column_id uuid ... references public.columns(id) on delete
+-- cascade, 20260728000000_init_schema.sql linha ~59), sem nenhum
+-- aviso — porque a trava de exclusão de coluna
+-- (impedir_exclusao_de_card_com_lancamento, ver deleteColumnAction,
+-- web/src/lib/kanban/actions.ts:294-326) só bloqueia quando existe
+-- lançamento financeiro real (parcela_lancamentos/taxas_imobiliaria/
+-- caucao_eventos) — um card arquivado sem histórico nenhum não
+-- bloqueia nada e é apagado silenciosamente junto com a coluna.
+--
+-- Por que desvincular column_id fecha esse risco POR CONSTRUÇÃO, não
+-- só por checagem de aplicação: um column_id nulo nunca é alcançado
+-- por "on delete cascade" de columns, porque não existe linha de FK
+-- para cascatear — o Postgres não tem nada para seguir a partir de um
+-- valor null numa coluna de FK. Não é mais uma regra que algum código
+-- da aplicação precisa lembrar de checar; é estrutural, garantido pelo
+-- próprio schema, independente de qualquer trigger ou Server Action.
+--
+-- D-05 — o ripple desta mudança de tipo (Card.column_id: string vira
+-- string | null, plano 16-04, web/src/lib/kanban/types.ts) fica
+-- contido no Board: nenhuma tela de Arquivados
+-- (arquivados-view.tsx, /arquivados) lê ou exibe column_id hoje, e o
+-- Board já filtra arquivado_em is null na própria query
+-- (app/(app)/page.tsx:25), então um column_id nulo nunca aparece no
+-- columns state que o Board itera.
+-- ------------------------------------------------------------
+
+-- A FK em si (references public.columns(id) on delete cascade) NÃO é
+-- tocada por esta statement — só a obrigatoriedade de valor. O
+-- "on delete cascade" continua exatamente como está; é a própria
+-- ausência de valor (column_id = null), e não uma mudança na FK, que
+-- fecha o risco de D-02.
+alter table public.cards alter column column_id drop not null;
+
+-- Backfill (Pitfall 1, 16-RESEARCH.md): sem esta linha, na MESMA
+-- migração, todo card já arquivado antes desta fase continuaria com
+-- seu column_id antigo ainda apontando para uma coluna real — ou seja,
+-- continuaria vulnerável ao exato risco de cascade que D-02 motivou
+-- fechar. A migração por si só (o "alter column" acima) é uma mudança
+-- de metadado que nunca emite um UPDATE — só afeta linhas gravadas
+-- DEPOIS dela, nunca as que já existem.
+--
+-- O filtro "arquivado_em is not null" é o mesmo já usado por
+-- page.tsx/arquivados/page.tsx para decidir "arquivado ou não" — esta
+-- update NUNCA toca um card com arquivado_em is null (contrato ativo
+-- em operação normal): só zera column_id de cards que já estão
+-- arquivados, nunca de um card ativo.
+update public.cards
+set column_id = null
+where arquivado_em is not null;
+
+-- ------------------------------------------------------------
+-- Nenhuma outra tabela, índice ou trigger é tocado por esta migração.
+-- public.columns, public.parcelas, public.parcela_lancamentos,
+-- public.taxas_imobiliaria, public.caucao_eventos ficam exatamente
+-- como estão.
+-- ------------------------------------------------------------
+
+
+-- ------------------------------------------------------------
+-- RLS — nenhuma linha de policy nesta migração.
+--
+-- Relaxar uma constraint de coluna não muda quem pode ler/escrever —
+-- a policy "team full access cards" (auth.role() = 'authenticated',
+-- 20260728000000_init_schema.sql:143-146) continua exatamente como
+-- está. Nenhuma policy é criada nem derrubada por este arquivo.
+-- ------------------------------------------------------------
