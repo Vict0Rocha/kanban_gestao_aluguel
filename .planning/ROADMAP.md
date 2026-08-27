@@ -41,6 +41,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 13: Dinheiro da imobiliária** - Controlar o dinheiro que a própria imobiliária recebe (taxa de administração, primeiro aluguel, caução, taxas de gestão), separado da gestão do valor bruto do aluguel
 - [x] **Phase 14: Cancelamento de taxas e caução** - Mostrar a taxa da imobiliária no histórico da parcela com opção de cancelar, e permitir cancelar eventos de caução
 - [x] **Phase 15: Exclusão de card com destrava e paginação** - Permitir excluir card/cancelar destrava mesmo com histórico de destrava (bloqueado só por conciliação travada), e adicionar paginação (12 itens) em Financeiro, Relatórios e Arquivados
+- [ ] **Phase 16: Reordenação em massa e arquivamento sem coluna** - Botão "Reordenar" no Board move todos os cards para uma coluna escolhida de uma vez; desarquivar sempre devolve o card à primeira coluna ativa, não à coluna antiga
 
 ## Phase Details
 
@@ -343,7 +344,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15
+Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -361,6 +362,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 13. Dinheiro da imobiliária | 7/7 | Complete | 2026-08-25 |
 | 14. Cancelamento de taxas e caução | 5/5 | Complete | 2026-08-26 |
 | 15. Exclusão de card com destrava e paginação | 6/6 | Complete | 2026-08-27 |
+| 16. Reordenação em massa e arquivamento sem coluna | 0/TBD | Not Started | - |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14 e 15 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário; Phase 12: capacidade nova pedida pelo usuário; Phase 13: capacidade nova pedida pelo usuário; Phase 14: capacidade nova pedida pelo usuário; Phase 15: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN.
 
@@ -389,3 +391,14 @@ Plans:
 - [x] 15-06-PLAN.md — Aplicar a migração em produção (checkpoint de decisão), relaxar `cardTemLancamento` no app, documentar, e confirmar CANDEST-01/02/03 em produção
 
 **Correção pós-verificação:** o usuário encontrou, ao testar `/relatorios/financeiro` sem filtro em produção (502 parcelas, 51 páginas de 10), que a lista de botões numerados ficava visualmente inviável — o desenho original de PAGIN-02 (D-05, `15-CONTEXT.md`) não previa truncamento porque a estimativa de volume do CONTEXT.md (~46-48 registros por listagem) não se aplicava a uma listagem sem filtro nenhum aplicado. Corrigido fora de um plano formal (mudança contida a um único arquivo compartilhado, `web/src/components/pagination.tsx`, consumido pelas seis listagens): a navegação numerada agora mostra no máximo 5 números por vez (`TAMANHO_JANELA`), com um par de botões de deslizar a janela (ícone de chevron duplo, ChevronsLeft/ChevronsRight) que muda só quais números aparecem, sem trocar a página atual, e um campo "Ir para" (aparece só quando há mais páginas que a janela mostra) para pular direto a qualquer página digitando o número. Aproveitado o mesmo pedido para trocar `TAMANHO_PAGINA` de 10 para 12 itens por página. `npx tsc --noEmit`/`npm run lint` limpos; verificação visual em produção pendente de confirmação do usuário (o app exige login real, sem credencial compartilhada com o assistente).
+
+### Phase 16: Reordenação em massa e arquivamento sem coluna
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 15
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 16 to break down)
