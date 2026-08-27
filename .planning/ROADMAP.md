@@ -364,7 +364,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 15. Exclusão de card com destrava e paginação | 6/6 | Complete | 2026-08-27 |
 | 16. Reordenação em massa e arquivamento sem coluna | 0/4 | Planned | - |
 
-**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14 e 15 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10: capacidade nova pedida pelo usuário; Phase 11: capacidade nova pedida pelo usuário; Phase 12: capacidade nova pedida pelo usuário; Phase 13: capacidade nova pedida pelo usuário; Phase 14: capacidade nova pedida pelo usuário; Phase 15: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN.
+**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15 e 16 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-16: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL.
 
 ### Phase 15: Exclusão de card com destrava e paginação
 
@@ -397,6 +397,15 @@ Plans:
 **Goal:** Um botão "Reordenar" ao lado da busca do Board move de uma vez todos os cards elegíveis (ou só os em destaque, se houver busca ativa) para uma coluna escolhida; e um card arquivado fica sem nenhuma coluna vinculada no banco, voltando sempre à primeira coluna do board ao ser desarquivado
 **Requirements**: REORD-01, REORD-02, REORD-03, ARQCOL-01, ARQCOL-02, ARQCOL-03 (trabalho pós-milestone — ver 16-CONTEXT.md)
 **Depends on:** Phase 15
+**Success Criteria** (what must be TRUE):
+
+  1. Existe um botão "Reordenar" ao lado do campo de busca no Board, que abre um popup listando as colunas existentes
+  2. Escolher uma coluna e confirmar move, numa única ação, todos os cards elegíveis — só os em destaque na busca, se houver busca ativa; todos os cards do board, se não houver — para a coluna escolhida
+  3. Depois do movimento em massa, a ordem dos cards na coluna de destino segue a ordem visual anterior (coluna → posição), com posições novas sequenciais
+  4. `cards.column_id` é nullable no banco; arquivar um card grava `column_id = null` junto com `arquivado_em` — inclusive para cards já arquivados antes desta fase (backfill)
+  5. Desarquivar sempre atribui a primeira coluna (menor `position`) do board, nunca a coluna anterior à qual o card estava vinculado
+  6. Excluir uma coluna nunca mais apaga em cascata um card arquivado sem histórico financeiro — fechado estruturalmente porque um `column_id` nulo nunca é alcançado por `on delete cascade` de `columns`
+
 **Plans:** 4 plans
 
 Plans:

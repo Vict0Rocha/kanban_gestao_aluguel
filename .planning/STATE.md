@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 16
 current_phase_name: reordena-o-em-massa-e-arquivamento-sem-coluna
-status: planning
-stopped_at: "Phase 16 context gathered — pronto para /gsd-plan-phase 16"
-last_updated: "2026-08-27T01:00:00.000Z"
+status: planned
+stopped_at: "Phase 16 planejada (4 planos, 3 ondas) — pronta para /gsd-execute-phase 16"
+last_updated: "2026-08-27T02:00:00.000Z"
 last_activity: 2026-08-27
-last_activity_desc: "Phase 16 (Reordenação em massa e arquivamento sem coluna) adicionada ao roadmap e discuss-phase concluído. Duas capacidades: (1) botão 'Reordenar' no Board, ao lado da busca — popup lista as colunas, usuário escolhe uma e confirma, move todos os cards em destaque na busca (ou todos, se não houver busca ativa — resolvido reusando matchingIds(columns, query) sem branch extra) para a coluna escolhida; (2) card arquivado passa a ter column_id nulo de verdade no banco (migração: alter column column_id drop not null) em vez de manter a coluna antiga — desarquivar sempre atribui a primeira coluna do board (menor position). Achado real durante a discussão: hoje excluir uma coluna com um card arquivado sem histórico financeiro apontando pra ela apaga esse card em cascata, sem aviso — motivou a decisão de desvincular de verdade, não só mudar o comportamento de desarquivar. 16-CONTEXT.md e 16-DISCUSSION-LOG.md escritos e commitados (20f98a7). Requer migração de banco (relaxar not null) — mesmo ciclo ensaio→apply→verify de sempre."
+last_activity_desc: "Phase 16 pesquisada, mapeada e planejada. 16-RESEARCH.md (HIGH confidence) resolveu a lacuna central que o CONTEXT.md tinha deixado em aberto: como desarquivarCardAction acha 'a primeira coluna' depois que column_id já está nulo — resposta: o projeto tem um único board, resolvido a frio (sem id passado) pela mesma query em 3 arquivos (page.tsx/financeiro/relatorios); desarquivarCardAction reusa o mesmo idioma, sem precisar de um cards.board_id novo. Achado extra: cards já arquivados antes desta fase precisam de backfill de column_id=null na MESMA migração (Pitfall 1), senão continuam vulneráveis ao risco de cascade que a fase existe pra fechar. 16-PATTERNS.md: 7/7 analogs (2 compostos, sem precedente exato — bulk-write e dialog de seleção de lista são formas novas neste projeto). gsd-planner produziu 4 planos em 3 ondas: Wave 1 (16-01 migração+backfill+runbook, 16-02 botão Reordenar ponta a ponta, paralelos); Wave 2 (16-03 ensaio contra produção, depende de 16-01); Wave 3 (16-04 checkpoint:decision → aplicar → SÓ DEPOIS widenar arquivarCardAction/desarquivarCardAction → docs → checkpoint:human-verify, depende de 16-03). REORD-01..03/ARQCOL-01..03 adicionados a REQUIREMENTS.md e ao Requirements: do ROADMAP.md. Seção Success Criteria adicionada manualmente ao ROADMAP.md (ausente no template do planner, mesma lacuna da Phase 15). Commits: 60c2c77 (research), 2710756 (requirement IDs), 92daabe (plans), c2c20fc (pattern map)."
 progress:
   total_phases: 16
   completed_phases: 15
-  total_plans: 50
+  total_plans: 54
   completed_plans: 50
-  percent: 94
+  percent: 93
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 16 (Reordenação em massa e arquivamento sem coluna) — contexto capturado, pronta para planejamento.
+**Current focus:** Phase 16 (Reordenação em massa e arquivamento sem coluna) — planejada (4 planos, 3 ondas), pronta para execução.
 
 ## Current Position
 
-Phase: 16 (reordenação-em-massa-e-arquivamento-sem-coluna) — CONTEXT GATHERED
-Status: 16-CONTEXT.md e 16-DISCUSSION-LOG.md escritos; falta rodar /gsd-plan-phase 16
-Last activity: 2026-08-27 — discuss-phase da Phase 16 concluído
+Phase: 16 (reordenação-em-massa-e-arquivamento-sem-coluna) — PLANNED
+Status: 16-01 a 16-04-PLAN.md escritos; falta rodar /gsd-execute-phase 16
+Last activity: 2026-08-27 — research + pattern-mapping + planning da Phase 16 concluídos
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
