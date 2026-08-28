@@ -69,7 +69,7 @@ export async function exportarRelatorioFinanceiroPDF(
 
   const geradoEmISO = new Date().toISOString()
 
-  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" })
+  const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" })
   // jspdf-autotable atribui `lastAutoTable` na instância em runtime (não
   // documentado no tipo de `jsPDF`, mas confirmado lendo o próprio pacote
   // instalado, dist/jspdf.plugin.autotable.mjs:1640) — necessário para
@@ -78,10 +78,11 @@ export async function exportarRelatorioFinanceiroPDF(
 
   // Cores (RGB explícito, convertido dos hex do "PDF Export Layout Contract"
   // em 10-UI-SPEC.md) — nenhuma outra cor aparece no documento.
-  const foreground: [number, number, number] = [24, 52, 28] // #18341c
-  const muted: [number, number, number] = [92, 112, 96] // #5c7060
-  const border: [number, number, number] = [219, 238, 212] // #dbeed4
-  const rowShade: [number, number, number] = [234, 246, 230] // #eaf6e6
+  const foreground: [number, number, number] = [38, 38, 38] // #262626
+  const headerFill: [number, number, number] = [242, 242, 242] // #f2f2f2
+  const border: [number, number, number] = [217, 217, 217] // #d9d9d9
+  const muted: [number, number, number] = [107, 107, 107] // #6b6b6b
+  const rowShade: [number, number, number] = [247, 247, 247] // zebra, distinct from headerFill
 
   // jsPDF só tem dois estilos nativos de fonte via `doc.setFont(fontName,
   // style)` — "normal"/"bold" — sem um terceiro estilo intermediário. O
@@ -172,34 +173,54 @@ export async function exportarRelatorioFinanceiroPDF(
       afterResumoY + 24
     )
   } else {
-    autoTable(doc, {
-      startY: afterResumoY + 16,
-      head: [["Imóvel", "Proprietário", "Competência", "Vencimento", "Situação", "Valor"]],
-      // Mesma ordenação cronológica (linhas já vem ordenada por vencimento de
-      // quem chamou — não reordenada aqui).
-      body: linhas.map((l) => {
-        const situacao = situacaoDaParcela(
-          l.status,
-          l.vencimento,
-          hojeISO
-        ) as SituacaoRelatorio
-        const { valorDevido, valorPago } = somarLancamentos(
-          l.valor_original,
-          l.parcela_lancamentos
-        )
-        const valor =
-          situacao === "paga" || situacao === "conciliada"
-            ? valorPago
-            : Math.max(valorDevido - valorPago, 0)
-        return [
+    // bodyRows computado uma única vez — o `valor` situação-dependente é
+    // reusado tanto na célula renderizada quanto na soma do Total (Don't
+    // Hand-Roll, RESEARCH.md); nunca re-derivado uma segunda vez.
+    const bodyRows = linhas.map((l) => {
+      const situacao = situacaoDaParcela(
+        l.status,
+        l.vencimento,
+        hojeISO
+      ) as SituacaoRelatorio
+      const { valorDevido, valorPago } = somarLancamentos(
+        l.valor_original,
+        l.parcela_lancamentos
+      )
+      const valor =
+        situacao === "paga" || situacao === "conciliada"
+          ? valorPago
+          : Math.max(valorDevido - valorPago, 0)
+      return {
+        valor,
+        cells: [
           l.cards?.endereco ?? "",
           l.cards?.proprietario ?? "",
           competenciaLabelLinha(l.competencia),
           formatDate(l.vencimento),
           SITUACAO_ROTULO_SINGULAR[situacao],
           formatCurrency(valor),
-        ]
-      }),
+        ],
+      }
+    })
+    const totalValor = bodyRows.reduce((acc, r) => acc + r.valor, 0)
+
+    autoTable(doc, {
+      startY: afterResumoY + 16,
+      theme: "plain",
+      head: [["Imóvel", "Proprietário", "Competência", "Vencimento", "Situação", "Valor"]],
+      // Mesma ordenação cronológica (linhas já vem ordenada por vencimento de
+      // quem chamou — não reordenada aqui).
+      body: bodyRows.map((r) => r.cells),
+      foot: [
+        [
+          { content: "Total", colSpan: 5 },
+          { content: formatCurrency(totalValor), styles: { halign: "right" } },
+        ],
+      ],
+      // showFoot explícito: nunca deixar no default "everyPage" da
+      // biblioteca, que repetiria o Total em cada página de um export com
+      // 2+ páginas (Pitfall 3, RESEARCH.md).
+      showFoot: "lastPage",
       // Padrão da biblioteca: o cabeçalho repete em toda nova página. Não
       // desligar — RESEARCH.md "Don't Hand-Roll" e o Layout Contract §4
       // exigem isso na escala de produção (~350+ parcelas). `headerRows: 1`
@@ -213,8 +234,18 @@ export async function exportarRelatorioFinanceiroPDF(
       // abaixo pela mesma razão que o plano pedia `headerRows: 1`: para que
       // uma manutenção futura não desative por engano.
       showHead: "everyPage",
-      styles: { fontSize: 9, textColor: foreground, lineColor: border },
-      headStyles: { fontStyle: "bold", fillColor: [255, 255, 255], textColor: foreground },
+      styles: {
+        fontSize: 9,
+        textColor: foreground,
+        lineColor: border,
+        // Linha horizontal sutil só embaixo de cada célula — nunca `top`
+        // junto com `bottom`, dobraria a linha renderizada em cada fronteira
+        // de linha (Anti-Pattern, RESEARCH.md).
+        lineWidth: { top: 0, right: 0, bottom: 0.75, left: 0 },
+        cellPadding: 5,
+      },
+      headStyles: { fontStyle: "bold", fillColor: headerFill, textColor: foreground },
+      footStyles: { fontStyle: "bold", fillColor: headerFill, textColor: foreground },
       alternateRowStyles: { fillColor: rowShade },
       columnStyles: { 5: { halign: "right" } },
     })
