@@ -45,7 +45,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 17: Exclusão de coluna sem cascade para cards ativos** - Excluir uma coluna com cards ativos deixa de apagar esses cards em cascata; só é permitido depois de movê-los para outra coluna
 - [x] **Phase 18: Filtro na Configuração financeira** - Um campo de busca ao vivo (mesmo componente do relatório "Situação dos contratos") filtra de verdade a listagem de /financeiro/configuracao por número, endereço e proprietário
 - [x] **Phase 19: Filtro suspenso e exportação em PDF no relatório da imobiliária** - O relatório "Dinheiro da imobiliária" ganha o mesmo filtro suspenso já usado nas outras telas, e um botão de exportar em PDF igual ao do Relatório Financeiro dedicado
-- [ ] **Phase 20: Filtro por tipo de movimento no relatório da imobiliária** - O painel suspenso de /relatorios/imobiliaria ganha um seletor de tipo de movimento (Administração/Comissão 1º aluguel/Caução), ao lado dos 5 campos já existentes
+- [x] **Phase 20: Filtro por tipo de movimento no relatório da imobiliária** - O painel suspenso de /relatorios/imobiliaria ganha um seletor de tipo de movimento (Administração/Comissão 1º aluguel/Caução), ao lado dos 5 campos já existentes
 
 ## Phase Details
 
@@ -370,7 +370,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 17. Exclusão de coluna sem cascade para cards ativos | 1/1 | Complete | 2026-08-27 |
 | 18. Filtro na Configuração financeira | 1/1 | Complete | 2026-08-28 |
 | 19. Filtro suspenso e exportação em PDF no relatório da imobiliária | 1/1 | Complete | 2026-08-28 |
-| 20. Filtro por tipo de movimento no relatório da imobiliária | 1/1 | In Progress|  |
+| 20. Filtro por tipo de movimento no relatório da imobiliária | 1/1 | Complete | 2026-08-28 |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 e 20 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-20: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG / § FILTIMOB / PDFIMOB / § TIPOIMOB / COLIMOB.
 
@@ -507,21 +507,24 @@ pós-milestone — ver 20-CONTEXT.md)
 **Depends on:** Phase 19
 **Success Criteria** (what must be TRUE):
 
-  1. Abrir o painel "Filtrar" mostra, depois dos 5 campos já existentes, uma linha de chips (Todos/
+  1. ✓ Abrir o painel "Filtrar" mostra, depois dos 5 campos já existentes, uma linha de chips (Todos/
      Administração/Comissão 1º aluguel/Caução); clicar num chip filtra a lista e os 6 `StatTile` juntos, sem
-     nenhum chip marcado por padrão (mesma semântica de Set vazio já usada por `situacoes`)
+     nenhum chip marcado por padrão (mesma semântica de Set vazio já usada por `situacoes`) — confirmado em
+     produção
 
-  2. Desmarcar um tipo zera o `StatTile` correspondente (nunca esconde o tile do grid) e para de somá-lo em
-     "Total recebido"
+  2. ✓ Desmarcar um tipo zera o `StatTile` correspondente (nunca esconde o tile do grid) e para de somá-lo em
+     "Total recebido" — confirmado em produção
 
-  3. "Caução" é um único chip cobrindo os três subtipos já existentes (recebida/devolvida/usada) — nunca um
-     chip por subtipo
+  3. ✓ "Caução" é um único chip cobrindo os três subtipos já existentes (recebida/devolvida/usada) — nunca um
+     chip por subtipo — confirmado em produção
 
-  4. `reconciliacao-pdf.ts` permanece byte a byte inalterado — o PDF passa a receber `linhas` já filtradas
-     pelo tipo automaticamente, sem nenhuma mudança de layout (fora de escopo desta fase, D-08/D-09)
+  4. ✓ `reconciliacao-pdf.ts` permanece byte a byte inalterado — o PDF passa a receber `linhas` já filtradas
+     pelo tipo automaticamente, sem nenhuma mudança de layout (fora de escopo desta fase, D-08/D-09) —
+     confirmado em produção
 
-  5. A célula "Contrato" mantém o mesmo formato visual (`IdPill` + texto), só troca o texto de endereço para
-     proprietário; uma nova coluna "Inquilino" aparece logo depois; endereço sai completamente da tela
+  5. ✓ A célula "Contrato" mantém o mesmo formato visual (`IdPill` + texto), só troca o texto de endereço para
+     proprietário; uma nova coluna "Inquilino" aparece logo depois; endereço sai completamente da tela —
+     confirmado em produção
 
 **Plans:** 1/1 plans executed
 

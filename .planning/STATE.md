@@ -4,16 +4,16 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 20
 current_phase_name: filtro-por-tipo-de-movimento-no-relat-rio-da-imobili-ria
-status: executed
-stopped_at: Plano 20-01 executado — falta confirmação humana em produção do human-check não bloqueante
-last_updated: "2026-08-28T13:56:00.000Z"
+status: complete
+stopped_at: Fase 20 encerrada — TIPOIMOB-01..03/COLIMOB-01..03 confirmados em produção pelo usuário
+last_updated: "2026-08-28T14:10:00.000Z"
 last_activity: 2026-08-28
-last_activity_desc: "Plano 20-01 (Filtro por tipo de movimento no relatório da imobiliária) executado em worktree isolado (agent-a8e0019aaf163aa8a). TipoMovimentoReconciliacao (OrigemTaxa | \"caucao\") e passaFiltroTipoReconciliacao novos em reconciliacao.ts; calcularReconciliacao ganhou 4º parâmetro obrigatório sem default (tripwire de compilação). Chip row Todos/Administração/Comissão 1º aluguel/Caução em filtro-reconciliacao.tsx, reusando FilterChip/toggle. dinheiro-imobiliaria-view.tsx: as duas cadeias de linhas (taxa e caução) ganharam o filtro de tipo — caução usando sempre a constante \"caucao\", nunca evento.tipo —, resetKey ganhou o Set ordenado, célula Contrato trocada de endereço para proprietário, nova coluna Inquilino. reconciliacao-pdf.ts não foi tocado (git diff --quiet confirmado). npx tsc --noEmit/npm run lint/npm run build verdes. Commit: ff38006 (Task 1, tracer cobrindo a fase inteira). Human-check não bloqueante pendente de confirmação do usuário em produção."
+last_activity_desc: "Fase 20 encerrada. Plano 20-01 mesclado em main (merge commit) e publicado. Usuário confirmou em produção o human-check do plano: 'Fiz os testes e tudo funcionou como o esperado!' TIPOIMOB-01..03/COLIMOB-01..03 marcados 'Confirmado em produção' em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table atualizados para Complete."
 progress:
-  total_phases: 19
-  completed_phases: 19
-  total_plans: 57
-  completed_plans: 57
+  total_phases: 20
+  completed_phases: 20
+  total_plans: 58
+  completed_plans: 58
   percent: 100
 ---
 
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 20 (Filtro por tipo de movimento no relatório da imobiliária) — CONTEXT.md pronto, falta plan-phase.
+**Current focus:** Nenhuma fase nova planejada. Fase 20 (Filtro por tipo de movimento no relatório da imobiliária) encerrada — TIPOIMOB-01..03/COLIMOB-01..03 confirmados em produção. Todas as 20 fases planejadas do projeto estão completas.
 
 ## Current Position
 
-Phase: 20 (filtro-por-tipo-de-movimento-no-relat-rio-da-imobili-ria) — EXECUTADA (plano 20-01), aguardando confirmação humana
-Status: Plano 20-01 (1 task, tracer) executado e commitado (`ff38006`). `20-01-SUMMARY.md` escrito. Falta o usuário confirmar em produção o `<human-check>` não bloqueante (chips filtrando lista+StatTiles+PDF, Caução unificada, colunas Contrato/Inquilino, PDF respeitando o filtro sem mudar layout).
-Last activity: 2026-08-28 — plano 20-01 executado em worktree isolado (agent-a8e0019aaf163aa8a).
+Phase: 20 (filtro-por-tipo-de-movimento-no-relat-rio-da-imobili-ria) — ENCERRADA
+Status: Plano 20-01 executado, mesclado e confirmado em produção. TIPOIMOB-01..03/COLIMOB-01..03 marcados "Confirmado em produção" em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table em Complete.
+Last activity: 2026-08-28 — usuário confirmou o human-check do plano 20-01 em produção. Fase 20 encerrada.
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 → 20. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -90,6 +90,7 @@ Last activity: 2026-08-28 — plano 20-01 executado em worktree isolado (agent-a
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-28: **Fase 20 encerrada — TIPOIMOB-01..03/COLIMOB-01..03 confirmados em produção.** Usuário testou os chips de tipo (zeramento de StatTile ao desmarcar, combinação de múltiplos tipos, "Caução" unificando os três subtipos), as colunas Contrato/Inquilino trocadas, e o PDF respeitando o filtro sem mudar de layout — "Fiz os testes e tudo funcionou como o esperado!". **Com isso encerram as 20 fases planejadas do projeto inteiro.** Não há fase nova planejada; o único aviso registrado continua sendo o redesenho do PDF de Dinheiro da imobiliária (D-09, 20-CONTEXT.md) — o usuário disse que vai trazer um modelo próprio numa fase futura, não é pendência ativa.
 - 2026-08-28: **Plano 20-01 executado** (worktree isolado, `agent-a8e0019aaf163aa8a`). Task 1 (tracer, cobrindo a fase inteira): `reconciliacao.ts` ganha `TipoMovimentoReconciliacao` (`OrigemTaxa | "caucao"`, reusa `OrigemTaxa` sem função de mapeamento) e `passaFiltroTipoReconciliacao` (Set vazio = sem filtro, mesma semântica de `situacoes`); `FiltroReconciliacaoValores`/`filtroReconciliacaoVazio` ganham o campo `tipos`; `calcularReconciliacao` ganha um 4º parâmetro OBRIGATÓRIO sem valor padrão — tripwire de compilação intencional que forçou a atualização do único call site em `dinheiro-imobiliaria-view.tsx`. `filtro-reconciliacao.tsx` ganha a linha de chips Todos/Administração/Comissão 1º aluguel/Caução, reusando `FilterChip`/`toggle` de `reports-view.tsx` (mesmo padrão já usado por "Situação" no Relatório Financeiro dedicado) — segundo uso desse par fora da tela onde nasceu. `dinheiro-imobiliaria-view.tsx`: as duas cadeias de `linhas` (taxa e caução) ganharam a cláusula de tipo — a cadeia de caução usa sempre a constante `"caucao"`, nunca `evento.tipo`, evitando reintroduzir filtragem por subtipo (D-02); `resetKey` ganhou um sexto segmento com o Set ordenado antes do `join` (`[...filtro.tipos].sort().join(",")`); célula "Contrato" trocada de endereço para proprietário (mesmo formato IdPill+texto); nova coluna "Inquilino" adicionada. `reconciliacao-pdf.ts` não foi tocado — `git diff --quiet` confirmado, o PDF passa a receber `linhas` já filtradas automaticamente. Zero migração de banco. `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes (worktree precisou de `npm install` próprio). Commit: `ff38006` (Task 1, único commit da fase). **Human-check não bloqueante pendente** (ver Blockers) — o comportamento renderizado dos chips (zeramento de StatTile, combinação de múltiplos tipos, Caução unificada, colunas Contrato/Inquilino) e a estrutura real do PDF exportado com filtro de tipo ativo só são observáveis interagindo com a tela/arquivo reais em produção.
 - 2026-08-28: **Fase 19 encerrada — FILTIMOB-01..04/PDFIMOB-01..02 confirmados em produção.** Plano 19-01 executado em worktree isolado (`agent-a4364ef8c764c90ee`), 2/2 tasks, mesclado em `main` (`c941279`) e publicado. `buscarReconciliacaoAction` ampliada com `inquilino` (D-04, zero migração — coluna já existia). `/relatorios/imobiliaria` ganhou o painel suspenso ao vivo (5 campos: Imóvel/Proprietário/Inquilino/ID do contrato/Período) reaproveitando a composição `Collapsible`+filtro-ao-vivo já shipada em produção desde a Phase 10 — pesquisa confirmou que não era um padrão novo, e sim uma cópia mecânica. Botão "Exportar PDF" via novo módulo `reconciliacao-pdf.ts`, espelhando `relatorio-financeiro-pdf.ts` bloco a bloco. `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes, verificados de forma independente no `main` já mesclado. Usuário confirmou em produção os dois human-checks do plano (filtro ao vivo + PDF exportado) com "Os dois funcionaram", depois de eu perguntar especificamente sobre ambos. **Com isso encerram as 19 fases planejadas do projeto inteiro.** Imediatamente após confirmar, o usuário pediu mais uma capacidade no mesmo painel de filtro (seletor de tipo — Administração/Comissão 1º aluguel/Caução) — vira Phase 20, ainda não formalizada.
 
@@ -155,8 +156,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - ~~Plano 17-01 tem dois `<human-check>` não bloqueantes pendentes de confirmação do usuário em produção~~ — resolvido, usuário confirmou os três ramos do diálogo de exclusão de coluna e a regressão do trigger de lançamento financeiro em produção (2026-08-27). Fase 17 encerrada.
 - ~~Plano 18-01 tem um `<human-check>` não bloqueante pendente de confirmação do usuário em produção~~ — resolvido. Primeiro teste do usuário não mostrou o campo de busca (deploy da Vercel ainda propagando — tabela com dados renderizava normal, só faltava o `SearchField`, consistente com o código: a única condição que os separa é `erro`, inativo); confirmado poucos minutos depois já funcionando ("Testei, funcionou corretamente"), e em seguida confirmado também o reset de paginação e a mensagem de busca sem correspondência ("Sim, testei tudo, pode fechar a fase."). Fase 18 encerrada (2026-08-28).
 - ~~Plano 19-01 tem dois `<human-check>` não bloqueantes pendentes de confirmação do usuário em produção~~ — resolvido, usuário confirmou o filtro ao vivo (5 campos) e o PDF exportado em produção ("Os dois funcionaram"), depois de eu perguntar especificamente sobre os dois pontos. Fase 19 encerrada (2026-08-28).
-- **Plano 19-01 tem dois `<human-check>` não bloqueantes pendentes de confirmação do usuário em produção** (após merge do worktree `agent-a4364ef8c764c90ee` em `main`): (1) o comportamento renderizado do filtro ao vivo de 5 campos em `/relatorios/imobiliaria` — atualização em tempo real, ID do contrato com comparação exata (não substring), "Limpar filtros", reset de paginação ao trocar o filtro; (2) a estrutura real do PDF exportado ("Exportar PDF") — cabeçalho com os 5 filtros, bloco de 6 totais batendo com os `StatTile` em tela, lista completa na mesma ordem DESC, coluna "Tipo" sempre texto, estado "Exportando..." durante a geração.
-- **Plano 20-01 tem um `<human-check>` não bloqueante pendente de confirmação do usuário em produção** (após merge do worktree `agent-a8e0019aaf163aa8a` em `main`): abrir "Filtrar" em `/relatorios/imobiliaria`, clicar cada chip de tipo (Administração/Comissão 1º aluguel/Caução) isoladamente e em combinação — confirmar que a lista mostra só os tipos marcados, que os `StatTile` dos tipos desmarcados mostram R$ 0,00 sem sumir do grid, e que "Total recebido" reflete só os tipos marcados; confirmar que "Caução" traz recebido/devolvido/usado juntos (nunca separado por subtipo); clicar "Todos" e confirmar que tudo volta; conferir a tabela (coluna "Contrato" com ID+proprietário, nova coluna "Inquilino", nenhum endereço); com um filtro de tipo ativo, exportar o PDF e confirmar que só traz os tipos filtrados, com o mesmo layout de sempre (D-08/D-09, PDF não muda de layout nesta fase).
+- ~~Plano 20-01 tem um `<human-check>` não bloqueante pendente de confirmação do usuário em produção~~ — resolvido, usuário confirmou os chips de tipo (zeramento de StatTile, Caução unificada), as colunas Contrato/Inquilino e o PDF respeitando o filtro em produção ("Fiz os testes e tudo funcionou como o esperado!"). Fase 20 encerrada (2026-08-28).
 
 ### Roadmap Evolution
 
@@ -188,6 +188,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-28T13:56:00.000Z
-Stopped at: Plano 20-01 executado — falta confirmação humana em produção do human-check não bloqueante
+Last session: 2026-08-28T14:10:00.000Z
+Stopped at: Fase 20 encerrada — TIPOIMOB-01..03/COLIMOB-01..03 confirmados em produção. Todas as 20 fases planejadas do projeto estão completas.
 Resume file: .planning/phases/20-filtro-por-tipo-de-movimento-no-relat-rio-da-imobili-ria/20-01-SUMMARY.md
