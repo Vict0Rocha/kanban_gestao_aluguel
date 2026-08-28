@@ -222,21 +222,21 @@ PDF espelhando o do Relatório Financeiro dedicado. Estritamente aditiva — a �
 registradas em
 `.planning/phases/19-filtro-suspenso-e-exporta-o-em-pdf-no-relat-rio-da-imobili-r/19-CONTEXT.md`.
 
-- [ ] **FILTIMOB-01**: Um painel suspenso (`Collapsible`) com 5 campos — Imóvel, Proprietário, Inquilino, ID
+- [x] **FILTIMOB-01**: Um painel suspenso (`Collapsible`) com 5 campos — Imóvel, Proprietário, Inquilino, ID
   do contrato e Período — filtra `/relatorios/imobiliaria` ao vivo, sem botão de submit; cada campo atualiza
   a lista e os `StatTile` imediatamente
-- [ ] **FILTIMOB-02**: `buscarReconciliacaoAction` amplia as duas consultas (`taxas_imobiliaria` e
+- [x] **FILTIMOB-02**: `buscarReconciliacaoAction` amplia as duas consultas (`taxas_imobiliaria` e
   `caucao_eventos`) para incluir `inquilino` no embed `cards(...)`, tornando o campo Inquilino filtrável de
   verdade — campo que hoje não é nem buscado por esta tela
-- [ ] **FILTIMOB-03**: O filtro por "ID do contrato" usa comparação exata de inteiro, nunca substring — mesmo
+- [x] **FILTIMOB-03**: O filtro por "ID do contrato" usa comparação exata de inteiro, nunca substring — mesmo
   padrão já usado no filtro suspenso do Financeiro e no precedente server-side de `financeiro/page.tsx`
-- [ ] **FILTIMOB-04**: Mudar qualquer um dos 5 campos do filtro volta a paginação para a página 1; um render
+- [x] **FILTIMOB-04**: Mudar qualquer um dos 5 campos do filtro volta a paginação para a página 1; um render
   não relacionado ao filtro nunca reseta a página em que o usuário está
-- [ ] **PDFIMOB-01**: Um botão "Exportar PDF" gera e baixa um PDF espelhando a estrutura do já existente no
+- [x] **PDFIMOB-01**: Um botão "Exportar PDF" gera e baixa um PDF espelhando a estrutura do já existente no
   Relatório Financeiro dedicado — cabeçalho com os 5 filtros ativos ("Todos" quando vazio), um bloco com os
   mesmos 6 totais mostrados em tela pelos `StatTile`, e a lista completa (taxas+caução) na mesma ordem já
   usada na tela
-- [ ] **PDFIMOB-02**: O botão "Exportar PDF" mostra "Exportando..." e fica desabilitado durante a geração,
+- [x] **PDFIMOB-02**: O botão "Exportar PDF" mostra "Exportando..." e fica desabilitado durante a geração,
   mesmo padrão do botão já existente no Relatório Financeiro dedicado
 
 ## Carried over from v1.0
@@ -375,12 +375,12 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | FILTCFG-02 | Phase 18 | Confirmado em produção |
 | FILTCFG-03 | Phase 18 | Confirmado em produção |
 | FILTCFG-04 | Phase 18 | Confirmado em produção |
-| FILTIMOB-01 | Phase 19 | Pendente |
-| FILTIMOB-02 | Phase 19 | Pendente |
-| FILTIMOB-03 | Phase 19 | Pendente |
-| FILTIMOB-04 | Phase 19 | Pendente |
-| PDFIMOB-01 | Phase 19 | Pendente |
-| PDFIMOB-02 | Phase 19 | Pendente |
+| FILTIMOB-01 | Phase 19 | Confirmado em produção |
+| FILTIMOB-02 | Phase 19 | Confirmado em produção |
+| FILTIMOB-03 | Phase 19 | Confirmado em produção |
+| FILTIMOB-04 | Phase 19 | Confirmado em produção |
+| PDFIMOB-01 | Phase 19 | Confirmado em produção |
+| PDFIMOB-02 | Phase 19 | Confirmado em produção |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5

@@ -44,7 +44,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 16: Reordenação em massa e arquivamento sem coluna** - Botão "Reordenar" no Board move todos os cards para uma coluna escolhida de uma vez; desarquivar sempre devolve o card à primeira coluna ativa, não à coluna antiga
 - [x] **Phase 17: Exclusão de coluna sem cascade para cards ativos** - Excluir uma coluna com cards ativos deixa de apagar esses cards em cascata; só é permitido depois de movê-los para outra coluna
 - [x] **Phase 18: Filtro na Configuração financeira** - Um campo de busca ao vivo (mesmo componente do relatório "Situação dos contratos") filtra de verdade a listagem de /financeiro/configuracao por número, endereço e proprietário
-- [ ] **Phase 19: Filtro suspenso e exportação em PDF no relatório da imobiliária** - O relatório "Dinheiro da imobiliária" ganha o mesmo filtro suspenso já usado nas outras telas, e um botão de exportar em PDF igual ao do Relatório Financeiro dedicado
+- [x] **Phase 19: Filtro suspenso e exportação em PDF no relatório da imobiliária** - O relatório "Dinheiro da imobiliária" ganha o mesmo filtro suspenso já usado nas outras telas, e um botão de exportar em PDF igual ao do Relatório Financeiro dedicado
 
 ## Phase Details
 
@@ -368,7 +368,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 16. Reordenação em massa e arquivamento sem coluna | 4/4 | Complete | 2026-08-27 |
 | 17. Exclusão de coluna sem cascade para cards ativos | 1/1 | Complete | 2026-08-27 |
 | 18. Filtro na Configuração financeira | 1/1 | Complete | 2026-08-28 |
-| 19. Filtro suspenso e exportação em PDF no relatório da imobiliária | 1/1 | In Progress | - |
+| 19. Filtro suspenso e exportação em PDF no relatório da imobiliária | 1/1 | Complete | 2026-08-28 |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 e 19 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-19: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG / § FILTIMOB / PDFIMOB.
 
@@ -470,21 +470,21 @@ composições já shipadas em produção neste projeto — nenhum padrão novo, 
 **Depends on:** Phase 18
 **Success Criteria** (what must be TRUE):
 
-  1. Abrir o painel "Filtrar" mostra 5 campos (Imóvel/Proprietário/Inquilino/ID do contrato/Período); digitar
-     em qualquer um filtra a lista e os `StatTile` ao vivo, sem botão de submit
+  1. ✓ Abrir o painel "Filtrar" mostra 5 campos (Imóvel/Proprietário/Inquilino/ID do contrato/Período); digitar
+     em qualquer um filtra a lista e os `StatTile` ao vivo, sem botão de submit — confirmado em produção
 
-  2. `buscarReconciliacaoAction` busca `inquilino` (campo já existente em `cards`, sem migração), tornando o
-     campo Inquilino filtrável de verdade
+  2. ✓ `buscarReconciliacaoAction` busca `inquilino` (campo já existente em `cards`, sem migração), tornando o
+     campo Inquilino filtrável de verdade — confirmado em produção
 
-  3. ID do contrato usa comparação exata de inteiro, nunca substring
-  4. Mudar qualquer campo do filtro reseta a paginação para a página 1; um render não relacionado ao filtro
-     nunca reseta a página
+  3. ✓ ID do contrato usa comparação exata de inteiro, nunca substring — confirmado em produção
+  4. ✓ Mudar qualquer campo do filtro reseta a paginação para a página 1; um render não relacionado ao filtro
+     nunca reseta a página — confirmado em produção
 
-  5. "Exportar PDF" baixa um PDF com o cabeçalho dos 5 filtros ativos, o bloco de 6 totais e a lista completa,
+  5. ✓ "Exportar PDF" baixa um PDF com o cabeçalho dos 5 filtros ativos, o bloco de 6 totais e a lista completa,
      na mesma estrutura já usada no Relatório Financeiro dedicado; o botão mostra "Exportando..." durante a
-     geração
+     geração — confirmado em produção
 
-  6. Zero migração de banco
+  6. ✓ Zero migração de banco
 
 **Plans:** 1/1 plans executed
 
@@ -492,5 +492,3 @@ Plans:
 
 - [x] 19-01-PLAN.md — Filtro suspenso ao vivo (Server Action, matchers, componente, Collapsible shell) e
   exportação em PDF (novo módulo espelhando o Relatório Financeiro) ponta a ponta
-
-- [ ] TBD (run /gsd-plan-phase 19 to break down)
