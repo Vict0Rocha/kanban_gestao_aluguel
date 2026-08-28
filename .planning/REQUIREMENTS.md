@@ -265,6 +265,29 @@ adiada). Decisões registradas em
   lugar da linha (o campo permanece intocado em todo tipo/consulta/PDF — só some do JSX renderizado desta
   tabela)
 
+### PDFMODELO — Redesenho do modelo de PDF dos relatórios financeiros (pós-milestone, Phase 21)
+
+Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário, com um print do software
+Sienge anexado como guia de estilo geral (explicitamente não para copiar igual). Aplica-se identicamente aos
+dois PDFs exportáveis já em produção (`relatorio-financeiro-pdf.ts`, Phase 10; `reconciliacao-pdf.ts`, Phase
+19), que continuam espelhados um no outro. Fecha, de passagem, a mudança de colunas de `reconciliacao-pdf.ts`
+que a Phase 20 deixou deliberadamente pendente só no PDF (D-09 daquela fase). Decisões registradas em
+`.planning/phases/21-redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros/21-CONTEXT.md`.
+
+- [ ] **PDFMODELO-01**: Os dois PDFs exportam em A4 paisagem, com uma paleta cinza inteira substituindo o
+  verde atual — sem nenhuma cor viva (verde, vermelho ou azul saturado) em lugar nenhum do documento
+- [ ] **PDFMODELO-02**: A lista principal de cada PDF usa linha horizontal sutil separando cada linha (sem
+  borda vertical entre colunas) mais zebra (linhas alternando branco e cinza bem claro)
+- [ ] **PDFMODELO-03**: Uma linha "Total" nova, em negrito com o mesmo fundo cinza do cabeçalho, no final da
+  lista de cada PDF, soma a coluna Valor de todas as linhas efetivamente listadas (já respeitando qualquer
+  filtro aplicado); nunca se repete em cada página de um export com múltiplas páginas
+- [ ] **PDFMODELO-04**: Os três blocos estruturais já existentes em cada PDF (título+timestamp, tabela de
+  filtros aplicados, bloco de totais/resumo) continuam existindo, com a mesma estrutura de antes — só passam a
+  usar a nova paleta cinza
+- [ ] **PDFMODELO-05**: `reconciliacao-pdf.ts` ganha uma coluna "Inquilino" e troca a célula "Contrato" de
+  endereço para proprietário do contrato (mesmo formato ID+texto); `relatorio-financeiro-pdf.ts` mantém suas
+  colunas atuais inalteradas
+
 ## Carried over from v1.0
 
 Requisito não concluído na v1.0, mantido visível para não se perder. **Não faz parte do escopo de fases da v2.0** — é uma ação de painel, não trabalho de código, adiada por escolha do usuário.
@@ -413,12 +436,17 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | COLIMOB-01 | Phase 20 | Confirmado em produção |
 | COLIMOB-02 | Phase 20 | Confirmado em produção |
 | COLIMOB-03 | Phase 20 | Confirmado em produção |
+| PDFMODELO-01 | Phase 21 | Pendente |
+| PDFMODELO-02 | Phase 21 | Pendente |
+| PDFMODELO-03 | Phase 21 | Pendente |
+| PDFMODELO-04 | Phase 21 | Pendente |
+| PDFMODELO-05 | Phase 21 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
 - Mapped to phases: 39
 - Unmapped: 0
-- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05), Phase 15 (CANDEST-01..03, PAGIN-01..03), Phase 16 (REORD-01..03, ARQCOL-01..03), Phase 17 (EXCOL-01..04), Phase 18 (FILTCFG-01..04), Phase 19 (FILTIMOB-01..04, PDFIMOB-01..02) e Phase 20 (TIPOIMOB-01..03, COLIMOB-01..03) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST`, `### PAGIN`, `### REORD`, `### ARQCOL`, `### EXCOL`, `### FILTCFG`, `### FILTIMOB / PDFIMOB` e `### TIPOIMOB / COLIMOB` acima
+- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05), Phase 15 (CANDEST-01..03, PAGIN-01..03), Phase 16 (REORD-01..03, ARQCOL-01..03), Phase 17 (EXCOL-01..04), Phase 18 (FILTCFG-01..04), Phase 19 (FILTIMOB-01..04, PDFIMOB-01..02), Phase 20 (TIPOIMOB-01..03, COLIMOB-01..03) e Phase 21 (PDFMODELO-01..05) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST`, `### PAGIN`, `### REORD`, `### ARQCOL`, `### EXCOL`, `### FILTCFG`, `### FILTIMOB / PDFIMOB`, `### TIPOIMOB / COLIMOB` e `### PDFMODELO` acima
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 - VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 

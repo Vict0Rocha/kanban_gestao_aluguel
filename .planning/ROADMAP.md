@@ -372,9 +372,9 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 18. Filtro na Configuração financeira | 1/1 | Complete | 2026-08-28 |
 | 19. Filtro suspenso e exportação em PDF no relatório da imobiliária | 1/1 | Complete | 2026-08-28 |
 | 20. Filtro por tipo de movimento no relatório da imobiliária | 1/1 | Complete | 2026-08-28 |
-| 21. Redesenho do modelo de PDF dos relatórios financeiros | 0/TBD | Planned | - |
+| 21. Redesenho do modelo de PDF dos relatórios financeiros | 0/1 | Planned | - |
 
-**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 e 20 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-20: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG / § FILTIMOB / PDFIMOB / § TIPOIMOB / COLIMOB.
+**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 e 21 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-21: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG / § FILTIMOB / PDFIMOB / § TIPOIMOB / COLIMOB / § PDFMODELO.
 
 ### Phase 15: Exclusão de card com destrava e paginação
 
@@ -537,11 +537,19 @@ Plans:
 
 ### Phase 21: Redesenho do modelo de PDF dos relatórios financeiros
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal**: Os dois PDFs exportados (Relatório Financeiro dedicado e Dinheiro da imobiliária) têm um visual novo — A4 paisagem, paleta cinza inteira, lista sem grade vertical com zebra, linha de Total nova — mais profissional para uso corporativo, com o mesmo contrato de layout documentado para os dois; `reconciliacao-pdf.ts` fecha, de passagem, a mudança de colunas (Inquilino/proprietário) que a Phase 20 deixou pendente só no PDF
+**Requirements**: PDFMODELO-01, PDFMODELO-02, PDFMODELO-03, PDFMODELO-04, PDFMODELO-05
 **Depends on:** Phase 20
-**Plans:** 0 plans
+**Success Criteria** (what must be TRUE):
+
+  1. Os dois PDFs exportam em A4 paisagem, paleta cinza inteira (texto `#262626`, cabeçalho/Total `#f2f2f2`, bordas `#d9d9d9`, rótulos/rodapé `#6b6b6b`) — sem nenhuma cor viva em lugar nenhum do documento
+  2. A lista principal de cada PDF usa linha horizontal sutil entre as linhas (sem grade vertical) mais zebra branco/cinza claro alternando
+  3. Uma linha "Total" nova, em negrito com o mesmo fundo cinza do cabeçalho, soma a coluna Valor de todas as linhas efetivamente listadas (já respeitando o filtro aplicado) no final da lista de cada PDF, e nunca se repete em páginas seguintes de um export com múltiplas páginas
+  4. Os três blocos estruturais já existentes em cada PDF (título+timestamp, filtros aplicados, totais/resumo) continuam presentes, com a mesma estrutura de antes — só recoloridos
+  5. `reconciliacao-pdf.ts` ganha a coluna "Inquilino" e troca a célula "Contrato" de endereço para proprietário; `relatorio-financeiro-pdf.ts` mantém suas colunas atuais inalteradas
+
+**Plans**: 1 plan
 
 Plans:
 
-- [ ] TBD (run /gsd-plan-phase 21 to break down)
+- [ ] 21-01-PLAN.md — Novo contrato visual ponta a ponta nos dois módulos de PDF (paisagem, paleta cinza, lista sem grade+zebra, linha de Total), mudança de colunas corrigida em `reconciliacao-pdf.ts`, e atualização de `10-UI-SPEC.md`
