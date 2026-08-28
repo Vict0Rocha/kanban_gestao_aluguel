@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 18
-current_phase_name: filtro-na-configura-o-financeira
-status: complete
-stopped_at: Fase 18 encerrada — FILTCFG-01..04 confirmados em produção pelo usuário
-last_updated: "2026-08-28T01:15:00.000Z"
+current_phase: 19
+current_phase_name: filtro-suspenso-e-exporta-o-em-pdf-no-relat-rio-da-imobili-r
+status: discussed
+stopped_at: Fase 19 discutida — CONTEXT.md pronto, falta plan-phase
+last_updated: "2026-08-28T02:00:00.000Z"
 last_activity: 2026-08-28
-last_activity_desc: "Fase 18 encerrada. Usuário reportou inicialmente que o campo de busca não aparecia em produção logo após o merge — diagnosticado como propagação do deploy da Vercel (tabela com dados renderizava normal, só o SearchField faltava; a única condição que os separa no código é `erro`, que não estava ativo), não um bug de código. Usuário testou de novo pouco depois e confirmou: 'Testei, funcionou corretamente' e, após confirmar que também testou o reset de paginação (editar percentuais/caução na página 2+ não resetando) e a mensagem de busca sem correspondência, fechou com 'Sim, testei tudo, pode fechar a fase.' FILTCFG-01..04 marcados 'Confirmado em produção' em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table atualizados para Complete."
+last_activity_desc: "Fase 19 (Filtro suspenso e exportação em PDF no relatório da imobiliária) discutida. Painel suspenso novo é uma composição inédita neste projeto: casca visual colapsável (Collapsible, igual FiltroParcelas/FiltroRelatorioFinanceiro) + comportamento ao vivo sem botão de aplicar (igual FiltroRelatorioFinanceiroLive) — usuário escolheu essa combinação depois de eu apresentar as duas opções puras. Campos: Imóvel/Proprietário/Inquilino/ID do contrato/Período (Período já existe, só muda de lugar). Inquilino exige ampliar buscarReconciliacaoAction (mudança pequena, aditiva, sem migração — campo já existe em cards). PDF espelha exatamente a estrutura do já existente no Relatório Financeiro (relatorio-financeiro-pdf.ts) — cabeçalho com filtros ativos + 6 totais dos StatTiles + lista unificada. 19-CONTEXT.md e 19-DISCUSSION-LOG.md escritos e commitados (fd83af4)."
 progress:
-  total_phases: 18
+  total_phases: 19
   completed_phases: 18
   total_plans: 56
   completed_plans: 56
-  percent: 100
+  percent: 95
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Nenhuma fase nova planejada. Fase 18 (Filtro na Configuração financeira) encerrada — FILTCFG-01..04 confirmados em produção. Todas as 18 fases planejadas do projeto estão completas.
+**Current focus:** Phase 19 (Filtro suspenso e exportação em PDF no relatório da imobiliária) — CONTEXT.md pronto, falta plan-phase.
 
 ## Current Position
 
-Phase: 18 (filtro-na-configura-o-financeira) — ENCERRADA
-Status: Plano 18-01 executado e confirmado em produção. FILTCFG-01..04 marcados "Confirmado em produção" em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table em Complete.
-Last activity: 2026-08-28 — usuário confirmou o human-check do plano 18-01 em produção, incluindo o reset de paginação e a mensagem de busca sem correspondência. Fase 18 encerrada.
+Phase: 19 (filtro-suspenso-e-exporta-o-em-pdf-no-relat-rio-da-imobili-r) — DISCUTIDA
+Status: `19-CONTEXT.md`/`19-DISCUSSION-LOG.md` escritos e commitados. Falta `/gsd-plan-phase 19`.
+Last activity: 2026-08-28 — discuss-phase concluído: painel suspenso ao vivo (Imóvel/Proprietário/Inquilino/ID/Período) + PDF espelhando o Relatório Financeiro.
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -178,6 +178,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-28T01:15:00.000Z
-Stopped at: Fase 18 encerrada — FILTCFG-01..04 confirmados em produção. Todas as 18 fases planejadas do projeto estão completas. Nenhuma fase nova planejada.
-Resume file: .planning/phases/18-filtro-na-configura-o-financeira/18-01-SUMMARY.md
+Last session: 2026-08-28T02:00:00.000Z
+Stopped at: Fase 19 discutida — CONTEXT.md pronto, falta plan-phase
+Resume file: .planning/phases/19-filtro-suspenso-e-exporta-o-em-pdf-no-relat-rio-da-imobili-r/19-CONTEXT.md
