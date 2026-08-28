@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 18
 current_phase_name: filtro-na-configura-o-financeira
-status: discussed
-stopped_at: Fase 18 discutida — CONTEXT.md pronto, falta plan-phase
-last_updated: "2026-08-27T22:00:00.000Z"
+status: executed
+stopped_at: Plano 18-01 executado (matcher, resetKey, SearchField) — falta confirmação humana em produção do human-check não bloqueante
+last_updated: "2026-08-28T00:55:18.593Z"
 last_activity: 2026-08-27
-last_activity_desc: "Fase 18 (Filtro na Configuração financeira) discutida. Nenhuma das duas áreas pré-formuladas (drawer+URL vs. filtro ao vivo multi-campo) batia com o que o usuário tinha em mente — ele queria um terceiro padrão: reusar o SearchField (campo único, ao vivo, sem botão) já usado no Board e no relatório 'Situação dos contratos' de /relatorios, não os componentes de filtro multi-campo. Confirmado: busca olha número do contrato, endereço e proprietário — os três campos já visíveis na tabela de ConfiguracaoFinanceiraView. buildMatcher/searchableText existentes em search.ts são tipados para Card e não se aplicam direto a ContratoConfig — precisa de matcher próprio. 18-CONTEXT.md e 18-DISCUSSION-LOG.md escritos e commitados (f57b685)."
+last_activity_desc: "Plano 18-01 (Filtro na Configuração financeira) executado em worktree isolado (agent-a202e155b5e335050). Busca ao vivo (SearchField, sem alteração) filtra /financeiro/configuracao por número/endereço/proprietário via matcher local buildContratoMatcher/searchableText (D-03, search.ts inalterado). resetKey do usePagination trocado de \"config\" para query (FILTCFG-02). Terceiro branch de estado vazio para busca sem correspondência (FILTCFG-03). npx tsc --noEmit/npm run lint/npm run build verdes. Commit 4eee7ef. Falta só o human-check não bloqueante em produção."
 progress:
   total_phases: 18
   completed_phases: 17
-  total_plans: 55
-  completed_plans: 55
-  percent: 94
+  total_plans: 56
+  completed_plans: 56
+  percent: 100
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 18 (Filtro na Configuração financeira) — CONTEXT.md pronto, falta plan-phase.
+**Current focus:** Phase 18 (Filtro na Configuração financeira) — plano 18-01 executado, falta confirmação humana em produção.
 
 ## Current Position
 
-Phase: 18 (filtro-na-configura-o-financeira) — DISCUTIDA
-Status: `18-CONTEXT.md`/`18-DISCUSSION-LOG.md` escritos e commitados. Falta `/gsd-plan-phase 18`.
-Last activity: 2026-08-27 — discuss-phase concluído: busca reusa `SearchField` (Board/Relatórios), campos número/endereço/proprietário.
+Phase: 18 (filtro-na-configura-o-financeira) — EXECUTADA (não bloqueante pendente)
+Status: Plano 18-01 executado em worktree isolado (`agent-a202e155b5e335050`), commit `4eee7ef`, `SUMMARY.md` escrito. Falta relayar ao usuário o human-check não bloqueante do plano (busca ao vivo, `resetKey` sobrevivendo a `router.refresh()`, mensagem de busca sem resultado) para confirmação em produção.
+Last activity: 2026-08-27 — plano 18-01 executado: busca reusa `SearchField` (Board/Relatórios), campos número/endereço/proprietário.
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -80,6 +80,7 @@ Last activity: 2026-08-27 — discuss-phase concluído: busca reusa `SearchField
 | Phase 14 P04 | ~35min | 2 tasks | 9 files |
 | Phase 14 P05 | ~25min | 2 tasks | 4 files |
 | Phase 17-exclus-o-de-coluna-sem-cascade-para-cards-ativos P01 | ~20min | 3 tasks | 6 files |
+| Phase 18-filtro-na-configura-o-financeira P01 | ~25min | 1 task | 1 file |
 
 ## Accumulated Context
 
@@ -125,6 +126,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - 2026-08-26: **Plano 14-01 concluído** (worktree isolado, agent-a86fb281d2312c106). Migracao aditiva 20260826000000_taxas_imobiliaria_lancamento_id.sql cria taxas_imobiliaria.lancamento_id (uuid, nullable, FK cascade para parcela_lancamentos.id) + indice, com comentario-guarda citando D-04 (Phase 13) -- a FK reabre o isolamento estrutural so para cascata de limpeza (CANIMOB-03), nunca para calculo de status. Runbook supabase/verificacao_taxas_imobiliaria_lancamento_id.sql prova, dentro de begin/rollback, a cascata real (cria card/parcela/lancamento/taxa de teste, apaga o lancamento, confirma via raise exception/raise notice que a taxa some junto), coluna nullable, indice, lancamento_id nulo aceito, RLS inalterada, cards intocado. Nada aplicado em producao neste plano -- ensaio real fica para o plano 14-02, aplicacao para o 14-03 atras de checkpoint:decision. Commits: 75ce2bf (Task 1), 7ca25bc (Task 2).
 - [Phase ?]: 2026-08-26: Plano 14-04 (Tasks 1-2) concluido em worktree isolado (agent-a30e340107bf0bf54). Historico unificado da parcela (parcelas.ts: TaxaHistorico/LinhaHistoricoParcela, uniao discriminada por kind) funde parcela_lancamentos+taxas_imobiliaria numa so lista cronologica; taxa-origem-label.tsx (novo) promove TAXA_ORIGEM/TaxaOrigemBadge de dinheiro-imobiliaria-view.tsx com className por origem (A-03). cancelarTaxaImobiliariaAction (nova): DELETE condicionado id+parcela_id, exigirParcelaNaoConciliada, NUNCA recalcularEGravarStatus. registrarPagamentoAction grava lancamento_id: inserido[0].id no INSERT de taxas_imobiliaria -- habilita a cascata on delete cascade sem nenhuma linha nova em cancelarLancamentoAction (CANIMOB-03). CancelarLancamentoDialog generalizado de tipo: Extract<...> para parentId/itemId/rotulo/acao ("lancamento"|"taxa"), pronto para caucao no plano 14-05. npm run lint/build verdes (worktree precisou de npm install proprio), todas as assercoes de fonte do <verify> confirmadas. Commits: c834a93 (Task 1), cb264b9 (Task 2). Task 3 (checkpoint:human-verify, gate=blocking) pendente -- requer prova em producao (SQL Editor) da cascata pagamento->taxa.
 - 2026-08-26: **Plano 14-05 (Tasks 1-2) concluído** em worktree isolado (agent-a058cbf215686f6e7). `cancelarEventoCaucaoAction` (nova, `actions.ts`): SELECT `order by criado_em desc limit 1` decide "o mais recente", recusa se `eventoId` não bater, só então DELETE condicionado a `id`+`card_id` — mesmo molde de duas etapas de `destravarParcelaAction`, nunca referencia `parcela_lancamentos`/`taxas_imobiliaria`. `cancelarEventoCaucao` (wrapper, `queries.ts`) ao lado de `registrarEventoCaucao`. `CancelarLancamentoDialog` ampliado para `acao: "lancamento" | "taxa" | "caucao"` — fecha CANIMOB-05 (os três domínios no mesmo componente, nenhum diálogo novo). `CaucaoHistoricoSheet`: `.map((evento, index) => ...)` calcula `ultimo = index === eventos.length - 1` (array ASCENDENTE — nunca `index === 0`, Pitfall 3 de 14-RESEARCH.md), botão "Cancelar" só no último evento. Task 2 (documentar em `docs/data-model.md`) já estava integralmente satisfeita por um commit anterior (`b9fa668`, plano 14-03, que antecipou a bullet "Cancelamento de taxa e de caução" cobrindo as três operações da fase) — verificado byte a byte contra as acceptance criteria, nenhuma mudança necessária. `npm run lint`/`npm run build` verdes (worktree precisou de `npm install` próprio). Commit: `d8dd721` (Task 1). **Task 3 (checkpoint:human-verify, gate=blocking) pendente** — última verificação da Phase 14 inteira: ciclo sequencial de caução (recebido→uso→devolução, cancelar sempre a partir do topo) + reconfirmação dos 5 critérios de sucesso do ROADMAP (CANIMOB-01..05).
+- 2026-08-27: **Plano 18-01 concluído** (worktree isolado, `agent-a202e155b5e335050`). Busca ao vivo (`SearchField`, reusado sem alteração) em `/financeiro/configuracao`, filtrando por número/endereço/proprietário via matcher local `buildContratoMatcher`/`searchableText` (D-03: `search.ts`'s `buildMatcher` fica tipado para `Card`, não estendido a `ContratoConfig`). `usePagination`'s `resetKey` trocado da constante `"config"` para o próprio estado `query` — mudar a busca reseta a página, editar percentuais/caução (`router.refresh()`) não reseta (FILTCFG-02). Terceiro branch de estado vazio ("Nenhum contrato corresponde à busca.") para busca sem correspondência. `search.ts`/`page.tsx` permanecem byte a byte inalterados (confirmado por `git diff --quiet`). `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes. Commit: `4eee7ef` (Task 1). **Human-check não bloqueante pendente** (ver Blockers) — comportamento de `resetKey` sobrevivendo a um `router.refresh()` real só é observável interagindo com a tela em produção.
 
 ### Pending Todos
 
@@ -143,6 +145,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - ~~Plano 14-04 Task 3 (checkpoint:human-verify, gate=blocking) pendente~~ — resolvido, usuário confirmou CANIMOB-01..03 em produção (2026-08-26).
 - ~~Plano 14-05 Task 3 (checkpoint:human-verify, gate=blocking) pendente — última verificação da Phase 14 inteira~~ — resolvido, usuário confirmou o ciclo sequencial completo de caução e CANIMOB-04/05 em produção (2026-08-26). Fase 14 encerrada.
 - ~~Plano 17-01 tem dois `<human-check>` não bloqueantes pendentes de confirmação do usuário em produção~~ — resolvido, usuário confirmou os três ramos do diálogo de exclusão de coluna e a regressão do trigger de lançamento financeiro em produção (2026-08-27). Fase 17 encerrada.
+- **Plano 18-01 tem um `<human-check>` não bloqueante pendente de confirmação do usuário em produção.** Verificação: em `/financeiro/configuracao`, digitar um termo (número/endereço/proprietário) filtra ao vivo e limpar restaura a lista; navegar para a página 2+ e editar percentuais/caução não reseta a página (só mudar o termo de busca reseta); busca sem correspondência mostra "Nenhum contrato corresponde à busca." Não bloqueia o fechamento da fase — grep/tsc/build já confirmam a forma do código (`resetKey=query`).
 
 ### Roadmap Evolution
 
@@ -172,6 +175,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-27T22:00:00.000Z
-Stopped at: Fase 18 discutida — CONTEXT.md pronto, falta plan-phase
-Resume file: .planning/phases/18-filtro-na-configura-o-financeira/18-CONTEXT.md
+Last session: 2026-08-28T00:55:18.593Z
+Stopped at: Plano 18-01 executado (matcher, resetKey, SearchField) — falta confirmação humana em produção do human-check não bloqueante
+Resume file: .planning/phases/18-filtro-na-configura-o-financeira/18-01-SUMMARY.md

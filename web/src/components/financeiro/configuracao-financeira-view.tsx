@@ -9,6 +9,8 @@ import { CaucaoHistoricoSheet } from "@/components/financeiro/caucao-historico-s
 import { ConfigurarPercentuaisDialog } from "@/components/financeiro/configurar-percentuais-dialog"
 import { IdPill } from "@/components/financeiro/id-pill"
 import { usePagination, Pagination } from "@/components/pagination"
+import { normalizeText } from "@/lib/kanban/search"
+import { SearchField } from "@/components/search-field"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -33,6 +35,30 @@ export type ContratoConfig = {
   percentualAdministracao: number
   percentualComissaoPrimeiroAluguel: number
   caucaoEventos: CaucaoEventoDetalhado[]
+}
+
+/**
+ * D-03 (18-CONTEXT.md): ContratoConfig não tem inquilino/telefone/
+ * observacoes como o Card completo do Board, então buildMatcher/
+ * searchableText de search.ts (tipados para Card) não se aplicam aqui —
+ * matcher próprio para os três campos já visíveis na tabela: número,
+ * endereço, proprietário. Mesmo contrato de buildMatcher: todos os termos
+ * precisam bater, cada um em qualquer um dos três campos.
+ */
+function searchableText(linha: ContratoConfig): string {
+  return normalizeText(
+    [String(linha.numero), linha.endereco, linha.proprietario].join(" ")
+  )
+}
+
+function buildContratoMatcher(query: string): (linha: ContratoConfig) => boolean {
+  const terms = normalizeText(query).split(/\s+/).filter(Boolean)
+  if (terms.length === 0) return () => true
+
+  return (linha) => {
+    const text = searchableText(linha)
+    return terms.every((term) => text.includes(term))
+  }
 }
 
 /** Status agregado do contrato (Color § Status tones, 13-UI-SPEC.md) —
@@ -141,16 +167,36 @@ export function ConfiguracaoFinanceiraView({
   todayISO: string
   erro?: boolean
 }) {
-  // PAGIN-03: tela sem filtro — chave constante, para o `router.refresh()`
-  // de editar percentuais/caução nunca resetar a posição do usuário
-  // (Pitfall 3, 15-RESEARCH.md).
+  const [query, setQuery] = React.useState("")
+  const matchesQuery = React.useMemo(() => buildContratoMatcher(query), [query])
+  const linhasFiltradas = React.useMemo(
+    () => linhas.filter(matchesQuery),
+    [linhas, matchesQuery]
+  )
+
+  // FILTCFG-02 (18-CONTEXT.md): query é useState do próprio
+  // ConfiguracaoFinanceiraView — não é remontado por um router.refresh()
+  // disparado por ConfigurarPercentuaisDialog/CaucaoHistoricoSheet (só a
+  // prop `linhas` ganha referência nova), então editar percentuais/caução
+  // nunca reseta a página do usuário. Mudar o termo de busca muda `query` e
+  // volta a paginação para a página 1 (as duas metades de FILTCFG-02).
   const { itensDaPagina, pagina, totalPaginas, setPagina } = usePagination(
-    linhas,
-    "config"
+    linhasFiltradas,
+    query
   )
 
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
+      {!erro && linhas.length > 0 && (
+        <div className="mb-4">
+          <SearchField
+            value={query}
+            onChange={setQuery}
+            placeholder="Buscar por número, endereço ou proprietário..."
+            resultSummary={`${linhasFiltradas.length} de ${linhas.length} contratos`}
+          />
+        </div>
+      )}
       {erro ? (
         <p className="text-sm text-muted-foreground">
           Não foi possível carregar os dados agora. Tente novamente.
@@ -158,6 +204,10 @@ export function ConfiguracaoFinanceiraView({
       ) : linhas.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           Nenhum contrato cadastrado ainda.
+        </p>
+      ) : linhasFiltradas.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          Nenhum contrato corresponde à busca.
         </p>
       ) : (
         <div>

@@ -366,7 +366,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 15. Exclusão de card com destrava e paginação | 6/6 | Complete | 2026-08-27 |
 | 16. Reordenação em massa e arquivamento sem coluna | 4/4 | Complete | 2026-08-27 |
 | 17. Exclusão de coluna sem cascade para cards ativos | 1/1 | Complete | 2026-08-27 |
-| 18. Filtro na Configuração financeira | 0/1 | Planned | - |
+| 18. Filtro na Configuração financeira | 1/1 | In Progress|  |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17 e 18 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-18: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG.
 
@@ -451,8 +451,8 @@ Plans:
   4. `SearchField` fica posicionado de forma consistente com o uso já existente em `reports-view.tsx`, com `placeholder` explícito — nunca o default, que cita "inquilino", campo que esta tela não busca (FILTCFG-04)
   5. Zero migração de banco, zero Server Action nova, zero mudança em `page.tsx` ou em `web/src/lib/kanban/search.ts` — toda a mudança fica dentro de `configuracao-financeira-view.tsx`
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans executed
 
 Plans:
 
-- [ ] 18-01-PLAN.md — Matcher local para `ContratoConfig`, composição do `resetKey` com o estado de busca, e `SearchField` ponta a ponta (tracer único)
+- [x] 18-01-PLAN.md — Matcher local para `ContratoConfig`, composição do `resetKey` com o estado de busca, e `SearchField` ponta a ponta (tracer único)
