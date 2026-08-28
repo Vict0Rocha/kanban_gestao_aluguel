@@ -368,9 +368,9 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 16. Reordenação em massa e arquivamento sem coluna | 4/4 | Complete | 2026-08-27 |
 | 17. Exclusão de coluna sem cascade para cards ativos | 1/1 | Complete | 2026-08-27 |
 | 18. Filtro na Configuração financeira | 1/1 | Complete | 2026-08-28 |
-| 19. Filtro suspenso e exportação em PDF no relatório da imobiliária | 0/TBD | Planned | - |
+| 19. Filtro suspenso e exportação em PDF no relatório da imobiliária | 0/1 | Planned | - |
 
-**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 e 19 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-19: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG.
+**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 e 19 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-19: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG / § FILTIMOB / PDFIMOB.
 
 ### Phase 15: Exclusão de card com destrava e paginação
 
@@ -461,11 +461,32 @@ Plans:
 
 ### Phase 19: Filtro suspenso e exportação em PDF no relatório da imobiliária
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** O relatório "Dinheiro da imobiliária" ganha um painel suspenso (Collapsible) com 5 campos ao vivo —
+Imóvel, Proprietário, Inquilino, ID do contrato e Período — filtrando a tela sem botão de submit, e um botão
+"Exportar PDF" que gera um PDF espelhando a estrutura do já existente no Relatório Financeiro dedicado
+(cabeçalho de filtros, bloco de totais, lista completa). Ambas as capacidades são cópias mecânicas de
+composições já shipadas em produção neste projeto — nenhum padrão novo, nenhuma migração de banco.
+**Requirements**: FILTIMOB-01, FILTIMOB-02, FILTIMOB-03, FILTIMOB-04, PDFIMOB-01, PDFIMOB-02 (trabalho pós-milestone — ver 19-CONTEXT.md)
 **Depends on:** Phase 18
-**Plans:** 0 plans
+**Success Criteria** (what must be TRUE):
+
+  1. Abrir o painel "Filtrar" mostra 5 campos (Imóvel/Proprietário/Inquilino/ID do contrato/Período); digitar
+     em qualquer um filtra a lista e os `StatTile` ao vivo, sem botão de submit
+  2. `buscarReconciliacaoAction` busca `inquilino` (campo já existente em `cards`, sem migração), tornando o
+     campo Inquilino filtrável de verdade
+  3. ID do contrato usa comparação exata de inteiro, nunca substring
+  4. Mudar qualquer campo do filtro reseta a paginação para a página 1; um render não relacionado ao filtro
+     nunca reseta a página
+  5. "Exportar PDF" baixa um PDF com o cabeçalho dos 5 filtros ativos, o bloco de 6 totais e a lista completa,
+     na mesma estrutura já usada no Relatório Financeiro dedicado; o botão mostra "Exportando..." durante a
+     geração
+  6. Zero migração de banco
+
+**Plans:** 0/1 plans executed
 
 Plans:
+
+- [ ] 19-01-PLAN.md — Filtro suspenso ao vivo (Server Action, matchers, componente, Collapsible shell) e
+  exportação em PDF (novo módulo espelhando o Relatório Financeiro) ponta a ponta
 
 - [ ] TBD (run /gsd-plan-phase 19 to break down)

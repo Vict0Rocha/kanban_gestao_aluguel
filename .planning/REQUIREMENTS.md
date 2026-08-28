@@ -212,6 +212,33 @@ migração. Decisões registradas em
   `reports-view.tsx`, com um `placeholder` explícito (nunca o default, que cita um campo que esta tela não
   busca)
 
+### FILTIMOB / PDFIMOB — Filtro suspenso e exportação em PDF no relatório da imobiliária (pós-milestone, Phase 19)
+
+Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário logo após a Phase 18 fechar.
+Dois prefixos para duas capacidades distintas na mesma fase (mesmo formato de `CANDEST`+`PAGIN` na Phase 15):
+um painel suspenso ao vivo (composição já provada em produção desde a Phase 10) e um botão de exportação em
+PDF espelhando o do Relatório Financeiro dedicado. Estritamente aditiva — a única mudança de dado é ampliar
+`buscarReconciliacaoAction` para incluir `inquilino` (campo já existente em `cards`), sem migração. Decisões
+registradas em
+`.planning/phases/19-filtro-suspenso-e-exporta-o-em-pdf-no-relat-rio-da-imobili-r/19-CONTEXT.md`.
+
+- [ ] **FILTIMOB-01**: Um painel suspenso (`Collapsible`) com 5 campos — Imóvel, Proprietário, Inquilino, ID
+  do contrato e Período — filtra `/relatorios/imobiliaria` ao vivo, sem botão de submit; cada campo atualiza
+  a lista e os `StatTile` imediatamente
+- [ ] **FILTIMOB-02**: `buscarReconciliacaoAction` amplia as duas consultas (`taxas_imobiliaria` e
+  `caucao_eventos`) para incluir `inquilino` no embed `cards(...)`, tornando o campo Inquilino filtrável de
+  verdade — campo que hoje não é nem buscado por esta tela
+- [ ] **FILTIMOB-03**: O filtro por "ID do contrato" usa comparação exata de inteiro, nunca substring — mesmo
+  padrão já usado no filtro suspenso do Financeiro e no precedente server-side de `financeiro/page.tsx`
+- [ ] **FILTIMOB-04**: Mudar qualquer um dos 5 campos do filtro volta a paginação para a página 1; um render
+  não relacionado ao filtro nunca reseta a página em que o usuário está
+- [ ] **PDFIMOB-01**: Um botão "Exportar PDF" gera e baixa um PDF espelhando a estrutura do já existente no
+  Relatório Financeiro dedicado — cabeçalho com os 5 filtros ativos ("Todos" quando vazio), um bloco com os
+  mesmos 6 totais mostrados em tela pelos `StatTile`, e a lista completa (taxas+caução) na mesma ordem já
+  usada na tela
+- [ ] **PDFIMOB-02**: O botão "Exportar PDF" mostra "Exportando..." e fica desabilitado durante a geração,
+  mesmo padrão do botão já existente no Relatório Financeiro dedicado
+
 ## Carried over from v1.0
 
 Requisito não concluído na v1.0, mantido visível para não se perder. **Não faz parte do escopo de fases da v2.0** — é uma ação de painel, não trabalho de código, adiada por escolha do usuário.
@@ -348,12 +375,18 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | FILTCFG-02 | Phase 18 | Confirmado em produção |
 | FILTCFG-03 | Phase 18 | Confirmado em produção |
 | FILTCFG-04 | Phase 18 | Confirmado em produção |
+| FILTIMOB-01 | Phase 19 | Pendente |
+| FILTIMOB-02 | Phase 19 | Pendente |
+| FILTIMOB-03 | Phase 19 | Pendente |
+| FILTIMOB-04 | Phase 19 | Pendente |
+| PDFIMOB-01 | Phase 19 | Pendente |
+| PDFIMOB-02 | Phase 19 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
 - Mapped to phases: 39
 - Unmapped: 0
-- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05), Phase 15 (CANDEST-01..03, PAGIN-01..03), Phase 16 (REORD-01..03, ARQCOL-01..03), Phase 17 (EXCOL-01..04) e Phase 18 (FILTCFG-01..04) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST`, `### PAGIN`, `### REORD`, `### ARQCOL`, `### EXCOL` e `### FILTCFG` acima
+- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05), Phase 15 (CANDEST-01..03, PAGIN-01..03), Phase 16 (REORD-01..03, ARQCOL-01..03), Phase 17 (EXCOL-01..04), Phase 18 (FILTCFG-01..04) e Phase 19 (FILTIMOB-01..04, PDFIMOB-01..02) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST`, `### PAGIN`, `### REORD`, `### ARQCOL`, `### EXCOL`, `### FILTCFG` e `### FILTIMOB / PDFIMOB` acima
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 - VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 
