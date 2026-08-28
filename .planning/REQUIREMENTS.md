@@ -239,6 +239,32 @@ registradas em
 - [x] **PDFIMOB-02**: O botão "Exportar PDF" mostra "Exportando..." e fica desabilitado durante a geração,
   mesmo padrão do botão já existente no Relatório Financeiro dedicado
 
+### TIPOIMOB / COLIMOB — Filtro por tipo de movimento no relatório da imobiliária (pós-milestone, Phase 20)
+
+Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário imediatamente depois de
+confirmar a Phase 19 em produção. Dois prefixos para duas capacidades distintas na mesma fase (mesmo formato
+de `FILTIMOB`+`PDFIMOB` na Phase 19): um seletor de tipo de movimento no painel suspenso já existente, e uma
+troca de colunas na lista abaixo dele. Estritamente aditiva sobre o filtro/lista da Phase 19 —
+`reconciliacao-pdf.ts` não muda de layout nesta fase (D-08/D-09, ideia de redesenho do PDF explicitamente
+adiada). Decisões registradas em
+`.planning/phases/20-filtro-por-tipo-de-movimento-no-relat-rio-da-imobili-ria/20-CONTEXT.md`.
+
+- [ ] **TIPOIMOB-01**: Uma linha de chips clicáveis multi-select (Todos/Administração/Comissão 1º
+  aluguel/Caução), mesmo componente `FilterChip`/`toggle` já usado pela "Situação" no Relatório Financeiro
+  dedicado, filtra `/relatorios/imobiliaria` — nenhum chip selecionado mostra tudo (mesma semântica de
+  `situacoes`)
+- [ ] **TIPOIMOB-02**: "Caução" é um único chip cobrindo os três subtipos já existentes (recebida/devolvida/
+  usada) juntos — nunca um chip separado por subtipo
+- [ ] **TIPOIMOB-03**: O filtro de tipo afeta a lista, os 6 `StatTile` (desmarcar um tipo zera o total
+  correspondente, sem esconder o tile) e o PDF exportado (que recebe `linhas` já filtradas, sem nenhuma
+  mudança de código em `reconciliacao-pdf.ts`)
+- [ ] **COLIMOB-01**: A célula "Contrato" mantém o formato visual atual (`IdPill` + texto ao lado) — só troca
+  o texto de endereço para proprietário, nunca vira duas colunas separadas
+- [ ] **COLIMOB-02**: Uma coluna nova, separada, "Inquilino", aparece logo depois de "Contrato"
+- [ ] **COLIMOB-03**: Endereço sai completamente da tela — não aparece em nenhuma coluna, tooltip ou outro
+  lugar da linha (o campo permanece intocado em todo tipo/consulta/PDF — só some do JSX renderizado desta
+  tabela)
+
 ## Carried over from v1.0
 
 Requisito não concluído na v1.0, mantido visível para não se perder. **Não faz parte do escopo de fases da v2.0** — é uma ação de painel, não trabalho de código, adiada por escolha do usuário.
@@ -381,12 +407,18 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | FILTIMOB-04 | Phase 19 | Confirmado em produção |
 | PDFIMOB-01 | Phase 19 | Confirmado em produção |
 | PDFIMOB-02 | Phase 19 | Confirmado em produção |
+| TIPOIMOB-01 | Phase 20 | Pendente |
+| TIPOIMOB-02 | Phase 20 | Pendente |
+| TIPOIMOB-03 | Phase 20 | Pendente |
+| COLIMOB-01 | Phase 20 | Pendente |
+| COLIMOB-02 | Phase 20 | Pendente |
+| COLIMOB-03 | Phase 20 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
 - Mapped to phases: 39
 - Unmapped: 0
-- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05), Phase 15 (CANDEST-01..03, PAGIN-01..03), Phase 16 (REORD-01..03, ARQCOL-01..03), Phase 17 (EXCOL-01..04), Phase 18 (FILTCFG-01..04) e Phase 19 (FILTIMOB-01..04, PDFIMOB-01..02) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST`, `### PAGIN`, `### REORD`, `### ARQCOL`, `### EXCOL`, `### FILTCFG` e `### FILTIMOB / PDFIMOB` acima
+- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05), Phase 15 (CANDEST-01..03, PAGIN-01..03), Phase 16 (REORD-01..03, ARQCOL-01..03), Phase 17 (EXCOL-01..04), Phase 18 (FILTCFG-01..04), Phase 19 (FILTIMOB-01..04, PDFIMOB-01..02) e Phase 20 (TIPOIMOB-01..03, COLIMOB-01..03) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST`, `### PAGIN`, `### REORD`, `### ARQCOL`, `### EXCOL`, `### FILTCFG`, `### FILTIMOB / PDFIMOB` e `### TIPOIMOB / COLIMOB` acima
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 - VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 
