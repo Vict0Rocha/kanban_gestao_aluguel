@@ -2,8 +2,10 @@
 
 import * as React from "react"
 import {
+  AlertCircle,
   ArrowDownToLine,
   ArrowUpFromLine,
+  FileDown,
   Filter,
   Percent,
   ShieldCheck,
@@ -24,6 +26,7 @@ import {
 } from "@/lib/kanban/reconciliacao"
 import { StatTile } from "@/components/reports/stat-tile"
 import { FiltroReconciliacao } from "@/components/reports/filtro-reconciliacao"
+import { exportarReconciliacaoPDF } from "@/components/reports/reconciliacao-pdf"
 import {
   CAUCAO_TIPO,
   CaucaoEventoLabel,
@@ -82,6 +85,10 @@ export function DinheiroImobiliariaView({
   )
   // Painel fechado por padrão, mesmo padrão de relatorio-financeiro-dedicado.tsx.
   const [aberto, setAberto] = React.useState(false)
+  const [exportando, setExportando] = React.useState(false)
+  const [erroExportacao, setErroExportacao] = React.useState<string | null>(
+    null
+  )
 
   const totais = React.useMemo(
     () => calcularReconciliacao(taxas, caucaoEventos, filtro.periodo),
@@ -139,6 +146,20 @@ export function DinheiroImobiliariaView({
     resetKey
   )
 
+  // RESEARCH.md Pitfall #2/Anti-pattern: só recebe `linhas`/`totais`/`filtro`
+  // já filtrados e na mesma ordem da tela — nunca dado bruto.
+  async function handleExportarPDF() {
+    setExportando(true)
+    setErroExportacao(null)
+    try {
+      await exportarReconciliacaoPDF(linhas, totais, filtro, hojeISO)
+    } catch {
+      setErroExportacao("Não foi possível exportar o PDF. Tente novamente.")
+    } finally {
+      setExportando(false)
+    }
+  }
+
   return (
     <Collapsible open={aberto} onOpenChange={setAberto}>
       <div className="flex flex-col gap-4">
@@ -157,8 +178,42 @@ export function DinheiroImobiliariaView({
                 </Button>
               }
             />
+            <Button
+              variant="default"
+              onClick={handleExportarPDF}
+              disabled={exportando}
+            >
+              <FileDown className="size-3.5" />
+              {exportando ? "Exportando..." : "Exportar PDF"}
+            </Button>
           </div>
         </div>
+
+        {erroExportacao ? (
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-card p-3"
+          >
+            <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                {erroExportacao}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Tente novamente.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setErroExportacao(null)}
+              aria-label="Fechar aviso"
+              className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+        ) : null}
 
         <CollapsiblePanel>
           <FiltroReconciliacao campos={filtro} onChange={setFiltro} />
