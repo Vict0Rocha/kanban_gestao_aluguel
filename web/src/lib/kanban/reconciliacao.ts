@@ -55,17 +55,49 @@ export function passaFiltroPeriodoReconciliacao(
   return data.startsWith(periodo)
 }
 
-/** Os 5 campos do painel suspenso (FILTIMOB-01..03, 19-CONTEXT.md D-03). */
+/**
+ * Superset dos dois valores de `OrigemTaxa` mais a categoria única de
+ * caução — os três subtipos de `TipoCaucao` (recebido/devolvido/usado)
+ * nunca aparecem aqui, colapsam para a constante `"caucao"` (D-02,
+ * 20-CONTEXT.md; Pattern 2, 20-RESEARCH.md).
+ */
+export type TipoMovimentoReconciliacao = OrigemTaxa | "caucao"
+
+/**
+ * Os 5 campos do painel suspenso (FILTIMOB-01..03, 19-CONTEXT.md D-03) mais
+ * o seletor de tipo de movimento (D-01, 20-CONTEXT.md).
+ */
 export type FiltroReconciliacaoValores = {
   imovel: string
   proprietario: string
   inquilino: string
   id: string
   periodo: string
+  tipos: Set<TipoMovimentoReconciliacao>
 }
 
 export function filtroReconciliacaoVazio(): FiltroReconciliacaoValores {
-  return { imovel: "", proprietario: "", inquilino: "", id: "", periodo: "" }
+  return {
+    imovel: "",
+    proprietario: "",
+    inquilino: "",
+    id: "",
+    periodo: "",
+    tipos: new Set(),
+  }
+}
+
+/**
+ * `tipos.size === 0` sempre retorna `true` (D-01: Set vazio = "sem
+ * filtro", mesma semântica já usada por `situacoes` no Relatório
+ * Financeiro dedicado), senão checa se `tipo` está no Set marcado.
+ */
+export function passaFiltroTipoReconciliacao(
+  tipo: TipoMovimentoReconciliacao,
+  tipos: Set<TipoMovimentoReconciliacao>
+): boolean {
+  if (tipos.size === 0) return true
+  return tipos.has(tipo)
 }
 
 /**
@@ -141,7 +173,8 @@ export type ReconciliacaoTotais = {
 export function calcularReconciliacao(
   taxas: TaxaImobiliariaRelatorio[],
   caucaoEventos: CaucaoEventoRelatorio[],
-  periodo: string
+  periodo: string,
+  tipos: Set<TipoMovimentoReconciliacao>
 ): ReconciliacaoTotais {
   let administracao = 0
   let comissao = 0
@@ -151,12 +184,14 @@ export function calcularReconciliacao(
 
   for (const taxa of taxas) {
     if (!passaFiltroPeriodoReconciliacao(taxa.data, periodo)) continue
+    if (!passaFiltroTipoReconciliacao(taxa.origem, tipos)) continue
     if (taxa.origem === "administracao") administracao += taxa.valor
     else comissao += taxa.valor
   }
 
   for (const evento of caucaoEventos) {
     if (!passaFiltroPeriodoReconciliacao(evento.data, periodo)) continue
+    if (!passaFiltroTipoReconciliacao("caucao", tipos)) continue
     if (evento.tipo === "recebido") caucaoRecebida += evento.valor
     else if (evento.tipo === "devolvido") caucaoDevolvida += evento.valor
     else caucaoUsada += evento.valor

@@ -20,6 +20,7 @@ import {
   filtroReconciliacaoVazio,
   passaFiltroCardsReconciliacao,
   passaFiltroPeriodoReconciliacao,
+  passaFiltroTipoReconciliacao,
   type CaucaoEventoRelatorio,
   type FiltroReconciliacaoValores,
   type TaxaImobiliariaRelatorio,
@@ -91,8 +92,8 @@ export function DinheiroImobiliariaView({
   )
 
   const totais = React.useMemo(
-    () => calcularReconciliacao(taxas, caucaoEventos, filtro.periodo),
-    [taxas, caucaoEventos, filtro.periodo]
+    () => calcularReconciliacao(taxas, caucaoEventos, filtro.periodo, filtro.tipos),
+    [taxas, caucaoEventos, filtro.periodo, filtro.tipos]
   )
 
   // A-02 (13-07-PLAN.md): a "linha unificada" da lista (taxa + caução no
@@ -103,6 +104,7 @@ export function DinheiroImobiliariaView({
     const taxaLinhas: LinhaLista[] = taxas
       .filter((taxa) => passaFiltroPeriodoReconciliacao(taxa.data, filtro.periodo))
       .filter((taxa) => passaFiltroCardsReconciliacao(taxa.cards, filtro))
+      .filter((taxa) => passaFiltroTipoReconciliacao(taxa.origem, filtro.tipos))
       .map((taxa) => ({
         id: taxa.id,
         data: taxa.data,
@@ -116,6 +118,7 @@ export function DinheiroImobiliariaView({
     const caucaoLinhas: LinhaLista[] = caucaoEventos
       .filter((evento) => passaFiltroPeriodoReconciliacao(evento.data, filtro.periodo))
       .filter((evento) => passaFiltroCardsReconciliacao(evento.cards, filtro))
+      .filter(() => passaFiltroTipoReconciliacao("caucao", filtro.tipos))
       .map((evento) => ({
         id: evento.id,
         data: evento.data,
@@ -136,11 +139,14 @@ export function DinheiroImobiliariaView({
     )
   }, [taxas, caucaoEventos, filtro])
 
-  // PAGIN-03: chave de identidade dos 5 campos do filtro ativo — nunca
-  // derivada de `taxas`/`caucaoEventos`/`linhas` (essas mudam em qualquer
-  // refresh de dado, não só quando o filtro muda), mesmo formato pipe-joined
-  // de `reports-view.tsx:133`'s `contractsResetKey`.
-  const resetKey = `${filtro.imovel}|${filtro.proprietario}|${filtro.inquilino}|${filtro.id}|${filtro.periodo}`
+  // PAGIN-03: chave de identidade dos 5 campos do filtro ativo mais o
+  // seletor de tipo — nunca derivada de `taxas`/`caucaoEventos`/`linhas`
+  // (essas mudam em qualquer refresh de dado, não só quando o filtro
+  // muda), mesmo formato pipe-joined de `reports-view.tsx:133`'s
+  // `contractsResetKey`. `filtro.tipos` é um Set — ordenado antes do
+  // `join` para que ordem de clique nunca mude a chave de reset para a
+  // mesma seleção final (Pitfall 4, 20-RESEARCH.md).
+  const resetKey = `${filtro.imovel}|${filtro.proprietario}|${filtro.inquilino}|${filtro.id}|${filtro.periodo}|${[...filtro.tipos].sort().join(",")}`
   const { itensDaPagina, pagina, totalPaginas, setPagina } = usePagination(
     linhas,
     resetKey
@@ -265,6 +271,7 @@ export function DinheiroImobiliariaView({
                 <TableRow>
                   <TableHead>Data</TableHead>
                   <TableHead>Contrato</TableHead>
+                  <TableHead>Inquilino</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
                   <TableHead>Observação</TableHead>
@@ -280,9 +287,12 @@ export function DinheiroImobiliariaView({
                       <div className="flex items-center gap-2">
                         <IdPill numero={linha.cards?.numero ?? 0} />
                         <span className="font-semibold text-foreground">
-                          {linha.cards?.endereco ?? ""}
+                          {linha.cards?.proprietario ?? ""}
                         </span>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {linha.cards?.inquilino ?? ""}
                     </TableCell>
                     <TableCell>{linha.tipo}</TableCell>
                     <TableCell className="text-right tabular-nums">
