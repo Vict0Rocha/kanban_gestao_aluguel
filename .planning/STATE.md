@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 19
 current_phase_name: filtro-suspenso-e-exporta-o-em-pdf-no-relat-rio-da-imobili-r
-status: discussed
-stopped_at: Fase 19 discutida — CONTEXT.md pronto, falta plan-phase
-last_updated: "2026-08-28T02:00:00.000Z"
+status: executed
+stopped_at: Completed 19-01-PLAN.md
+last_updated: "2026-08-28T12:33:13.054Z"
 last_activity: 2026-08-28
 last_activity_desc: "Fase 19 (Filtro suspenso e exportação em PDF no relatório da imobiliária) discutida. Painel suspenso novo é uma composição inédita neste projeto: casca visual colapsável (Collapsible, igual FiltroParcelas/FiltroRelatorioFinanceiro) + comportamento ao vivo sem botão de aplicar (igual FiltroRelatorioFinanceiroLive) — usuário escolheu essa combinação depois de eu apresentar as duas opções puras. Campos: Imóvel/Proprietário/Inquilino/ID do contrato/Período (Período já existe, só muda de lugar). Inquilino exige ampliar buscarReconciliacaoAction (mudança pequena, aditiva, sem migração — campo já existe em cards). PDF espelha exatamente a estrutura do já existente no Relatório Financeiro (relatorio-financeiro-pdf.ts) — cabeçalho com filtros ativos + 6 totais dos StatTiles + lista unificada. 19-CONTEXT.md e 19-DISCUSSION-LOG.md escritos e commitados (fd83af4)."
 progress:
   total_phases: 19
-  completed_phases: 18
-  total_plans: 56
-  completed_plans: 56
-  percent: 95
+  completed_phases: 19
+  total_plans: 57
+  completed_plans: 57
+  percent: 100
 ---
 
 # Project State
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-08-16)
 
 ## Current Position
 
-Phase: 19 (filtro-suspenso-e-exporta-o-em-pdf-no-relat-rio-da-imobili-r) — DISCUTIDA
-Status: `19-CONTEXT.md`/`19-DISCUSSION-LOG.md` escritos e commitados. Falta `/gsd-plan-phase 19`.
-Last activity: 2026-08-28 — discuss-phase concluído: painel suspenso ao vivo (Imóvel/Proprietário/Inquilino/ID/Período) + PDF espelhando o Relatório Financeiro.
+Phase: 19 (filtro-suspenso-e-exporta-o-em-pdf-no-relat-rio-da-imobili-r) — EXECUTADA (aguardando confirmação humana em produção)
+Status: Plano 19-01 executado em worktree isolado (`agent-a4364ef8c764c90ee`), 2/2 tasks, `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes. Falta merge em `main` + confirmação do usuário dos dois `<human-check>` não bloqueantes.
+Last activity: 2026-08-28 — plano 19-01 executado: filtro suspenso ao vivo (5 campos) + Exportar PDF em `/relatorios/imobiliaria`.
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -81,6 +81,7 @@ Last activity: 2026-08-28 — discuss-phase concluído: painel suspenso ao vivo 
 | Phase 14 P05 | ~25min | 2 tasks | 4 files |
 | Phase 17-exclus-o-de-coluna-sem-cascade-para-cards-ativos P01 | ~20min | 3 tasks | 6 files |
 | Phase 18-filtro-na-configura-o-financeira P01 | ~25min | 1 task | 1 file |
+| Phase 19 P01 | 25min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,7 @@ Last activity: 2026-08-28 — discuss-phase concluído: painel suspenso ao vivo 
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 
+- 2026-08-28: **Plano 19-01 executado** (worktree isolado, `agent-a4364ef8c764c90ee`). Task 1 (tracer): `buscarReconciliacaoAction` amplia os dois `.select()` (`taxas_imobiliaria`/`caucao_eventos`) com `inquilino` no embed `cards(...)` (D-04) — aditivo, zero migração (`cards.inquilino` já existia, nullable). `reconciliacao.ts` ganha `FiltroReconciliacaoValores`/`filtroReconciliacaoVazio`/`passaFiltroTextoReconciliacao` (accent-insensitive via `normalizeText`, mesmo padrão da Fase 18)/`passaFiltroIdReconciliacao` (comparação exata de inteiro, nunca substring — mesmo padrão server-side de `financeiro/page.tsx`)/`passaFiltroCardsReconciliacao`. Novo componente `FiltroReconciliacao` (5 campos ao vivo, sem botão de submit) espelha `filtro-relatorio-financeiro-live.tsx`. `dinheiro-imobiliaria-view.tsx` reestruturado com a casca `Collapsible`/`CollapsibleTrigger`/`CollapsiblePanel` já shipada em produção desde a Fase 10 (`relatorio-financeiro-dedicado.tsx`) — confirmando que essa composição generaliza para uma segunda tela sem desenho novo — e `resetKey` composto só dos 5 campos do filtro (nunca de `taxas`/`caucaoEventos`/`linhas`). Task 2: novo módulo `reconciliacao-pdf.ts` espelha `relatorio-financeiro-pdf.ts` bloco a bloco (mesmas cores, `import()` dinâmico só dentro da função, `doc.getNumberOfPages()` sem `.internal.`, `showHead: "everyPage"`); botão "Exportar PDF" + `handleExportarPDF`/`erroExportacao` cabeados ao lado do `CollapsibleTrigger`. Um desvio pequeno (Rule 1): mensagem de lista vazia em tela corrigida de "...no período selecionado." para "...encontrado para os filtros aplicados.", já que agora 5 campos podem esvaziar a lista, não só Período. `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes no worktree (precisou de `npm install` próprio). Zero arquivo novo em `supabase/migrations/`. Commits: `31bf9e1` (Task 1), `85d057b` (Task 2). **Dois `<human-check>` não bloqueantes pendentes** (ver Blockers) — comportamento ao vivo do filtro (5 campos, ID exato, reset de paginação) e a estrutura real do PDF gerado só são observáveis interagindo com a tela/arquivo reais em produção.
 - 2026-08-28: **Fase 18 encerrada — FILTCFG-01..04 confirmados em produção.** Plano 18-01 executado em worktree isolado (`agent-a202e155b5e335050`), mesclado em `main` (`fdbabab`) e publicado. Busca ao vivo (`SearchField`, reusado sem alteração) filtra `/financeiro/configuracao` por número/endereço/proprietário via matcher local `buildContratoMatcher`/`searchableText` (D-03, `web/src/lib/kanban/search.ts` permanece byte a byte inalterado — confirmado por `git diff --quiet`). `resetKey` de `usePagination` recomposto da string constante `"config"` para o próprio estado `query`: buscar reseta a página, editar percentuais/caução (`router.refresh()`) não reseta. Terceiro branch de estado vazio ("Nenhum contrato corresponde à busca."). Zero migração de banco, zero Server Action nova — confirmado por `git diff --quiet` em `page.tsx` também. `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes, verificados de forma independente no `main` já mesclado. **Falso alarme na verificação:** o usuário reportou inicialmente que o campo de busca não aparecia — diagnosticado como o deploy da Vercel ainda propagando (não um bug: a tabela já renderizava com dados normalmente, e a única condição que esconde o `SearchField` no código é `erro`, que não estava ativo); confirmado funcionando poucos minutos depois. Usuário testou tudo em produção e confirmou: "Sim, testei tudo, pode fechar a fase." **Com isso encerram as 18 fases planejadas do projeto inteiro.** Não há fase nova planejada; o próximo trabalho conhecido é o usuário eventualmente pedir ajustes no relatório de reconciliação da Phase 13 depois de usá-lo na prática (aviso registrado, não pendência ativa).
 
 - 2026-08-27: **Fase 17 encerrada — EXCOL-01..04 confirmados em produção.** Plano 17-01 executado em worktree isolado (`agent-aafbdcc309a339b9c`), 3/3 tasks, mesclado em `main` (`e2f025d`) e publicado. `excluirColunaComMovimentoAction` (nova, `actions.ts`) combina mover todos os cards da coluna de origem para um destino escolhido + excluir a coluna numa única chamada de servidor — reconsulta `board_id` das duas colunas e os cards da origem no momento da escrita (nunca aceita `cardIds` do cliente, mesma disciplina de `podarParcelasOrfas`), `Promise.all` com posições `base+(index+1)*GAP`, checa erro e zero-linhas em TODOS os resultados do movimento antes do `.delete()`. `ExcluirColunaDialog` (novo componente) cobre três ramos: coluna vazia inalterada (EXCOL-01), sem destino disponível bloqueada com "Crie outra coluna antes de excluir esta." (EXCOL-03/D-02), seletor de coluna mesmo padrão visual do `ReordenarDialog` (EXCOL-02/D-01). `board.tsx` passa `columns={columns}` para `<Column>` pela primeira vez. `deleteColumnAction` ganhou um precheck server-side próprio contra coluna não vazia (Task 2, EXCOL-04) — fecha o achado de segurança de `17-RESEARCH.md` Finding 4/Pitfall 1: sem essa trava, a garantia valeria só por convenção de UI, não no boundary real do servidor (Server Actions são endpoints POST alcançáveis fora da interface). `docs/data-model.md` documenta a decisão (Task 3). Zero migração de banco — `columns → cards on delete cascade` continua como rede de segurança (D-03 confirmado, primeira fase desde a Phase 4 sem arquivo novo em `supabase/migrations/`). `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes, verificados de forma independente no `main` já mesclado (não só no worktree). Usuário testou em produção os dois human-checks do plano e confirmou: "Testei e tudo funcionou como o esperado" — os três ramos do diálogo (vazia/seletor/bloqueada) e a regressão negativa do trigger de lançamento financeiro. **Com isso encerram as 17 fases planejadas do projeto inteiro.** Não há fase nova planejada; o próximo trabalho conhecido é o usuário eventualmente pedir ajustes no relatório de reconciliação da Phase 13 depois de usá-lo na prática (aviso registrado, não pendência ativa).
@@ -148,6 +150,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - ~~Plano 14-05 Task 3 (checkpoint:human-verify, gate=blocking) pendente — última verificação da Phase 14 inteira~~ — resolvido, usuário confirmou o ciclo sequencial completo de caução e CANIMOB-04/05 em produção (2026-08-26). Fase 14 encerrada.
 - ~~Plano 17-01 tem dois `<human-check>` não bloqueantes pendentes de confirmação do usuário em produção~~ — resolvido, usuário confirmou os três ramos do diálogo de exclusão de coluna e a regressão do trigger de lançamento financeiro em produção (2026-08-27). Fase 17 encerrada.
 - ~~Plano 18-01 tem um `<human-check>` não bloqueante pendente de confirmação do usuário em produção~~ — resolvido. Primeiro teste do usuário não mostrou o campo de busca (deploy da Vercel ainda propagando — tabela com dados renderizava normal, só faltava o `SearchField`, consistente com o código: a única condição que os separa é `erro`, inativo); confirmado poucos minutos depois já funcionando ("Testei, funcionou corretamente"), e em seguida confirmado também o reset de paginação e a mensagem de busca sem correspondência ("Sim, testei tudo, pode fechar a fase."). Fase 18 encerrada (2026-08-28).
+- **Plano 19-01 tem dois `<human-check>` não bloqueantes pendentes de confirmação do usuário em produção** (após merge do worktree `agent-a4364ef8c764c90ee` em `main`): (1) o comportamento renderizado do filtro ao vivo de 5 campos em `/relatorios/imobiliaria` — atualização em tempo real, ID do contrato com comparação exata (não substring), "Limpar filtros", reset de paginação ao trocar o filtro; (2) a estrutura real do PDF exportado ("Exportar PDF") — cabeçalho com os 5 filtros, bloco de 6 totais batendo com os `StatTile` em tela, lista completa na mesma ordem DESC, coluna "Tipo" sempre texto, estado "Exportando..." durante a geração.
 
 ### Roadmap Evolution
 
@@ -178,6 +181,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-28T02:00:00.000Z
-Stopped at: Fase 19 discutida — CONTEXT.md pronto, falta plan-phase
-Resume file: .planning/phases/19-filtro-suspenso-e-exporta-o-em-pdf-no-relat-rio-da-imobili-r/19-CONTEXT.md
+Last session: 2026-08-28T12:33:12.980Z
+Stopped at: Completed 19-01-PLAN.md
+Resume file: None
