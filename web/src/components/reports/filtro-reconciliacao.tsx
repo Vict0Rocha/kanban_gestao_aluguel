@@ -6,7 +6,18 @@ import { Button } from "@/components/ui/button"
 import {
   filtroReconciliacaoVazio,
   type FiltroReconciliacaoValores,
+  type TipoMovimentoReconciliacao,
 } from "@/lib/kanban/reconciliacao"
+import { FilterChip, toggle } from "@/components/reports/reports-view"
+
+const TIPO_MOVIMENTO_OPTIONS: {
+  value: TipoMovimentoReconciliacao
+  label: string
+}[] = [
+  { value: "administracao", label: "Administração" },
+  { value: "comissao_primeiro_aluguel", label: "Comissão 1º aluguel" },
+  { value: "caucao", label: "Caução" },
+]
 
 /**
  * Espelha `filtro-relatorio-financeiro-live.tsx` 1:1 (D-01, 19-CONTEXT.md):
@@ -37,7 +48,8 @@ export function FiltroReconciliacao({
       campos.proprietario.trim() ||
       campos.inquilino.trim() ||
       campos.id.trim() ||
-      campos.periodo.trim()
+      campos.periodo.trim() ||
+      campos.tipos.size > 0
   )
 
   return (
@@ -97,6 +109,34 @@ export function FiltroReconciliacao({
             onChange={(event) => atualizarCampo("periodo", event.target.value)}
           />
         </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <span className="shrink-0 text-xs font-semibold text-muted-foreground uppercase">
+          Tipo
+        </span>
+        <FilterChip
+          active={campos.tipos.size === 0}
+          onClick={() => onChange((atual) => ({ ...atual, tipos: new Set() }))}
+          className="font-semibold"
+        >
+          Todos
+        </FilterChip>
+        {TIPO_MOVIMENTO_OPTIONS.map((option) => (
+          <FilterChip
+            key={option.value}
+            active={campos.tipos.has(option.value)}
+            onClick={() =>
+              onChange((atual) => ({
+                ...atual,
+                tipos: toggle(atual.tipos, option.value),
+              }))
+            }
+            className="font-semibold"
+          >
+            {option.label}
+          </FilterChip>
+        ))}
       </div>
 
       {temFiltroPreenchido && (
