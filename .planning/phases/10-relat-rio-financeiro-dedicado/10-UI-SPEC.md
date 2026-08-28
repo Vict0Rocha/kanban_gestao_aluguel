@@ -158,29 +158,93 @@ Both `FilterChip` (`reports-view.tsx`) and `ParcelaSituacaoBadge` (`parcela-situ
 
 ## PDF Export Layout Contract
 
-Governs RELDED-05's visual output. The **library/rendering approach is a planning-stage technical decision** (10-CONTEXT.md "Claude's Discretion" — client-side print CSS, `jsPDF`/`html2canvas`, or server-side generation, each checked for Next.js 16/React 19/Turbopack compatibility per `web/AGENTS.md`); this section specifies what the resulting document must look like regardless of which approach is chosen.
+Governs RELDED-05's visual output. This contract now governs **both** PDF export modules —
+`relatorio-financeiro-pdf.ts` (Relatório Financeiro dedicado, this phase) and `reconciliacao-pdf.ts` (Dinheiro
+da imobiliária, mirrored since Phase 19) — the two modules are deliberately kept structurally identical block
+for block, and were redesigned together to the current gray/landscape/Total-row contract in Phase 21
+(redesenho do modelo de PDF). The **library/rendering approach is a planning-stage technical decision**
+(10-CONTEXT.md "Claude's Discretion" — client-side print CSS, `jsPDF`/`html2canvas`, or server-side generation,
+each checked for Next.js 16/React 19/Turbopack compatibility per `web/AGENTS.md`); this section specifies what
+the resulting document must look like regardless of which approach is chosen.
 
-**Reference used, and how.** The user attached a real export from another system ("Sienge/Starian") as a structural reference, explicitly asking for something "bem estruturado e resumido... em um estilo de lista." Per the reference brief, this project's PDF does **not** copy Sienge's business fields (indexador/juros/multas — not part of this app's data model) or its per-day/per-month cascading subtotal rows (`Total do dia` / `Total do mês` / `Total da empresa` / `Total geral`) — those exist in Sienge because its report has no equivalent of this app's 4-category breakdown. This app's "totals" **are** the 4 categories (D-04, locked) — they map directly onto the *shape* of Sienge's own end-of-report summary-stats block (`Vencido no período` / `A vencer no período` / `Total de parcelas` / `Valor médio`, page 2 of the reference), not onto its per-day subtotals. What **is** carried over, deliberately: (a) a compact, bordered, label:value header table for the applied filters (mirrors Sienge's "Empresa / Período / indexador / juros" header block), (b) a clean, single flat tabular list with no visual clutter, and (c) a totals/summary block positioned at the end. This is the "grouped list with subtotals, clean tabular hierarchy, compact label:value header blocks" visual language the reference was chosen for — adapted, not copied, to this app's simpler 4-total shape per D-04.
+**Reference used, and how.** The user attached a real export from another system ("Sienge/Starian") as a
+structural reference, explicitly asking for something "bem estruturado e resumido... em um estilo de lista."
+Per the reference brief, this project's PDF does **not** copy Sienge's business fields (indexador/juros/multas
+— not part of this app's data model) or its per-day/per-month cascading subtotal rows (`Total do dia` / `Total
+do mês` / `Total da empresa` / `Total geral`) — those exist in Sienge because its report has no equivalent of
+this app's category breakdown. This app's category totals (D-04, locked) map directly onto the *shape* of
+Sienge's own end-of-report summary-stats block (`Vencido no período` / `A vencer no período` / `Total de
+parcelas` / `Valor médio`, page 2 of the reference), not onto its per-day subtotals. What **is** carried over,
+deliberately: (a) a compact, bordered, label:value header table for the applied filters (mirrors Sienge's
+"Empresa / Período / indexador / juros" header block), (b) a clean, single flat tabular list with no visual
+clutter, and (c) a totals/summary block positioned at the end. Phase 21 additionally adopted Sienge's grand-total
+row at the end of the list itself (D-06) — adapted, not copied, into a single "Total" row rather than Sienge's
+cascading per-day/per-month/company subtotal hierarchy, which remains out of scope.
 
 **1. Page format**
-A4, portrait. Six columns (Imóvel/Proprietário/Competência/Vencimento/Situação/Valor) fit comfortably in portrait at the type sizes below — no landscape needed (unlike the reference, which carries ~13 columns of Sienge-specific fields this app doesn't have).
+A4, **paisagem (landscape)** — both modules (Phase 21, D-01; supersedes the earlier portrait layout).
+`relatorio-financeiro-pdf.ts` keeps its six columns (Imóvel/Proprietário/Competência/Vencimento/Situação/Valor).
+`reconciliacao-pdf.ts` also has six columns as of Phase 21 (Data/Contrato/Inquilino/Tipo/Valor/Observação —
+"Inquilino" added and "Contrato" now shows the proprietário instead of the endereço, closing the Phase 20
+D-09 gap). The wider landscape page accommodates both modules' six columns comfortably at the type sizes below.
 
 **2. Header block (top of page 1 only)**
-- Document title: "Relatório Financeiro" — same weight/prominence as an `h1`, roughly 18–20pt bold, `--foreground` `#18341c` (or the PDF-safe equivalent if the rendering path can't consume CSS custom properties — always fall back to the literal hex from `globals.css`, never invent a new color for print).
-- Generation timestamp, right-aligned on the same line or directly beneath: "Gerado em {data} às {hora}" (Cuiabá time, via `formatInstantDate`/`hojeEmCuiaba` — never a raw UTC timestamp, same rule as the rest of the app).
-- Applied-filters block: a bordered, compact label:value table (mirrors Sienge's header table structurally), one row per active filter dimension — Imóvel, Proprietário, Período, Situação — each showing the value that was active at export time, or "Todos"/"Todas" when that dimension wasn't filtered. This is what makes the PDF self-explanatory per D-04 ("ninguém que abrir o PDF depois precisa lembrar ou adivinhar o que foi filtrado") — never omit a row, even an unfiltered one, so the reader can tell "not filtered" apart from "filter value not captured."
+- Document title: "Relatório Financeiro" (or "Dinheiro da imobiliária" for the other module) — same
+  weight/prominence as an `h1`, roughly 18–20pt bold, foreground `#262626` (or the PDF-safe equivalent if the
+  rendering path can't consume CSS custom properties — always fall back to the literal hex, never invent a new
+  color for print).
+- Generation timestamp, right-aligned on the same line or directly beneath: "Gerado em {data} às {hora}" (Cuiabá
+  time, via `formatInstantDate`/`hojeEmCuiaba` — never a raw UTC timestamp, same rule as the rest of the app).
+- Applied-filters block: a bordered, compact label:value table (mirrors Sienge's header table structurally),
+  one row per active filter dimension, each showing the value that was active at export time, or
+  "Todos"/"Todas" when that dimension wasn't filtered — border color `#d9d9d9`. This is what makes the PDF
+  self-explanatory per D-04 ("ninguém que abrir o PDF depois precisa lembrar ou adivinhar o que foi filtrado")
+  — never omit a row, even an unfiltered one, so the reader can tell "not filtered" apart from "filter value
+  not captured."
 
 **3. Summary/totals block**
-Positioned directly below the header block, above the list. Four label:value pairs, one per category (Pagas / A vencer / Vencidas / Conciliadas), each showing count + money total — the PDF-native rendering of the same `CategoriaRelatorio[]` the on-screen `StatTile` row shows, laid out as a compact bordered row/table (Sienge summary-stats shape), not as four separate boxed cards (print doesn't need the screen's card affordance — a denser tabular block reads better on paper and matches "resumido").
+Positioned directly below the header block, above the list. Label:value pairs — one per category in
+`relatorio-financeiro-pdf.ts` (Pagas / A vencer / Vencidas / Conciliadas, count + money total), or one per
+total in `reconciliacao-pdf.ts` (Administração / Comissão / Total recebido / Caução recebida / Caução
+devolvida / Caução usada) — the PDF-native rendering of the same values the on-screen `StatTile` row shows,
+laid out as a compact bordered row/table (Sienge summary-stats shape), not as separate boxed cards (print
+doesn't need the screen's card affordance — a denser tabular block reads better on paper and matches
+"resumido").
 
 **4. List**
-A single flat table, same six columns and same sort order (vencimento ascending) as the on-screen list in §6 above — no per-date or per-month subtotal grouping rows (deliberately not carried over from the reference, see note above; D-04 asks for "a lista completa," not a grouped ledger). Header row repeats on every page if the list spans multiple pages (standard print-table behavior — any chosen library/CSS approach must support this, it is not optional at scale: production already has ~350+ parcelas across all contracts, an ungrouped list without repeating headers on a filtered-down PDF spanning 2+ pages would be unusable). Row density: tighter than the on-screen table (paper has no hover/click affordance to protect) — roughly 9–10pt body text, alternating row shading optional but not required (`--muted` `#eaf6e6` on every other row is acceptable if the chosen rendering path supports it cheaply; a plain white list with just border-bottom rules per row is an acceptable, simpler fallback — do not block implementation on alternating shading).
+A single flat table, same columns and same sort order as each module's on-screen list — no per-date or
+per-month subtotal grouping rows (deliberately not carried over from the reference, see note above; D-04 asks
+for "a lista completa," not a grouped ledger). Header row repeats on every page if the list spans multiple
+pages (`showHead: "everyPage"`, standard print-table behavior — not optional at scale: production already has
+~350+ parcelas across all contracts, an ungrouped list without repeating headers on a filtered-down PDF
+spanning 2+ pages would be unusable). Row density: tighter than the on-screen table (paper has no hover/click
+affordance to protect) — roughly 9–10pt body text.
+
+As of Phase 21 (D-04/D-05), the list uses `theme:"plain"` with a horizontal rule only underneath each cell
+(`styles.lineWidth` bottom-only, `#d9d9d9`) — **no vertical border between columns** — plus zebra shading
+(white / `#f2f2f2`) alternating on every other row; this is locked, not optional (superseding the earlier
+"alternating row shading optional but not required" language). The table header row has a solid `#f2f2f2`
+background with bold text (was a plain white background before Phase 21).
+
+**Total row (new, Phase 21, D-06).** The last row of the list is a bold "Total" row, sharing the same `#f2f2f2`
+background as the header row (rendered via `jspdf-autotable`'s `foot`/`footStyles`, never as a regular body
+row), summing the Valor column across every row actually listed in the PDF (i.e. already respecting whatever
+filter was applied at export time — never an unfiltered grand total). It always uses `showFoot:"lastPage"`
+explicitly — never the library's default (`"everyPage"`), which would incorrectly repeat the Total on every
+page of a multi-page export. The empty-list state (below) never renders a Total row.
 
 **5. Empty result in PDF**
-If the filtered list has zero rows at export time, the PDF still generates (D-04 does not say to block export on empty results) — header block and summary block render normally (all four totals legitimately show 0/R$ 0,00), and the list area shows the same copy as the on-screen empty state: "Nenhuma parcela encontrada para os filtros aplicados." Never silently produce a PDF with a blank list area and no explanation.
+If the filtered list has zero rows at export time, the PDF still generates (D-04 does not say to block export
+on empty results) — header block and summary block render normally (all totals legitimately show 0/R$ 0,00),
+and the list area shows the same copy as the on-screen empty state (e.g. "Nenhuma parcela encontrada para os
+filtros aplicados."). Never silently produce a PDF with a blank list area and no explanation; no Total row
+appears in this state, since there is no list to sum.
 
 **6. Footer (every page)**
-Small, muted text: page number ("Página X de Y") and a short system attribution line ("Kanban Aluguel — gerado em {data}") — mirrors the reference's footer convention (timestamp + system name) at a much lower visual weight than the reference's, since this isn't a paid third-party product needing its own branding weight, just a lightweight provenance line.
+Small, muted text (`#6b6b6b`): page number ("Página X de Y") and a short system attribution line ("Kanban
+Aluguel — gerado em {data}") — mirrors the reference's footer convention (timestamp + system name) at a much
+lower visual weight than the reference's, since this isn't a paid third-party product needing its own branding
+weight, just a lightweight provenance line.
 
 **7. Typography (PDF-specific — a print medium, sized in pt, separate from the on-screen `px` scale above)**
 | Role | Size | Weight |
@@ -190,20 +254,23 @@ Small, muted text: page number ("Página X de Y") and a short system attribution
 | Header/summary values | 9–10pt | Regular |
 | Table header row | 9pt, uppercase | Semibold |
 | Table body | 9–10pt | Regular |
+| Total row | 9pt | Semibold (bold) |
 | Footer | 7–8pt | Regular |
 
-Exactly two weights — 400 regular / 600 semibold — the identical budget as the on-screen contract above, not a separate scale. Do not introduce Bold (700/800) anywhere in the PDF.
+Exactly two weights — 400 regular / 600 semibold — the identical budget as the on-screen contract above, not a
+separate scale. Do not introduce Bold (700/800) anywhere in the PDF.
 
-**8. Color (PDF-specific — hex fallbacks, for rendering paths that can't consume CSS custom properties)**
+**8. Color palette (PDF-specific — hex fallbacks, for rendering paths that can't consume CSS custom
+properties; Phase 21, D-03)**
 | Role | Hex |
 |------|-----|
-| Text / foreground | `#18341c` |
-| Muted text (labels, footer) | `#5c7060` |
-| Borders / rules | `#dbeed4` |
-| Accent (document title underline or header-table border, used sparingly — never for large fills on paper) | `#74ac1c` |
-| Row shading (optional, alternating) | `#eaf6e6` |
+| Foreground (text) | `#262626` |
+| Header + Total row fill | `#f2f2f2` |
+| Border | `#d9d9d9` |
+| Muted (labels, footer) | `#6b6b6b` |
+| Zebra (alternating row shading) | `#f7f7f7` |
 
-Do not introduce colors outside this set. The PDF is a monochrome-leaning document by convention (print economy, legibility) — the brand green is a light-touch accent here, not a dominant surface color the way it can never be on screen either.
+Nenhuma cor viva (verde/vermelho/azul saturado) aparece em nenhum dos dois PDFs (D-03).
 
 ---
 
