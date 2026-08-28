@@ -249,25 +249,21 @@ troca de colunas na lista abaixo dele. Estritamente aditiva sobre o filtro/lista
 adiada). Decisões registradas em
 `.planning/phases/20-filtro-por-tipo-de-movimento-no-relat-rio-da-imobili-ria/20-CONTEXT.md`.
 
-- [x] **TIPOIMOB-01**: Uma linha de chips clicáveis multi-select (Todos/Administração/Comissão 1º
+- [ ] **TIPOIMOB-01**: Uma linha de chips clicáveis multi-select (Todos/Administração/Comissão 1º
   aluguel/Caução), mesmo componente `FilterChip`/`toggle` já usado pela "Situação" no Relatório Financeiro
   dedicado, filtra `/relatorios/imobiliaria` — nenhum chip selecionado mostra tudo (mesma semântica de
-  `situacoes`) — implementado no plano 20-01 (`ff38006`), aguardando confirmação em produção
-- [x] **TIPOIMOB-02**: "Caução" é um único chip cobrindo os três subtipos já existentes (recebida/devolvida/
-  usada) juntos — nunca um chip separado por subtipo — implementado no plano 20-01 (`ff38006`), aguardando
-  confirmação em produção
-- [x] **TIPOIMOB-03**: O filtro de tipo afeta a lista, os 6 `StatTile` (desmarcar um tipo zera o total
+  `situacoes`)
+- [ ] **TIPOIMOB-02**: "Caução" é um único chip cobrindo os três subtipos já existentes (recebida/devolvida/
+  usada) juntos — nunca um chip separado por subtipo
+- [ ] **TIPOIMOB-03**: O filtro de tipo afeta a lista, os 6 `StatTile` (desmarcar um tipo zera o total
   correspondente, sem esconder o tile) e o PDF exportado (que recebe `linhas` já filtradas, sem nenhuma
-  mudança de código em `reconciliacao-pdf.ts`) — implementado no plano 20-01 (`ff38006`), aguardando
-  confirmação em produção
-- [x] **COLIMOB-01**: A célula "Contrato" mantém o formato visual atual (`IdPill` + texto ao lado) — só troca
-  o texto de endereço para proprietário, nunca vira duas colunas separadas — implementado no plano 20-01
-  (`ff38006`), aguardando confirmação em produção
-- [x] **COLIMOB-02**: Uma coluna nova, separada, "Inquilino", aparece logo depois de "Contrato" — implementado
-  no plano 20-01 (`ff38006`), aguardando confirmação em produção
-- [x] **COLIMOB-03**: Endereço sai completamente da tela — não aparece em nenhuma coluna, tooltip ou outro
+  mudança de código em `reconciliacao-pdf.ts`)
+- [ ] **COLIMOB-01**: A célula "Contrato" mantém o formato visual atual (`IdPill` + texto ao lado) — só troca
+  o texto de endereço para proprietário, nunca vira duas colunas separadas
+- [ ] **COLIMOB-02**: Uma coluna nova, separada, "Inquilino", aparece logo depois de "Contrato"
+- [ ] **COLIMOB-03**: Endereço sai completamente da tela — não aparece em nenhuma coluna, tooltip ou outro
   lugar da linha (o campo permanece intocado em todo tipo/consulta/PDF — só some do JSX renderizado desta
-  tabela) — implementado no plano 20-01 (`ff38006`), aguardando confirmação em produção
+  tabela)
 
 ## Carried over from v1.0
 
@@ -411,12 +407,12 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | FILTIMOB-04 | Phase 19 | Confirmado em produção |
 | PDFIMOB-01 | Phase 19 | Confirmado em produção |
 | PDFIMOB-02 | Phase 19 | Confirmado em produção |
-| TIPOIMOB-01 | Phase 20 | Implementado, aguardando confirmação em produção |
-| TIPOIMOB-02 | Phase 20 | Implementado, aguardando confirmação em produção |
-| TIPOIMOB-03 | Phase 20 | Implementado, aguardando confirmação em produção |
-| COLIMOB-01 | Phase 20 | Implementado, aguardando confirmação em produção |
-| COLIMOB-02 | Phase 20 | Implementado, aguardando confirmação em produção |
-| COLIMOB-03 | Phase 20 | Implementado, aguardando confirmação em produção |
+| TIPOIMOB-01 | Phase 20 | Pendente |
+| TIPOIMOB-02 | Phase 20 | Pendente |
+| TIPOIMOB-03 | Phase 20 | Pendente |
+| COLIMOB-01 | Phase 20 | Pendente |
+| COLIMOB-02 | Phase 20 | Pendente |
+| COLIMOB-03 | Phase 20 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
