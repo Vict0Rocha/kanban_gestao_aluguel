@@ -44,6 +44,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 16: Reordenação em massa e arquivamento sem coluna** - Botão "Reordenar" no Board move todos os cards para uma coluna escolhida de uma vez; desarquivar sempre devolve o card à primeira coluna ativa, não à coluna antiga
 - [x] **Phase 17: Exclusão de coluna sem cascade para cards ativos** - Excluir uma coluna com cards ativos deixa de apagar esses cards em cascata; só é permitido depois de movê-los para outra coluna
 - [x] **Phase 18: Filtro na Configuração financeira** - Um campo de busca ao vivo (mesmo componente do relatório "Situação dos contratos") filtra de verdade a listagem de /financeiro/configuracao por número, endereço e proprietário
+- [ ] **Phase 19: Filtro suspenso e exportação em PDF no relatório da imobiliária** - O relatório "Dinheiro da imobiliária" ganha o mesmo filtro suspenso já usado nas outras telas, e um botão de exportar em PDF igual ao do Relatório Financeiro dedicado
 
 ## Phase Details
 
@@ -346,7 +347,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18
+Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -367,8 +368,9 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 16. Reordenação em massa e arquivamento sem coluna | 4/4 | Complete | 2026-08-27 |
 | 17. Exclusão de coluna sem cascade para cards ativos | 1/1 | Complete | 2026-08-27 |
 | 18. Filtro na Configuração financeira | 1/1 | Complete | 2026-08-28 |
+| 19. Filtro suspenso e exportação em PDF no relatório da imobiliária | 0/TBD | Planned | - |
 
-**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17 e 18 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-18: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG.
+**Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 e 19 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-19: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG.
 
 ### Phase 15: Exclusão de card com destrava e paginação
 
@@ -456,3 +458,14 @@ Plans:
 Plans:
 
 - [x] 18-01-PLAN.md — Matcher local para `ContratoConfig`, composição do `resetKey` com o estado de busca, e `SearchField` ponta a ponta (tracer único)
+
+### Phase 19: Filtro suspenso e exportação em PDF no relatório da imobiliária
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 18
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 19 to break down)
