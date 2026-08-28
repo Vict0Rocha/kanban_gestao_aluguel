@@ -1,4 +1,5 @@
 import type { OrigemTaxa, TipoCaucao } from "./taxas"
+import { normalizeText } from "./search"
 
 /**
  * Mesma regra de `relatorio-financeiro.ts`: este módulo NÃO pode importar
@@ -19,7 +20,12 @@ export type TaxaImobiliariaRelatorio = {
   valor: number
   origem: OrigemTaxa
   observacao: string | null
-  cards: { endereco: string; proprietario: string; numero: number } | null
+  cards: {
+    endereco: string
+    proprietario: string
+    numero: number
+    inquilino: string | null
+  } | null
 }
 
 export type CaucaoEventoRelatorio = {
@@ -28,7 +34,12 @@ export type CaucaoEventoRelatorio = {
   valor: number
   tipo: TipoCaucao
   observacao: string | null
-  cards: { endereco: string; proprietario: string; numero: number } | null
+  cards: {
+    endereco: string
+    proprietario: string
+    numero: number
+    inquilino: string | null
+  } | null
 }
 
 /**
@@ -42,6 +53,76 @@ export function passaFiltroPeriodoReconciliacao(
 ): boolean {
   if (!/^\d{4}-\d{2}$/.test(periodo)) return true
   return data.startsWith(periodo)
+}
+
+/** Os 5 campos do painel suspenso (FILTIMOB-01..03, 19-CONTEXT.md D-03). */
+export type FiltroReconciliacaoValores = {
+  imovel: string
+  proprietario: string
+  inquilino: string
+  id: string
+  periodo: string
+}
+
+export function filtroReconciliacaoVazio(): FiltroReconciliacaoValores {
+  return { imovel: "", proprietario: "", inquilino: "", id: "", periodo: "" }
+}
+
+/**
+ * Campo vazio nunca filtra. Accent-insensitive via `normalizeText`
+ * (search.ts) — mesmo padrão do live-matcher mais recente do projeto
+ * (configuracao-financeira-view.tsx, Phase 18).
+ */
+export function passaFiltroTextoReconciliacao(
+  valor: string,
+  filtro: string
+): boolean {
+  const alvo = normalizeText(filtro.trim())
+  if (!alvo) return true
+  return normalizeText(valor).includes(alvo)
+}
+
+/**
+ * Mesmo padrão server-side de `financeiro/page.tsx:64-65,135-136` —
+ * comparação exata de inteiro, nunca substring. Id não numérico é ignorado
+ * (filtro não derruba nenhuma linha), nunca lança exceção.
+ */
+export function passaFiltroIdReconciliacao(
+  numero: number,
+  filtro: string
+): boolean {
+  const digitos = filtro.trim()
+  if (!digitos) return true
+  const alvo = Number.isInteger(Number(digitos)) ? Number(digitos) : null
+  return alvo !== null && numero === alvo
+}
+
+/**
+ * Composição única dos 4 campos derivados de `cards` — reusada tanto para
+ * taxaLinhas quanto para caucaoLinhas dentro do useMemo de `linhas`
+ * (dinheiro-imobiliaria-view.tsx). `passaFiltroPeriodoReconciliacao` fica de
+ * fora daqui de propósito: opera sobre `taxa.data`/`evento.data`, não sobre
+ * `cards`, e continua sendo chamada separadamente.
+ */
+export function passaFiltroCardsReconciliacao(
+  cards: {
+    endereco: string
+    proprietario: string
+    numero: number
+    inquilino: string | null
+  } | null,
+  filtro: FiltroReconciliacaoValores
+): boolean {
+  if (!passaFiltroTextoReconciliacao(cards?.endereco ?? "", filtro.imovel))
+    return false
+  if (
+    !passaFiltroTextoReconciliacao(cards?.proprietario ?? "", filtro.proprietario)
+  )
+    return false
+  if (!passaFiltroTextoReconciliacao(cards?.inquilino ?? "", filtro.inquilino))
+    return false
+  if (!passaFiltroIdReconciliacao(cards?.numero ?? -1, filtro.id)) return false
+  return true
 }
 
 export type ReconciliacaoTotais = {
