@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 20
-current_phase_name: filtro-por-tipo-de-movimento-no-relat-rio-da-imobili-ria
-status: complete
-stopped_at: Fase 20 encerrada — TIPOIMOB-01..03/COLIMOB-01..03 confirmados em produção pelo usuário
-last_updated: "2026-08-28T14:10:00.000Z"
+current_phase: 21
+current_phase_name: redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros
+status: discussed
+stopped_at: Fase 21 discutida — CONTEXT.md pronto, falta plan-phase
+last_updated: "2026-08-28T14:40:00.000Z"
 last_activity: 2026-08-28
-last_activity_desc: "Fase 20 encerrada. Plano 20-01 mesclado em main (merge commit) e publicado. Usuário confirmou em produção o human-check do plano: 'Fiz os testes e tudo funcionou como o esperado!' TIPOIMOB-01..03/COLIMOB-01..03 marcados 'Confirmado em produção' em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table atualizados para Complete."
+last_activity_desc: "Fase 21 (Redesenho do modelo de PDF dos relatórios financeiros) discutida. Aplica aos dois PDFs (Relatório Financeiro dedicado e Dinheiro da imobiliária): paisagem, paleta cinza substituindo o verde inteiro do contrato atual (texto #262626, fundo cabeçalho/total #f2f2f2, bordas #d9d9d9, zero cor viva), lista com linha horizontal sutil (sem grade vertical) + zebra — usuário mudou de ideia de 'grade completa' pra essa combinação numa segunda rodada. Nova linha de Total (negrito, fundo cinza) no final da lista, somando a coluna Valor já filtrada. Os três blocos estruturais existentes (título/filtros/totais) mantidos, só recolorindo. Usuário anexou um print do Sienge como guia de estilo, explicitamente não para copiar igual. 21-CONTEXT.md e 21-DISCUSSION-LOG.md escritos e commitados (a38232a)."
 progress:
-  total_phases: 20
+  total_phases: 21
   completed_phases: 20
   total_plans: 58
   completed_plans: 58
-  percent: 100
+  percent: 95
 ---
 
 # Project State
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Nenhuma fase nova planejada. Fase 20 (Filtro por tipo de movimento no relatório da imobiliária) encerrada — TIPOIMOB-01..03/COLIMOB-01..03 confirmados em produção. Todas as 20 fases planejadas do projeto estão completas.
+**Current focus:** Phase 21 (Redesenho do modelo de PDF dos relatórios financeiros) — CONTEXT.md pronto, falta plan-phase.
 
 ## Current Position
 
-Phase: 20 (filtro-por-tipo-de-movimento-no-relat-rio-da-imobili-ria) — ENCERRADA
-Status: Plano 20-01 executado, mesclado e confirmado em produção. TIPOIMOB-01..03/COLIMOB-01..03 marcados "Confirmado em produção" em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table em Complete.
-Last activity: 2026-08-28 — usuário confirmou o human-check do plano 20-01 em produção. Fase 20 encerrada.
+Phase: 21 (redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros) — DISCUTIDA
+Status: `21-CONTEXT.md`/`21-DISCUSSION-LOG.md` escritos e commitados. Falta `/gsd-plan-phase 21`.
+Last activity: 2026-08-28 — discuss-phase concluído: paisagem, paleta cinza, linha sutil+zebra na lista, linha de Total nova, aplicado aos dois PDFs.
 
-**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 → 20. A numeração continua da v1.0 (Phases 1-3), não reinicia.
+**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
 ## Performance Metrics
 
@@ -189,6 +189,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-28T14:10:00.000Z
-Stopped at: Fase 20 encerrada — TIPOIMOB-01..03/COLIMOB-01..03 confirmados em produção. Todas as 20 fases planejadas do projeto estão completas.
-Resume file: .planning/phases/20-filtro-por-tipo-de-movimento-no-relat-rio-da-imobili-ria/20-01-SUMMARY.md
+Last session: 2026-08-28T14:40:00.000Z
+Stopped at: Fase 21 discutida — CONTEXT.md pronto, falta plan-phase
+Resume file: .planning/phases/21-redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros/21-CONTEXT.md
