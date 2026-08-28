@@ -46,7 +46,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 18: Filtro na Configuração financeira** - Um campo de busca ao vivo (mesmo componente do relatório "Situação dos contratos") filtra de verdade a listagem de /financeiro/configuracao por número, endereço e proprietário
 - [x] **Phase 19: Filtro suspenso e exportação em PDF no relatório da imobiliária** - O relatório "Dinheiro da imobiliária" ganha o mesmo filtro suspenso já usado nas outras telas, e um botão de exportar em PDF igual ao do Relatório Financeiro dedicado
 - [x] **Phase 20: Filtro por tipo de movimento no relatório da imobiliária** - O painel suspenso de /relatorios/imobiliaria ganha um seletor de tipo de movimento (Administração/Comissão 1º aluguel/Caução), ao lado dos 5 campos já existentes
-- [ ] **Phase 21: Redesenho do modelo de PDF dos relatórios financeiros** - Os dois PDFs exportados (Relatório Financeiro dedicado e Dinheiro da imobiliária) ganham um novo visual — paisagem, tabela em grade cinza clara, linha de total — mais profissional para uso corporativo
+- [x] **Phase 21: Redesenho do modelo de PDF dos relatórios financeiros** - Os dois PDFs exportados (Relatório Financeiro dedicado e Dinheiro da imobiliária) ganham um novo visual — paisagem, tabela em grade cinza clara, linha de total — mais profissional para uso corporativo
 
 ## Phase Details
 
@@ -372,7 +372,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 18. Filtro na Configuração financeira | 1/1 | Complete | 2026-08-28 |
 | 19. Filtro suspenso e exportação em PDF no relatório da imobiliária | 1/1 | Complete | 2026-08-28 |
 | 20. Filtro por tipo de movimento no relatório da imobiliária | 1/1 | Complete | 2026-08-28 |
-| 21. Redesenho do modelo de PDF dos relatórios financeiros | 1/1 | In Progress|  |
+| 21. Redesenho do modelo de PDF dos relatórios financeiros | 1/1 | Complete | 2026-08-28 |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 e 21 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-21: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG / § FILTIMOB / PDFIMOB / § TIPOIMOB / COLIMOB / § PDFMODELO.
 
@@ -542,11 +542,11 @@ Plans:
 **Depends on:** Phase 20
 **Success Criteria** (what must be TRUE):
 
-  1. Os dois PDFs exportam em A4 paisagem, paleta cinza inteira (texto `#262626`, cabeçalho/Total `#f2f2f2`, bordas `#d9d9d9`, rótulos/rodapé `#6b6b6b`) — sem nenhuma cor viva em lugar nenhum do documento
-  2. A lista principal de cada PDF usa linha horizontal sutil entre as linhas (sem grade vertical) mais zebra branco/cinza claro alternando
-  3. Uma linha "Total" nova, em negrito com o mesmo fundo cinza do cabeçalho, soma a coluna Valor de todas as linhas efetivamente listadas (já respeitando o filtro aplicado) no final da lista de cada PDF, e nunca se repete em páginas seguintes de um export com múltiplas páginas
-  4. Os três blocos estruturais já existentes em cada PDF (título+timestamp, filtros aplicados, totais/resumo) continuam presentes, com a mesma estrutura de antes — só recoloridos
-  5. `reconciliacao-pdf.ts` ganha a coluna "Inquilino" e troca a célula "Contrato" de endereço para proprietário; `relatorio-financeiro-pdf.ts` mantém suas colunas atuais inalteradas
+  1. ✓ Os dois PDFs exportam em A4 paisagem, paleta cinza inteira (texto `#262626`, cabeçalho/Total `#f2f2f2`, bordas `#d9d9d9`, rótulos/rodapé `#6b6b6b`) — sem nenhuma cor viva em lugar nenhum do documento — confirmado em produção
+  2. ✓ A lista principal de cada PDF usa linha horizontal sutil entre as linhas (sem grade vertical) mais zebra branco/cinza claro alternando — confirmado em produção
+  3. ✓ Uma linha "Total" nova, em negrito com o mesmo fundo cinza do cabeçalho, soma a coluna Valor de todas as linhas efetivamente listadas (já respeitando o filtro aplicado) no final da lista de cada PDF, e nunca se repete em páginas seguintes de um export com múltiplas páginas — confirmado em produção
+  4. ✓ Os três blocos estruturais já existentes em cada PDF (título+timestamp, filtros aplicados, totais/resumo) continuam presentes, com a mesma estrutura de antes — só recoloridos — confirmado em produção
+  5. ✓ `reconciliacao-pdf.ts` ganha a coluna "Inquilino" e troca a célula "Contrato" de endereço para proprietário; `relatorio-financeiro-pdf.ts` mantém suas colunas atuais inalteradas — confirmado em produção
 
 **Plans**: 1/1 plans executed
 

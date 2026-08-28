@@ -4,11 +4,11 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 21
 current_phase_name: redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros
-status: executed
-stopped_at: Fase 21 executada — plano 21-01 completo (2/2 tasks), aguardando human-check em produção
-last_updated: "2026-08-28T18:52:41.477Z"
+status: complete
+stopped_at: Fase 21 encerrada — PDFMODELO-01..05 confirmados em produção pelo usuário
+last_updated: "2026-08-28T19:10:00.000Z"
 last_activity: 2026-08-28
-last_activity_desc: "Fase 21 (Redesenho do modelo de PDF dos relatórios financeiros) executada — plano 21-01, 2/2 tasks. Task 1 (tracer): relatorio-financeiro-pdf.ts redesenhado ponta a ponta — paisagem, paleta cinza (foreground #262626, headerFill #f2f2f2 novo, border #d9d9d9, muted #6b6b6b, rowShade #f7f7f7), lista theme:plain com linha horizontal sutil (bottom-only) + zebra, nova linha 'Total' via foot/footStyles/showFoot:lastPage somando bodyRows.valor (reusado, nunca re-derivado). Task 2: reconciliacao-pdf.ts espelha o mesmo tratamento + mudança de colunas corrigida (D-02) — coluna Inquilino nova, Contrato mostra proprietário em vez de endereço, columnStyles/colSpan deslocados (Valor 3->4); 10-UI-SPEC.md § PDF Export Layout Contract reescrito cobrindo os dois módulos. npx tsc --noEmit/npm run lint/npm run build verdes (worktree precisou de npm ci próprio). Commits: e32e764 (Task 1), 19d5061 (Task 2). Human-check consolidado não bloqueante pendente (abrir os dois PDFs em produção)."
+last_activity_desc: "Fase 21 encerrada. Plano 21-01 mesclado em main (33517bb) e publicado. Usuário confirmou em produção o human-check consolidado do plano: 'Fiz os teste tudo funcionou como o esperado, ficou otimo.' PDFMODELO-01..05 marcados 'Confirmado em produção' em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table atualizados para Complete."
 progress:
   total_phases: 21
   completed_phases: 21
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 21 (Redesenho do modelo de PDF dos relatórios financeiros) — plano 21-01 executado (2/2 tasks), aguardando human-check em produção.
+**Current focus:** Nenhuma fase nova planejada. Fase 21 (Redesenho do modelo de PDF dos relatórios financeiros) encerrada — PDFMODELO-01..05 confirmados em produção. Todas as 21 fases planejadas do projeto estão completas.
 
 ## Current Position
 
-Phase: 21 (redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros) — EXECUTADA
-Status: Plano 21-01 executado (2/2 tasks, commits e32e764/19d5061). `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes. Falta confirmação do human-check consolidado em produção (abrir os dois PDFs) para fechar a fase.
-Last activity: 2026-08-28 — plano 21-01 executado: paisagem, paleta cinza, linha sutil+zebra na lista, linha de Total nova, aplicado aos dois PDFs; reconciliacao-pdf.ts ganhou coluna Inquilino e Contrato mostrando proprietário (D-02 corrigido); 10-UI-SPEC.md atualizado.
+Phase: 21 (redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros) — ENCERRADA
+Status: Plano 21-01 executado, mesclado e confirmado em produção. PDFMODELO-01..05 marcados "Confirmado em produção" em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table em Complete.
+Last activity: 2026-08-28 — usuário confirmou o human-check do plano 21-01 em produção ("Fiz os teste tudo funcionou como o esperado, ficou otimo"). Fase 21 encerrada.
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -90,6 +90,8 @@ Last activity: 2026-08-28 — plano 21-01 executado: paisagem, paleta cinza, lin
 ### Decisions
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
+
+- 2026-08-28: **Fase 21 encerrada — PDFMODELO-01..05 confirmados em produção.** Plano 21-01 executado em worktree isolado (`agent-a304acf413f88473b`), 2/2 tasks, mesclado em `main` (`33517bb`) e publicado. Os dois PDFs exportáveis (`relatorio-financeiro-pdf.ts`, `reconciliacao-pdf.ts`) trocaram o contrato verde/retrato/sem-total por um contrato cinza/paisagem/lista-sem-grade-com-zebra/com-Total — mecanismos (`theme:"plain"`, `lineWidth` bottom-only, `foot`/`footStyles`/`showFoot:"lastPage"`) verificados pela pesquisa direto no código-fonte do `jspdf-autotable@5.0.8` efetivamente instalado, não por memória/docs genéricos. Um erro real foi encontrado e corrigido durante o discuss-phase: o CONTEXT.md original assumia que `reconciliacao-pdf.ts` já tinha as colunas Inquilino/proprietário desde a Phase 20 — a pesquisa confirmou que não, a Phase 20 deixou isso pendente só no PDF (D-08/D-09 daquela fase); a correção (D-02) fez essa mudança de coluna acontecer nesta fase. `10-UI-SPEC.md` § "PDF Export Layout Contract" atualizado in-place cobrindo os dois módulos. `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes, verificados de forma independente no `main` já mesclado. Usuário abriu os dois PDFs em produção e confirmou: "Fiz os teste tudo funcionou como o esperado, ficou otimo." **Com isso encerram as 21 fases planejadas do projeto inteiro.** Não há fase nova planejada.
 
 - 2026-08-28: **Fase 20 encerrada — TIPOIMOB-01..03/COLIMOB-01..03 confirmados em produção.** Usuário testou os chips de tipo (zeramento de StatTile ao desmarcar, combinação de múltiplos tipos, "Caução" unificando os três subtipos), as colunas Contrato/Inquilino trocadas, e o PDF respeitando o filtro sem mudar de layout — "Fiz os testes e tudo funcionou como o esperado!". **Com isso encerram as 20 fases planejadas do projeto inteiro.** Não há fase nova planejada; o único aviso registrado continua sendo o redesenho do PDF de Dinheiro da imobiliária (D-09, 20-CONTEXT.md) — o usuário disse que vai trazer um modelo próprio numa fase futura, não é pendência ativa.
 - 2026-08-28: **Plano 20-01 executado** (worktree isolado, `agent-a8e0019aaf163aa8a`). Task 1 (tracer, cobrindo a fase inteira): `reconciliacao.ts` ganha `TipoMovimentoReconciliacao` (`OrigemTaxa | "caucao"`, reusa `OrigemTaxa` sem função de mapeamento) e `passaFiltroTipoReconciliacao` (Set vazio = sem filtro, mesma semântica de `situacoes`); `FiltroReconciliacaoValores`/`filtroReconciliacaoVazio` ganham o campo `tipos`; `calcularReconciliacao` ganha um 4º parâmetro OBRIGATÓRIO sem valor padrão — tripwire de compilação intencional que forçou a atualização do único call site em `dinheiro-imobiliaria-view.tsx`. `filtro-reconciliacao.tsx` ganha a linha de chips Todos/Administração/Comissão 1º aluguel/Caução, reusando `FilterChip`/`toggle` de `reports-view.tsx` (mesmo padrão já usado por "Situação" no Relatório Financeiro dedicado) — segundo uso desse par fora da tela onde nasceu. `dinheiro-imobiliaria-view.tsx`: as duas cadeias de `linhas` (taxa e caução) ganharam a cláusula de tipo — a cadeia de caução usa sempre a constante `"caucao"`, nunca `evento.tipo`, evitando reintroduzir filtragem por subtipo (D-02); `resetKey` ganhou um sexto segmento com o Set ordenado antes do `join` (`[...filtro.tipos].sort().join(",")`); célula "Contrato" trocada de endereço para proprietário (mesmo formato IdPill+texto); nova coluna "Inquilino" adicionada. `reconciliacao-pdf.ts` não foi tocado — `git diff --quiet` confirmado, o PDF passa a receber `linhas` já filtradas automaticamente. Zero migração de banco. `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes (worktree precisou de `npm install` próprio). Commit: `ff38006` (Task 1, único commit da fase). **Human-check não bloqueante pendente** (ver Blockers) — o comportamento renderizado dos chips (zeramento de StatTile, combinação de múltiplos tipos, Caução unificada, colunas Contrato/Inquilino) e a estrutura real do PDF exportado com filtro de tipo ativo só são observáveis interagindo com a tela/arquivo reais em produção.
@@ -159,6 +161,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - ~~Plano 18-01 tem um `<human-check>` não bloqueante pendente de confirmação do usuário em produção~~ — resolvido. Primeiro teste do usuário não mostrou o campo de busca (deploy da Vercel ainda propagando — tabela com dados renderizava normal, só faltava o `SearchField`, consistente com o código: a única condição que os separa é `erro`, inativo); confirmado poucos minutos depois já funcionando ("Testei, funcionou corretamente"), e em seguida confirmado também o reset de paginação e a mensagem de busca sem correspondência ("Sim, testei tudo, pode fechar a fase."). Fase 18 encerrada (2026-08-28).
 - ~~Plano 19-01 tem dois `<human-check>` não bloqueantes pendentes de confirmação do usuário em produção~~ — resolvido, usuário confirmou o filtro ao vivo (5 campos) e o PDF exportado em produção ("Os dois funcionaram"), depois de eu perguntar especificamente sobre os dois pontos. Fase 19 encerrada (2026-08-28).
 - ~~Plano 20-01 tem um `<human-check>` não bloqueante pendente de confirmação do usuário em produção~~ — resolvido, usuário confirmou os chips de tipo (zeramento de StatTile, Caução unificada), as colunas Contrato/Inquilino e o PDF respeitando o filtro em produção ("Fiz os testes e tudo funcionou como o esperado!"). Fase 20 encerrada (2026-08-28).
+- ~~Plano 21-01 tem um `<human-check>` consolidado não bloqueante pendente de confirmação do usuário em produção~~ — resolvido, usuário abriu os dois PDFs exportados e confirmou o novo contrato visual (paisagem, paleta cinza, lista sem grade+zebra, linha de Total, colunas Inquilino/proprietário em `reconciliacao-pdf.ts`) em produção ("Fiz os teste tudo funcionou como o esperado, ficou otimo"). Fase 21 encerrada (2026-08-28).
 
 ### Roadmap Evolution
 
@@ -191,6 +194,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-28T18:52:35.367Z
-Stopped at: Fase 21 executada — plano 21-01 completo (2/2 tasks), aguardando human-check em produção
-Resume file: None
+Last session: 2026-08-28T19:10:00.000Z
+Stopped at: Fase 21 encerrada — PDFMODELO-01..05 confirmados em produção. Todas as 21 fases planejadas do projeto estão completas.
+Resume file: .planning/phases/21-redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros/21-01-SUMMARY.md

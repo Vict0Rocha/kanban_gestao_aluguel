@@ -274,17 +274,17 @@ dois PDFs exportáveis já em produção (`relatorio-financeiro-pdf.ts`, Phase 1
 que a Phase 20 deixou deliberadamente pendente só no PDF (D-09 daquela fase). Decisões registradas em
 `.planning/phases/21-redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros/21-CONTEXT.md`.
 
-- [ ] **PDFMODELO-01**: Os dois PDFs exportam em A4 paisagem, com uma paleta cinza inteira substituindo o
+- [x] **PDFMODELO-01**: Os dois PDFs exportam em A4 paisagem, com uma paleta cinza inteira substituindo o
   verde atual — sem nenhuma cor viva (verde, vermelho ou azul saturado) em lugar nenhum do documento
-- [ ] **PDFMODELO-02**: A lista principal de cada PDF usa linha horizontal sutil separando cada linha (sem
+- [x] **PDFMODELO-02**: A lista principal de cada PDF usa linha horizontal sutil separando cada linha (sem
   borda vertical entre colunas) mais zebra (linhas alternando branco e cinza bem claro)
-- [ ] **PDFMODELO-03**: Uma linha "Total" nova, em negrito com o mesmo fundo cinza do cabeçalho, no final da
+- [x] **PDFMODELO-03**: Uma linha "Total" nova, em negrito com o mesmo fundo cinza do cabeçalho, no final da
   lista de cada PDF, soma a coluna Valor de todas as linhas efetivamente listadas (já respeitando qualquer
   filtro aplicado); nunca se repete em cada página de um export com múltiplas páginas
-- [ ] **PDFMODELO-04**: Os três blocos estruturais já existentes em cada PDF (título+timestamp, tabela de
+- [x] **PDFMODELO-04**: Os três blocos estruturais já existentes em cada PDF (título+timestamp, tabela de
   filtros aplicados, bloco de totais/resumo) continuam existindo, com a mesma estrutura de antes — só passam a
   usar a nova paleta cinza
-- [ ] **PDFMODELO-05**: `reconciliacao-pdf.ts` ganha uma coluna "Inquilino" e troca a célula "Contrato" de
+- [x] **PDFMODELO-05**: `reconciliacao-pdf.ts` ganha uma coluna "Inquilino" e troca a célula "Contrato" de
   endereço para proprietário do contrato (mesmo formato ID+texto); `relatorio-financeiro-pdf.ts` mantém suas
   colunas atuais inalteradas
 
@@ -436,11 +436,11 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | COLIMOB-01 | Phase 20 | Confirmado em produção |
 | COLIMOB-02 | Phase 20 | Confirmado em produção |
 | COLIMOB-03 | Phase 20 | Confirmado em produção |
-| PDFMODELO-01 | Phase 21 | Pendente |
-| PDFMODELO-02 | Phase 21 | Pendente |
-| PDFMODELO-03 | Phase 21 | Pendente |
-| PDFMODELO-04 | Phase 21 | Pendente |
-| PDFMODELO-05 | Phase 21 | Pendente |
+| PDFMODELO-01 | Phase 21 | Confirmado em produção |
+| PDFMODELO-02 | Phase 21 | Confirmado em produção |
+| PDFMODELO-03 | Phase 21 | Confirmado em produção |
+| PDFMODELO-04 | Phase 21 | Confirmado em produção |
+| PDFMODELO-05 | Phase 21 | Confirmado em produção |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
