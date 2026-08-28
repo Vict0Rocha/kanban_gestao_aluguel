@@ -46,6 +46,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 18: Filtro na Configuração financeira** - Um campo de busca ao vivo (mesmo componente do relatório "Situação dos contratos") filtra de verdade a listagem de /financeiro/configuracao por número, endereço e proprietário
 - [x] **Phase 19: Filtro suspenso e exportação em PDF no relatório da imobiliária** - O relatório "Dinheiro da imobiliária" ganha o mesmo filtro suspenso já usado nas outras telas, e um botão de exportar em PDF igual ao do Relatório Financeiro dedicado
 - [x] **Phase 20: Filtro por tipo de movimento no relatório da imobiliária** - O painel suspenso de /relatorios/imobiliaria ganha um seletor de tipo de movimento (Administração/Comissão 1º aluguel/Caução), ao lado dos 5 campos já existentes
+- [ ] **Phase 21: Redesenho do modelo de PDF dos relatórios financeiros** - Os dois PDFs exportados (Relatório Financeiro dedicado e Dinheiro da imobiliária) ganham um novo visual — paisagem, tabela em grade cinza clara, linha de total — mais profissional para uso corporativo
 
 ## Phase Details
 
@@ -348,7 +349,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 → 20
+Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -371,6 +372,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 18. Filtro na Configuração financeira | 1/1 | Complete | 2026-08-28 |
 | 19. Filtro suspenso e exportação em PDF no relatório da imobiliária | 1/1 | Complete | 2026-08-28 |
 | 20. Filtro por tipo de movimento no relatório da imobiliária | 1/1 | Complete | 2026-08-28 |
+| 21. Redesenho do modelo de PDF dos relatórios financeiros | 0/TBD | Planned | - |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 e 20 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-20: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG / § FILTIMOB / PDFIMOB / § TIPOIMOB / COLIMOB.
 
@@ -532,3 +534,14 @@ Plans:
 
 - [x] 20-01-PLAN.md — Filtro por tipo de movimento ponta a ponta (chip row, filtro de tipo em lista+totais) e
   troca de colunas Contrato/Inquilino, num único tracer
+
+### Phase 21: Redesenho do modelo de PDF dos relatórios financeiros
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 20
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 21 to break down)
