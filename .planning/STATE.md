@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: Módulo Financeiro
-current_phase: 19
-current_phase_name: filtro-suspenso-e-exporta-o-em-pdf-no-relat-rio-da-imobili-r
-status: complete
-stopped_at: Fase 19 encerrada — FILTIMOB-01..04/PDFIMOB-01..02 confirmados em produção pelo usuário
-last_updated: "2026-08-28T13:00:00.000Z"
+current_phase: 20
+current_phase_name: filtro-por-tipo-de-movimento-no-relat-rio-da-imobili-ria
+status: discussed
+stopped_at: Fase 20 discutida — CONTEXT.md pronto, falta plan-phase
+last_updated: "2026-08-28T13:30:00.000Z"
 last_activity: 2026-08-28
-last_activity_desc: "Fase 19 encerrada. Plano 19-01 mesclado em main (c941279) e publicado. Usuário confirmou em produção os dois human-checks do plano: o filtro ao vivo (5 campos, ID exato, reset de paginação) e o PDF exportado, respondendo 'Os dois funcionaram' quando perguntado especificamente sobre ambos. FILTIMOB-01..04/PDFIMOB-01..02 marcados 'Confirmado em produção' em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table atualizados para Complete."
+last_activity_desc: "Fase 20 (Filtro por tipo de movimento no relatório da imobiliária) discutida. Chips multi-select (Administração/Comissão 1º aluguel/Caução unificada/Todos), mesmo componente FilterChip/toggle já usado pela Situação no Relatório Financeiro dedicado — Caução agrupa os 3 subtipos existentes (recebida/devolvida/usada) num único chip. Afeta lista + StatTiles (zera, não esconde) + PDF (menos linhas, sem mudar layout). Bônus da discussão: colunas da lista mudam — célula Contrato troca endereço por proprietário (mantendo o mesmo formato ID+nome), nova coluna Inquilino separada. PDF explicitamente NÃO muda de layout nesta fase — usuário vai trazer um modelo próprio numa fase futura (registrado como deferred idea). 20-CONTEXT.md e 20-DISCUSSION-LOG.md escritos e commitados (d0663dd)."
 progress:
-  total_phases: 19
+  total_phases: 20
   completed_phases: 19
   total_plans: 57
   completed_plans: 57
-  percent: 100
+  percent: 95
 ---
 
 # Project State
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Nenhuma fase nova planejada. Fase 19 (Filtro suspenso e exportação em PDF no relatório da imobiliária) encerrada — FILTIMOB-01..04/PDFIMOB-01..02 confirmados em produção. Todas as 19 fases planejadas do projeto estão completas.
+**Current focus:** Phase 20 (Filtro por tipo de movimento no relatório da imobiliária) — CONTEXT.md pronto, falta plan-phase.
 
 ## Current Position
 
-Phase: 19 (filtro-suspenso-e-exporta-o-em-pdf-no-relat-rio-da-imobili-r) — ENCERRADA
-Status: Plano 19-01 executado, mesclado (`c941279`) e confirmado em produção. FILTIMOB-01..04/PDFIMOB-01..02 marcados "Confirmado em produção" em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table em Complete.
-Last activity: 2026-08-28 — usuário confirmou os dois human-checks do plano 19-01 em produção. Fase 19 encerrada.
+Phase: 20 (filtro-por-tipo-de-movimento-no-relat-rio-da-imobili-ria) — DISCUTIDA
+Status: `20-CONTEXT.md`/`20-DISCUSSION-LOG.md` escritos e commitados. Falta `/gsd-plan-phase 20`.
+Last activity: 2026-08-28 — discuss-phase concluído: chips de tipo (Administração/Comissão/Caução) + troca de colunas na lista (proprietário no lugar de endereço, nova coluna Inquilino).
 
-**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19. A numeração continua da v1.0 (Phases 1-3), não reinicia.
+**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 → 20. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
 ## Performance Metrics
 
@@ -185,6 +185,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-28T13:00:00.000Z
-Stopped at: Fase 19 encerrada — FILTIMOB-01..04/PDFIMOB-01..02 confirmados em produção. Todas as 19 fases planejadas do projeto estão completas.
-Resume file: .planning/phases/19-filtro-suspenso-e-exporta-o-em-pdf-no-relat-rio-da-imobili-r/19-01-SUMMARY.md
+Last session: 2026-08-28T13:30:00.000Z
+Stopped at: Fase 20 discutida — CONTEXT.md pronto, falta plan-phase
+Resume file: .planning/phases/20-filtro-por-tipo-de-movimento-no-relat-rio-da-imobili-ria/20-CONTEXT.md
