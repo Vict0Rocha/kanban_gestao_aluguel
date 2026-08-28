@@ -372,7 +372,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 18. Filtro na Configuração financeira | 1/1 | Complete | 2026-08-28 |
 | 19. Filtro suspenso e exportação em PDF no relatório da imobiliária | 1/1 | Complete | 2026-08-28 |
 | 20. Filtro por tipo de movimento no relatório da imobiliária | 1/1 | Complete | 2026-08-28 |
-| 21. Redesenho do modelo de PDF dos relatórios financeiros | 0/1 | Planned | - |
+| 21. Redesenho do modelo de PDF dos relatórios financeiros | 1/1 | In Progress|  |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 e 21 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-21: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG / § FILTIMOB / PDFIMOB / § TIPOIMOB / COLIMOB / § PDFMODELO.
 
@@ -548,8 +548,8 @@ Plans:
   4. Os três blocos estruturais já existentes em cada PDF (título+timestamp, filtros aplicados, totais/resumo) continuam presentes, com a mesma estrutura de antes — só recoloridos
   5. `reconciliacao-pdf.ts` ganha a coluna "Inquilino" e troca a célula "Contrato" de endereço para proprietário; `relatorio-financeiro-pdf.ts` mantém suas colunas atuais inalteradas
 
-**Plans**: 1 plan
+**Plans**: 1/1 plans executed
 
 Plans:
 
-- [ ] 21-01-PLAN.md — Novo contrato visual ponta a ponta nos dois módulos de PDF (paisagem, paleta cinza, lista sem grade+zebra, linha de Total), mudança de colunas corrigida em `reconciliacao-pdf.ts`, e atualização de `10-UI-SPEC.md`
+- [x] 21-01-PLAN.md — Novo contrato visual ponta a ponta nos dois módulos de PDF (paisagem, paleta cinza, lista sem grade+zebra, linha de Total), mudança de colunas corrigida em `reconciliacao-pdf.ts`, e atualização de `10-UI-SPEC.md`
