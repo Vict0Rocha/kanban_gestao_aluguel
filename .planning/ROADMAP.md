@@ -43,7 +43,7 @@ O resultado são 5 fases em vez de 6, com o mesmo escopo e a mesma ordem de depe
 - [x] **Phase 15: Exclusão de card com destrava e paginação** - Permitir excluir card/cancelar destrava mesmo com histórico de destrava (bloqueado só por conciliação travada), e adicionar paginação (12 itens) em Financeiro, Relatórios e Arquivados
 - [x] **Phase 16: Reordenação em massa e arquivamento sem coluna** - Botão "Reordenar" no Board move todos os cards para uma coluna escolhida de uma vez; desarquivar sempre devolve o card à primeira coluna ativa, não à coluna antiga
 - [x] **Phase 17: Exclusão de coluna sem cascade para cards ativos** - Excluir uma coluna com cards ativos deixa de apagar esses cards em cascata; só é permitido depois de movê-los para outra coluna
-- [ ] **Phase 18: Filtro na Configuração financeira** - Um campo de busca ao vivo (mesmo componente do relatório "Situação dos contratos") filtra de verdade a listagem de /financeiro/configuracao por número, endereço e proprietário
+- [x] **Phase 18: Filtro na Configuração financeira** - Um campo de busca ao vivo (mesmo componente do relatório "Situação dos contratos") filtra de verdade a listagem de /financeiro/configuracao por número, endereço e proprietário
 
 ## Phase Details
 
@@ -366,7 +366,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 15. Exclusão de card com destrava e paginação | 6/6 | Complete | 2026-08-27 |
 | 16. Reordenação em massa e arquivamento sem coluna | 4/4 | Complete | 2026-08-27 |
 | 17. Exclusão de coluna sem cascade para cards ativos | 1/1 | Complete | 2026-08-27 |
-| 18. Filtro na Configuração financeira | 1/1 | In Progress|  |
+| 18. Filtro na Configuração financeira | 1/1 | Complete | 2026-08-28 |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17 e 18 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-18: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG.
 
@@ -445,11 +445,11 @@ Plans:
 **Depends on:** Phase 17
 **Success Criteria** (what must be TRUE):
 
-  1. Digitar um termo no `SearchField` acima da tabela filtra a lista em tempo real, removendo as linhas cujo número/endereço/proprietário não batem — sem botão de submit, sem distinção de acento, com todos os termos digitados precisando bater (FILTCFG-01)
-  2. Mudar o termo de busca volta a paginação para a página 1; editar percentuais ou registrar/cancelar um evento de caução (ações que disparam `router.refresh()`) nunca resetam a página em que o usuário está (FILTCFG-02)
-  3. Uma busca sem nenhuma correspondência mostra "Nenhum contrato corresponde à busca." em vez de uma tabela com cabeçalho vazio (FILTCFG-03)
-  4. `SearchField` fica posicionado de forma consistente com o uso já existente em `reports-view.tsx`, com `placeholder` explícito — nunca o default, que cita "inquilino", campo que esta tela não busca (FILTCFG-04)
-  5. Zero migração de banco, zero Server Action nova, zero mudança em `page.tsx` ou em `web/src/lib/kanban/search.ts` — toda a mudança fica dentro de `configuracao-financeira-view.tsx`
+  1. ✓ Digitar um termo no `SearchField` acima da tabela filtra a lista em tempo real, removendo as linhas cujo número/endereço/proprietário não batem — sem botão de submit, sem distinção de acento, com todos os termos digitados precisando bater (FILTCFG-01) — confirmado em produção
+  2. ✓ Mudar o termo de busca volta a paginação para a página 1; editar percentuais ou registrar/cancelar um evento de caução (ações que disparam `router.refresh()`) nunca resetam a página em que o usuário está (FILTCFG-02) — confirmado em produção
+  3. ✓ Uma busca sem nenhuma correspondência mostra "Nenhum contrato corresponde à busca." em vez de uma tabela com cabeçalho vazio (FILTCFG-03) — confirmado em produção
+  4. ✓ `SearchField` fica posicionado de forma consistente com o uso já existente em `reports-view.tsx`, com `placeholder` explícito — nunca o default, que cita "inquilino", campo que esta tela não busca (FILTCFG-04) — confirmado em produção
+  5. ✓ Zero migração de banco, zero Server Action nova, zero mudança em `page.tsx` ou em `web/src/lib/kanban/search.ts` — toda a mudança fica dentro de `configuracao-financeira-view.tsx`
 
 **Plans:** 1/1 plans executed
 

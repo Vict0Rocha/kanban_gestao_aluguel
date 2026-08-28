@@ -200,15 +200,15 @@ fechar. Estritamente aditiva na camada de apresentação — nenhuma mudança de
 migração. Decisões registradas em
 `.planning/phases/18-filtro-na-configura-o-financeira/18-CONTEXT.md`.
 
-- [ ] **FILTCFG-01**: Um campo de busca ao vivo (`SearchField`, sem botão de submit) filtra a listagem de
+- [x] **FILTCFG-01**: Um campo de busca ao vivo (`SearchField`, sem botão de submit) filtra a listagem de
   `/financeiro/configuracao` de verdade — remove linhas, não só realça — por número do contrato, endereço e
   proprietário, sem distinção de acento, com todos os termos digitados precisando bater (AND multi-termo)
-- [ ] **FILTCFG-02**: Mudar o termo de busca volta a paginação para a página 1; uma ação que não muda o
+- [x] **FILTCFG-02**: Mudar o termo de busca volta a paginação para a página 1; uma ação que não muda o
   termo (editar percentuais ou registrar/cancelar um evento de caução, que disparam `router.refresh()`)
   nunca reseta a página em que o usuário está
-- [ ] **FILTCFG-03**: Uma busca sem nenhuma correspondência mostra uma mensagem distinta de "nenhum
+- [x] **FILTCFG-03**: Uma busca sem nenhuma correspondência mostra uma mensagem distinta de "nenhum
   contrato cadastrado"
-- [ ] **FILTCFG-04**: `SearchField` fica posicionado de forma consistente com o uso já existente em
+- [x] **FILTCFG-04**: `SearchField` fica posicionado de forma consistente com o uso já existente em
   `reports-view.tsx`, com um `placeholder` explícito (nunca o default, que cita um campo que esta tela não
   busca)
 
@@ -344,10 +344,10 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | EXCOL-02 | Phase 17 | Confirmado em produção |
 | EXCOL-03 | Phase 17 | Confirmado em produção |
 | EXCOL-04 | Phase 17 | Confirmado em produção |
-| FILTCFG-01 | Phase 18 | Pendente |
-| FILTCFG-02 | Phase 18 | Pendente |
-| FILTCFG-03 | Phase 18 | Pendente |
-| FILTCFG-04 | Phase 18 | Pendente |
+| FILTCFG-01 | Phase 18 | Confirmado em produção |
+| FILTCFG-02 | Phase 18 | Confirmado em produção |
+| FILTCFG-03 | Phase 18 | Confirmado em produção |
+| FILTCFG-04 | Phase 18 | Confirmado em produção |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5

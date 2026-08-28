@@ -4,14 +4,14 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 18
 current_phase_name: filtro-na-configura-o-financeira
-status: executed
-stopped_at: Plano 18-01 executado (matcher, resetKey, SearchField) — falta confirmação humana em produção do human-check não bloqueante
-last_updated: "2026-08-28T00:55:18.593Z"
-last_activity: 2026-08-27
-last_activity_desc: "Plano 18-01 (Filtro na Configuração financeira) executado em worktree isolado (agent-a202e155b5e335050). Busca ao vivo (SearchField, sem alteração) filtra /financeiro/configuracao por número/endereço/proprietário via matcher local buildContratoMatcher/searchableText (D-03, search.ts inalterado). resetKey do usePagination trocado de \"config\" para query (FILTCFG-02). Terceiro branch de estado vazio para busca sem correspondência (FILTCFG-03). npx tsc --noEmit/npm run lint/npm run build verdes. Commit 4eee7ef. Falta só o human-check não bloqueante em produção."
+status: complete
+stopped_at: Fase 18 encerrada — FILTCFG-01..04 confirmados em produção pelo usuário
+last_updated: "2026-08-28T01:15:00.000Z"
+last_activity: 2026-08-28
+last_activity_desc: "Fase 18 encerrada. Usuário reportou inicialmente que o campo de busca não aparecia em produção logo após o merge — diagnosticado como propagação do deploy da Vercel (tabela com dados renderizava normal, só o SearchField faltava; a única condição que os separa no código é `erro`, que não estava ativo), não um bug de código. Usuário testou de novo pouco depois e confirmou: 'Testei, funcionou corretamente' e, após confirmar que também testou o reset de paginação (editar percentuais/caução na página 2+ não resetando) e a mensagem de busca sem correspondência, fechou com 'Sim, testei tudo, pode fechar a fase.' FILTCFG-01..04 marcados 'Confirmado em produção' em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table atualizados para Complete."
 progress:
   total_phases: 18
-  completed_phases: 17
+  completed_phases: 18
   total_plans: 56
   completed_plans: 56
   percent: 100
@@ -24,15 +24,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 18 (Filtro na Configuração financeira) — plano 18-01 executado, falta confirmação humana em produção.
+**Current focus:** Nenhuma fase nova planejada. Fase 18 (Filtro na Configuração financeira) encerrada — FILTCFG-01..04 confirmados em produção. Todas as 18 fases planejadas do projeto estão completas.
 
 ## Current Position
 
-Phase: 18 (filtro-na-configura-o-financeira) — EXECUTADA (não bloqueante pendente)
-Status: Plano 18-01 executado em worktree isolado (`agent-a202e155b5e335050`), commit `4eee7ef`, `SUMMARY.md` escrito. Falta relayar ao usuário o human-check não bloqueante do plano (busca ao vivo, `resetKey` sobrevivendo a `router.refresh()`, mensagem de busca sem resultado) para confirmação em produção.
-Last activity: 2026-08-27 — plano 18-01 executado: busca reusa `SearchField` (Board/Relatórios), campos número/endereço/proprietário.
+Phase: 18 (filtro-na-configura-o-financeira) — ENCERRADA
+Status: Plano 18-01 executado e confirmado em produção. FILTCFG-01..04 marcados "Confirmado em produção" em REQUIREMENTS.md; ROADMAP.md Success Criteria e Progress table em Complete.
+Last activity: 2026-08-28 — usuário confirmou o human-check do plano 18-01 em produção, incluindo o reset de paginação e a mensagem de busca sem correspondência. Fase 18 encerrada.
 
-**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17. A numeração continua da v1.0 (Phases 1-3), não reinicia.
+**Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
 ## Performance Metrics
 
@@ -87,6 +87,8 @@ Last activity: 2026-08-27 — plano 18-01 executado: busca reusa `SearchField` (
 ### Decisions
 
 Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
+
+- 2026-08-28: **Fase 18 encerrada — FILTCFG-01..04 confirmados em produção.** Plano 18-01 executado em worktree isolado (`agent-a202e155b5e335050`), mesclado em `main` (`fdbabab`) e publicado. Busca ao vivo (`SearchField`, reusado sem alteração) filtra `/financeiro/configuracao` por número/endereço/proprietário via matcher local `buildContratoMatcher`/`searchableText` (D-03, `web/src/lib/kanban/search.ts` permanece byte a byte inalterado — confirmado por `git diff --quiet`). `resetKey` de `usePagination` recomposto da string constante `"config"` para o próprio estado `query`: buscar reseta a página, editar percentuais/caução (`router.refresh()`) não reseta. Terceiro branch de estado vazio ("Nenhum contrato corresponde à busca."). Zero migração de banco, zero Server Action nova — confirmado por `git diff --quiet` em `page.tsx` também. `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes, verificados de forma independente no `main` já mesclado. **Falso alarme na verificação:** o usuário reportou inicialmente que o campo de busca não aparecia — diagnosticado como o deploy da Vercel ainda propagando (não um bug: a tabela já renderizava com dados normalmente, e a única condição que esconde o `SearchField` no código é `erro`, que não estava ativo); confirmado funcionando poucos minutos depois. Usuário testou tudo em produção e confirmou: "Sim, testei tudo, pode fechar a fase." **Com isso encerram as 18 fases planejadas do projeto inteiro.** Não há fase nova planejada; o próximo trabalho conhecido é o usuário eventualmente pedir ajustes no relatório de reconciliação da Phase 13 depois de usá-lo na prática (aviso registrado, não pendência ativa).
 
 - 2026-08-27: **Fase 17 encerrada — EXCOL-01..04 confirmados em produção.** Plano 17-01 executado em worktree isolado (`agent-aafbdcc309a339b9c`), 3/3 tasks, mesclado em `main` (`e2f025d`) e publicado. `excluirColunaComMovimentoAction` (nova, `actions.ts`) combina mover todos os cards da coluna de origem para um destino escolhido + excluir a coluna numa única chamada de servidor — reconsulta `board_id` das duas colunas e os cards da origem no momento da escrita (nunca aceita `cardIds` do cliente, mesma disciplina de `podarParcelasOrfas`), `Promise.all` com posições `base+(index+1)*GAP`, checa erro e zero-linhas em TODOS os resultados do movimento antes do `.delete()`. `ExcluirColunaDialog` (novo componente) cobre três ramos: coluna vazia inalterada (EXCOL-01), sem destino disponível bloqueada com "Crie outra coluna antes de excluir esta." (EXCOL-03/D-02), seletor de coluna mesmo padrão visual do `ReordenarDialog` (EXCOL-02/D-01). `board.tsx` passa `columns={columns}` para `<Column>` pela primeira vez. `deleteColumnAction` ganhou um precheck server-side próprio contra coluna não vazia (Task 2, EXCOL-04) — fecha o achado de segurança de `17-RESEARCH.md` Finding 4/Pitfall 1: sem essa trava, a garantia valeria só por convenção de UI, não no boundary real do servidor (Server Actions são endpoints POST alcançáveis fora da interface). `docs/data-model.md` documenta a decisão (Task 3). Zero migração de banco — `columns → cards on delete cascade` continua como rede de segurança (D-03 confirmado, primeira fase desde a Phase 4 sem arquivo novo em `supabase/migrations/`). `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes, verificados de forma independente no `main` já mesclado (não só no worktree). Usuário testou em produção os dois human-checks do plano e confirmou: "Testei e tudo funcionou como o esperado" — os três ramos do diálogo (vazia/seletor/bloqueada) e a regressão negativa do trigger de lançamento financeiro. **Com isso encerram as 17 fases planejadas do projeto inteiro.** Não há fase nova planejada; o próximo trabalho conhecido é o usuário eventualmente pedir ajustes no relatório de reconciliação da Phase 13 depois de usá-lo na prática (aviso registrado, não pendência ativa).
 - 2026-08-27: **Fase 16 encerrada — REORD-01..03 e ARQCOL-01..03 confirmados em produção.** Plano 16-04 fechou a metade de arquivamento: migração `20260827000000_arquivamento_sem_coluna` aplicada em produção via SQL Editor (`alter table cards alter column column_id drop not null` + backfill dos cards já arquivados, primeira migração deste projeto que relaxa uma constraint `not null` em vez de `create or replace function` sobre trigger), `arquivarCardAction`/`desarquivarCardAction`/`Card.column_id` widenados SÓ DEPOIS da confirmação de aplicação real — mesma disciplina banco-primeiro-app-depois já usada nas Phases 13/14/15. Ensaio (plano 16-03) e verificação pós-push confirmaram as quatro provas: constraint relaxada, backfill seletivo (nunca toca card ativo), e a prova central — um card arquivado com `column_id` nulo sobrevive à exclusão da coluna que apontava antes, contra o contraste de um card com `column_id` ainda vinculado sendo apagado em cascata. `desarquivarCardAction` resolve "o board" pela mesma consulta já usada em `page.tsx`/`financeiro/page.tsx`/`relatorios/page.tsx` (este projeto tem um único board), sem precisar de uma coluna `board_id` nova em `cards`. O botão "Reordenar" (plano 16-02, já em produção desde a Wave 1) foi reconfirmado funcionando depois da migração. Teste ponta a ponta em produção confirmado pelo usuário: "Fiz os teste e tudo se comportou como o esperado." **Achado real levantado pelo próprio usuário durante essa verificação, fora do escopo desta fase:** excluir uma coluna com cards ATIVOS (não arquivados) ainda apaga esses cards em cascata (`on delete cascade` de `columns → cards`, comportamento existente desde o schema inicial do projeto, `20260728000000_init_schema.sql` — nunca coberto por nenhuma fase anterior). O usuário quer que isso pare de acontecer: excluir uma coluna com cards ativos só deve ser possível depois de mover esses cards para outra coluna, nunca em cascata. Vira Phase 17, ainda não formalizada. **Com isso encerram as 16 fases planejadas do projeto inteiro** (v2.0 Módulo Financeiro completo + todo o trabalho pós-milestone: Phases 9-16).
@@ -145,7 +147,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - ~~Plano 14-04 Task 3 (checkpoint:human-verify, gate=blocking) pendente~~ — resolvido, usuário confirmou CANIMOB-01..03 em produção (2026-08-26).
 - ~~Plano 14-05 Task 3 (checkpoint:human-verify, gate=blocking) pendente — última verificação da Phase 14 inteira~~ — resolvido, usuário confirmou o ciclo sequencial completo de caução e CANIMOB-04/05 em produção (2026-08-26). Fase 14 encerrada.
 - ~~Plano 17-01 tem dois `<human-check>` não bloqueantes pendentes de confirmação do usuário em produção~~ — resolvido, usuário confirmou os três ramos do diálogo de exclusão de coluna e a regressão do trigger de lançamento financeiro em produção (2026-08-27). Fase 17 encerrada.
-- **Plano 18-01 tem um `<human-check>` não bloqueante pendente de confirmação do usuário em produção.** Verificação: em `/financeiro/configuracao`, digitar um termo (número/endereço/proprietário) filtra ao vivo e limpar restaura a lista; navegar para a página 2+ e editar percentuais/caução não reseta a página (só mudar o termo de busca reseta); busca sem correspondência mostra "Nenhum contrato corresponde à busca." Não bloqueia o fechamento da fase — grep/tsc/build já confirmam a forma do código (`resetKey=query`).
+- ~~Plano 18-01 tem um `<human-check>` não bloqueante pendente de confirmação do usuário em produção~~ — resolvido. Primeiro teste do usuário não mostrou o campo de busca (deploy da Vercel ainda propagando — tabela com dados renderizava normal, só faltava o `SearchField`, consistente com o código: a única condição que os separa é `erro`, inativo); confirmado poucos minutos depois já funcionando ("Testei, funcionou corretamente"), e em seguida confirmado também o reset de paginação e a mensagem de busca sem correspondência ("Sim, testei tudo, pode fechar a fase."). Fase 18 encerrada (2026-08-28).
 
 ### Roadmap Evolution
 
@@ -175,6 +177,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-28T00:55:18.593Z
-Stopped at: Plano 18-01 executado (matcher, resetKey, SearchField) — falta confirmação humana em produção do human-check não bloqueante
+Last session: 2026-08-28T01:15:00.000Z
+Stopped at: Fase 18 encerrada — FILTCFG-01..04 confirmados em produção. Todas as 18 fases planejadas do projeto estão completas. Nenhuma fase nova planejada.
 Resume file: .planning/phases/18-filtro-na-configura-o-financeira/18-01-SUMMARY.md
