@@ -193,6 +193,25 @@ Decisões registradas em `.planning/phases/17-exclus-o-de-coluna-sem-cascade-par
 - [x] **EXCOL-03**: Se a coluna sendo excluída for a única do board (nenhuma outra coluna disponível como destino) e tiver pelo menos 1 card, a exclusão é bloqueada com mensagem clara
 - [x] **EXCOL-04**: Nenhum card ativo é apagado em cascata ao excluir uma coluna — garantido tanto pela camada de aplicação (a coluna é garantidamente esvaziada antes do delete) quanto por uma trava server-side em `deleteColumnAction` que recusa excluir uma coluna não vazia mesmo se chamada fora da UI
 
+### FILTCFG — Filtro na Configuração financeira (pós-milestone, Phase 18)
+
+Fora do conjunto de 39 requisitos da v2.0 — capacidade nova pedida pelo usuário logo após a Phase 17
+fechar. Estritamente aditiva na camada de apresentação — nenhuma mudança de query/Server Action, nenhuma
+migração. Decisões registradas em
+`.planning/phases/18-filtro-na-configura-o-financeira/18-CONTEXT.md`.
+
+- [ ] **FILTCFG-01**: Um campo de busca ao vivo (`SearchField`, sem botão de submit) filtra a listagem de
+  `/financeiro/configuracao` de verdade — remove linhas, não só realça — por número do contrato, endereço e
+  proprietário, sem distinção de acento, com todos os termos digitados precisando bater (AND multi-termo)
+- [ ] **FILTCFG-02**: Mudar o termo de busca volta a paginação para a página 1; uma ação que não muda o
+  termo (editar percentuais ou registrar/cancelar um evento de caução, que disparam `router.refresh()`)
+  nunca reseta a página em que o usuário está
+- [ ] **FILTCFG-03**: Uma busca sem nenhuma correspondência mostra uma mensagem distinta de "nenhum
+  contrato cadastrado"
+- [ ] **FILTCFG-04**: `SearchField` fica posicionado de forma consistente com o uso já existente em
+  `reports-view.tsx`, com um `placeholder` explícito (nunca o default, que cita um campo que esta tela não
+  busca)
+
 ## Carried over from v1.0
 
 Requisito não concluído na v1.0, mantido visível para não se perder. **Não faz parte do escopo de fases da v2.0** — é uma ação de painel, não trabalho de código, adiada por escolha do usuário.
@@ -325,12 +344,16 @@ Preenchido na criação do roadmap (2026-08-16). Fases 4-8 — a numeração con
 | EXCOL-02 | Phase 17 | Confirmado em produção |
 | EXCOL-03 | Phase 17 | Confirmado em produção |
 | EXCOL-04 | Phase 17 | Confirmado em produção |
+| FILTCFG-01 | Phase 18 | Pendente |
+| FILTCFG-02 | Phase 18 | Pendente |
+| FILTCFG-03 | Phase 18 | Pendente |
+| FILTCFG-04 | Phase 18 | Pendente |
 
 **Coverage:**
 - v2.0 requirements: 39 total — Phase 4: 3, Phase 5: 9, Phase 6: 7, **Phase 6.1: 5**, **Phase 6.2: 6**, Phase 7: 4, Phase 8: 5
 - Mapped to phases: 39
 - Unmapped: 0
-- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05), Phase 15 (CANDEST-01..03, PAGIN-01..03), Phase 16 (REORD-01..03, ARQCOL-01..03) e Phase 17 (EXCOL-01..04) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST`, `### PAGIN`, `### REORD`, `### ARQCOL` e `### EXCOL` acima
+- Phase 9 (INTEG-01..05), Phase 10 (RELDED-01..05), Phase 11 (CANPAG-01..04), Phase 12 (CANAJU-01..04), Phase 13 (IMOB-01..05), Phase 14 (CANIMOB-01..05), Phase 15 (CANDEST-01..03, PAGIN-01..03), Phase 16 (REORD-01..03, ARQCOL-01..03), Phase 17 (EXCOL-01..04) e Phase 18 (FILTCFG-01..04) são trabalho pós-milestone, fora dos 39 requisitos da v2.0 — ver seções `### INTEG`, `### RELDED`, `### CANPAG`, `### CANAJU`, `### IMOB`, `### CANIMOB`, `### CANDEST`, `### PAGIN`, `### REORD`, `### ARQCOL`, `### EXCOL` e `### FILTCFG` acima
 - FINUI-02 substituído por CONSULTA-02 (não conta duplicado — 1 saiu, 5 novos entraram: CONTRATO-03, PARCELA-05, PARCELA-06, CONSULTA-01, CONSULTA-02)
 - VIDA-01..06 entraram em 2026-08-19, depois do feedback do usuário sobre o comportamento de inativo, a divergência entre card e Financeiro, e a ausência de trava na exclusão (33 + 6 = 39)
 
