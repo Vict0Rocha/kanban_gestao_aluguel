@@ -1985,13 +1985,17 @@ export async function buscarReconciliacaoAction(): Promise<
 
   const { data: taxas, error: erroTaxas } = await sessao.supabase
     .from("taxas_imobiliaria")
-    .select("id, data, valor, origem, observacao, cards(endereco, proprietario, numero)")
+    .select(
+      "id, data, valor, origem, observacao, cards(endereco, proprietario, numero, inquilino)"
+    )
 
   if (erroTaxas) return { ok: false, error: erroDoBanco(erroTaxas.code, "carregar o relatório") }
 
   const { data: caucaoEventos, error: erroCaucao } = await sessao.supabase
     .from("caucao_eventos")
-    .select("id, data, valor, tipo, observacao, cards(endereco, proprietario, numero)")
+    .select(
+      "id, data, valor, tipo, observacao, cards(endereco, proprietario, numero, inquilino)"
+    )
 
   if (erroCaucao) return { ok: false, error: erroDoBanco(erroCaucao.code, "carregar o relatório") }
 
