@@ -370,7 +370,7 @@ Phases execute in numeric order: 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9
 | 17. Exclusão de coluna sem cascade para cards ativos | 1/1 | Complete | 2026-08-27 |
 | 18. Filtro na Configuração financeira | 1/1 | Complete | 2026-08-28 |
 | 19. Filtro suspenso e exportação em PDF no relatório da imobiliária | 1/1 | Complete | 2026-08-28 |
-| 20. Filtro por tipo de movimento no relatório da imobiliária | 0/1 | Planned | - |
+| 20. Filtro por tipo de movimento no relatório da imobiliária | 1/1 | In Progress|  |
 
 **Cobertura de requisitos:** 39 de 39 requisitos da v2.0 mapeados, cada um para exatamente uma fase (28 originais − 1 substituído [FINUI-02] + 5 novos da Phase 6.1 + 6 novos da Phase 6.2 = 39; ver REQUIREMENTS.md para a conta exata). `SEC-02` (Leaked Password Protection, herdado da v1.0) fica deliberadamente fora — é toggle no painel do Supabase, não trabalho de código. Phases 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 e 20 são trabalho pós-milestone (Phase 9: bug encontrado na verificação final da Phase 8; Phase 10-20: capacidade nova pedida pelo usuário), fora da contagem de 39 da v2.0 — ver REQUIREMENTS.md § CANDEST / § PAGIN / § REORD / § ARQCOL / § EXCOL / § FILTCFG / § FILTIMOB / PDFIMOB / § TIPOIMOB / COLIMOB.
 
@@ -510,18 +510,22 @@ pós-milestone — ver 20-CONTEXT.md)
   1. Abrir o painel "Filtrar" mostra, depois dos 5 campos já existentes, uma linha de chips (Todos/
      Administração/Comissão 1º aluguel/Caução); clicar num chip filtra a lista e os 6 `StatTile` juntos, sem
      nenhum chip marcado por padrão (mesma semântica de Set vazio já usada por `situacoes`)
+
   2. Desmarcar um tipo zera o `StatTile` correspondente (nunca esconde o tile do grid) e para de somá-lo em
      "Total recebido"
+
   3. "Caução" é um único chip cobrindo os três subtipos já existentes (recebida/devolvida/usada) — nunca um
      chip por subtipo
+
   4. `reconciliacao-pdf.ts` permanece byte a byte inalterado — o PDF passa a receber `linhas` já filtradas
      pelo tipo automaticamente, sem nenhuma mudança de layout (fora de escopo desta fase, D-08/D-09)
+
   5. A célula "Contrato" mantém o mesmo formato visual (`IdPill` + texto), só troca o texto de endereço para
      proprietário; uma nova coluna "Inquilino" aparece logo depois; endereço sai completamente da tela
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans executed
 
 Plans:
 
-- [ ] 20-01-PLAN.md — Filtro por tipo de movimento ponta a ponta (chip row, filtro de tipo em lista+totais) e
+- [x] 20-01-PLAN.md — Filtro por tipo de movimento ponta a ponta (chip row, filtro de tipo em lista+totais) e
   troca de colunas Contrato/Inquilino, num único tracer
