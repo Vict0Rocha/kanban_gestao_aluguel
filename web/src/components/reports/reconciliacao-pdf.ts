@@ -54,7 +54,7 @@ export async function exportarReconciliacaoPDF(
   const { jsPDF } = await import("jspdf")
   const { autoTable } = await import("jspdf-autotable")
 
-  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" })
+  const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" })
   // jspdf-autotable atribui `lastAutoTable` na instância em runtime (não
   // documentado no tipo de `jsPDF`, confirmado em relatorio-financeiro-pdf.ts)
   // — necessário para encadear o `startY` do próximo bloco sem hardcodar
@@ -63,10 +63,11 @@ export async function exportarReconciliacaoPDF(
 
   // Mesmas cores (RGB explícito, mesmos hex) do "PDF Export Layout Contract"
   // em 10-UI-SPEC.md, já em uso por relatorio-financeiro-pdf.ts.
-  const foreground: [number, number, number] = [24, 52, 28] // #18341c
-  const muted: [number, number, number] = [92, 112, 96] // #5c7060
-  const border: [number, number, number] = [219, 238, 212] // #dbeed4
-  const rowShade: [number, number, number] = [234, 246, 230] // #eaf6e6
+  const foreground: [number, number, number] = [38, 38, 38] // #262626
+  const headerFill: [number, number, number] = [242, 242, 242] // #f2f2f2
+  const border: [number, number, number] = [217, 217, 217] // #d9d9d9
+  const muted: [number, number, number] = [107, 107, 107] // #6b6b6b
+  const rowShade: [number, number, number] = [247, 247, 247] // zebra, distinct from headerFill
 
   const pageWidth = doc.internal.pageSize.getWidth()
   const marginX = 40
@@ -151,27 +152,56 @@ export async function exportarReconciliacaoPDF(
       afterResumoY + 24
     )
   } else {
+    // linhas já vem ordenada (DESC — dinheiro-imobiliaria-view.tsx:91-98
+    // "linhas" memo): nunca reordenar aqui (Anti-Pattern, 19-RESEARCH.md).
+    // `l.valor` já é um número plano por linha, sem derivação
+    // situação-dependente — reusado diretamente na soma do Total.
+    const totalValor = linhas.reduce((acc, l) => acc + l.valor, 0)
+
     autoTable(doc, {
       startY: afterResumoY + 16,
-      head: [["Data", "Contrato", "Tipo", "Valor", "Observação"]],
-      // linhas já vem ordenada (DESC — dinheiro-imobiliaria-view.tsx:91-98
-      // "linhas" memo): nunca reordenar aqui (Anti-Pattern, 19-RESEARCH.md).
+      theme: "plain",
+      head: [["Data", "Contrato", "Inquilino", "Tipo", "Valor", "Observação"]],
       body: linhas.map((l) => [
         formatDate(l.data),
-        `#${l.cards?.numero ?? 0} ${l.cards?.endereco ?? ""}`,
+        `#${l.cards?.numero ?? 0} ${l.cards?.proprietario ?? ""}`,
+        l.cards?.inquilino ?? "",
         l.tipoLabel,
         formatCurrency(l.valor),
         l.observacao ?? "",
       ]),
+      foot: [
+        [
+          { content: "Total", colSpan: 4 },
+          { content: formatCurrency(totalValor), styles: { halign: "right" } },
+          "",
+        ],
+      ],
+      // showFoot explícito: nunca deixar no default "everyPage" da
+      // biblioteca, que repetiria o Total em cada página de um export com
+      // 2+ páginas (Pitfall 3, RESEARCH.md).
+      showFoot: "lastPage",
       // Padrão da biblioteca: o cabeçalho repete em toda nova página.
       // `headerRows` não é uma propriedade real de `UserOptions` no
       // `jspdf-autotable` 5.0.8 instalado — `showHead: "everyPage"` é o
       // equivalente real, declarado explicitamente (Pitfall #4).
       showHead: "everyPage",
-      styles: { fontSize: 9, textColor: foreground, lineColor: border },
-      headStyles: { fontStyle: "bold", fillColor: [255, 255, 255], textColor: foreground },
+      styles: {
+        fontSize: 9,
+        textColor: foreground,
+        lineColor: border,
+        // Linha horizontal sutil só embaixo de cada célula — nunca `top`
+        // junto com `bottom`, dobraria a linha renderizada em cada fronteira
+        // de linha (Anti-Pattern, RESEARCH.md).
+        lineWidth: { top: 0, right: 0, bottom: 0.75, left: 0 },
+        cellPadding: 5,
+      },
+      headStyles: { fontStyle: "bold", fillColor: headerFill, textColor: foreground },
+      footStyles: { fontStyle: "bold", fillColor: headerFill, textColor: foreground },
       alternateRowStyles: { fillColor: rowShade },
-      columnStyles: { 3: { halign: "right" } },
+      // Valor desloca do índice 3 para o 4 porque "Inquilino" foi inserida
+      // no índice 2 (PATTERNS.md).
+      columnStyles: { 4: { halign: "right" } },
     })
   }
 

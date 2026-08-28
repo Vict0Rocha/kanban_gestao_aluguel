@@ -4,17 +4,17 @@ milestone: v2.0
 milestone_name: Módulo Financeiro
 current_phase: 21
 current_phase_name: redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros
-status: discussed
-stopped_at: Fase 21 discutida — CONTEXT.md pronto, falta plan-phase
-last_updated: "2026-08-28T14:40:00.000Z"
+status: executed
+stopped_at: Fase 21 executada — plano 21-01 completo (2/2 tasks), aguardando human-check em produção
+last_updated: "2026-08-28T18:52:41.477Z"
 last_activity: 2026-08-28
-last_activity_desc: "Fase 21 (Redesenho do modelo de PDF dos relatórios financeiros) discutida. Aplica aos dois PDFs (Relatório Financeiro dedicado e Dinheiro da imobiliária): paisagem, paleta cinza substituindo o verde inteiro do contrato atual (texto #262626, fundo cabeçalho/total #f2f2f2, bordas #d9d9d9, zero cor viva), lista com linha horizontal sutil (sem grade vertical) + zebra — usuário mudou de ideia de 'grade completa' pra essa combinação numa segunda rodada. Nova linha de Total (negrito, fundo cinza) no final da lista, somando a coluna Valor já filtrada. Os três blocos estruturais existentes (título/filtros/totais) mantidos, só recolorindo. Usuário anexou um print do Sienge como guia de estilo, explicitamente não para copiar igual. 21-CONTEXT.md e 21-DISCUSSION-LOG.md escritos e commitados (a38232a)."
+last_activity_desc: "Fase 21 (Redesenho do modelo de PDF dos relatórios financeiros) executada — plano 21-01, 2/2 tasks. Task 1 (tracer): relatorio-financeiro-pdf.ts redesenhado ponta a ponta — paisagem, paleta cinza (foreground #262626, headerFill #f2f2f2 novo, border #d9d9d9, muted #6b6b6b, rowShade #f7f7f7), lista theme:plain com linha horizontal sutil (bottom-only) + zebra, nova linha 'Total' via foot/footStyles/showFoot:lastPage somando bodyRows.valor (reusado, nunca re-derivado). Task 2: reconciliacao-pdf.ts espelha o mesmo tratamento + mudança de colunas corrigida (D-02) — coluna Inquilino nova, Contrato mostra proprietário em vez de endereço, columnStyles/colSpan deslocados (Valor 3->4); 10-UI-SPEC.md § PDF Export Layout Contract reescrito cobrindo os dois módulos. npx tsc --noEmit/npm run lint/npm run build verdes (worktree precisou de npm ci próprio). Commits: e32e764 (Task 1), 19d5061 (Task 2). Human-check consolidado não bloqueante pendente (abrir os dois PDFs em produção)."
 progress:
   total_phases: 21
-  completed_phases: 20
-  total_plans: 58
-  completed_plans: 58
-  percent: 95
+  completed_phases: 21
+  total_plans: 59
+  completed_plans: 59
+  percent: 100
 ---
 
 # Project State
@@ -24,13 +24,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-08-16)
 
 **Core value:** Dar visibilidade e controle sobre a situação de cada contrato de aluguel — sem depender de planilha.
-**Current focus:** Phase 21 (Redesenho do modelo de PDF dos relatórios financeiros) — CONTEXT.md pronto, falta plan-phase.
+**Current focus:** Phase 21 (Redesenho do modelo de PDF dos relatórios financeiros) — plano 21-01 executado (2/2 tasks), aguardando human-check em produção.
 
 ## Current Position
 
-Phase: 21 (redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros) — DISCUTIDA
-Status: `21-CONTEXT.md`/`21-DISCUSSION-LOG.md` escritos e commitados. Falta `/gsd-plan-phase 21`.
-Last activity: 2026-08-28 — discuss-phase concluído: paisagem, paleta cinza, linha sutil+zebra na lista, linha de Total nova, aplicado aos dois PDFs.
+Phase: 21 (redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros) — EXECUTADA
+Status: Plano 21-01 executado (2/2 tasks, commits e32e764/19d5061). `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes. Falta confirmação do human-check consolidado em produção (abrir os dois PDFs) para fechar a fase.
+Last activity: 2026-08-28 — plano 21-01 executado: paisagem, paleta cinza, linha sutil+zebra na lista, linha de Total nova, aplicado aos dois PDFs; reconciliacao-pdf.ts ganhou coluna Inquilino e Contrato mostrando proprietário (D-02 corrigido); 10-UI-SPEC.md atualizado.
 
 **Ordem de execução:** 4 → 5 → 6 → 6.1 → 6.2 → 7 → 8 → 9 → 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17 → 18 → 19 → 20 → 21. A numeração continua da v1.0 (Phases 1-3), não reinicia.
 
@@ -83,6 +83,7 @@ Last activity: 2026-08-28 — discuss-phase concluído: paisagem, paleta cinza, 
 | Phase 18-filtro-na-configura-o-financeira P01 | ~25min | 1 task | 1 file |
 | Phase 19 P01 | 25min | 2 tasks | 5 files |
 | Phase 20 P01 | ~15min | 1 task | 3 files |
+| Phase 21 P01 | 25min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -136,6 +137,7 @@ Decisões completas em PROJECT.md, seção Key Decisions. Recentes:
 - [Phase ?]: 2026-08-26: Plano 14-04 (Tasks 1-2) concluido em worktree isolado (agent-a30e340107bf0bf54). Historico unificado da parcela (parcelas.ts: TaxaHistorico/LinhaHistoricoParcela, uniao discriminada por kind) funde parcela_lancamentos+taxas_imobiliaria numa so lista cronologica; taxa-origem-label.tsx (novo) promove TAXA_ORIGEM/TaxaOrigemBadge de dinheiro-imobiliaria-view.tsx com className por origem (A-03). cancelarTaxaImobiliariaAction (nova): DELETE condicionado id+parcela_id, exigirParcelaNaoConciliada, NUNCA recalcularEGravarStatus. registrarPagamentoAction grava lancamento_id: inserido[0].id no INSERT de taxas_imobiliaria -- habilita a cascata on delete cascade sem nenhuma linha nova em cancelarLancamentoAction (CANIMOB-03). CancelarLancamentoDialog generalizado de tipo: Extract<...> para parentId/itemId/rotulo/acao ("lancamento"|"taxa"), pronto para caucao no plano 14-05. npm run lint/build verdes (worktree precisou de npm install proprio), todas as assercoes de fonte do <verify> confirmadas. Commits: c834a93 (Task 1), cb264b9 (Task 2). Task 3 (checkpoint:human-verify, gate=blocking) pendente -- requer prova em producao (SQL Editor) da cascata pagamento->taxa.
 - 2026-08-26: **Plano 14-05 (Tasks 1-2) concluído** em worktree isolado (agent-a058cbf215686f6e7). `cancelarEventoCaucaoAction` (nova, `actions.ts`): SELECT `order by criado_em desc limit 1` decide "o mais recente", recusa se `eventoId` não bater, só então DELETE condicionado a `id`+`card_id` — mesmo molde de duas etapas de `destravarParcelaAction`, nunca referencia `parcela_lancamentos`/`taxas_imobiliaria`. `cancelarEventoCaucao` (wrapper, `queries.ts`) ao lado de `registrarEventoCaucao`. `CancelarLancamentoDialog` ampliado para `acao: "lancamento" | "taxa" | "caucao"` — fecha CANIMOB-05 (os três domínios no mesmo componente, nenhum diálogo novo). `CaucaoHistoricoSheet`: `.map((evento, index) => ...)` calcula `ultimo = index === eventos.length - 1` (array ASCENDENTE — nunca `index === 0`, Pitfall 3 de 14-RESEARCH.md), botão "Cancelar" só no último evento. Task 2 (documentar em `docs/data-model.md`) já estava integralmente satisfeita por um commit anterior (`b9fa668`, plano 14-03, que antecipou a bullet "Cancelamento de taxa e de caução" cobrindo as três operações da fase) — verificado byte a byte contra as acceptance criteria, nenhuma mudança necessária. `npm run lint`/`npm run build` verdes (worktree precisou de `npm install` próprio). Commit: `d8dd721` (Task 1). **Task 3 (checkpoint:human-verify, gate=blocking) pendente** — última verificação da Phase 14 inteira: ciclo sequencial de caução (recebido→uso→devolução, cancelar sempre a partir do topo) + reconfirmação dos 5 critérios de sucesso do ROADMAP (CANIMOB-01..05).
 - 2026-08-27: **Plano 18-01 concluído** (worktree isolado, `agent-a202e155b5e335050`). Busca ao vivo (`SearchField`, reusado sem alteração) em `/financeiro/configuracao`, filtrando por número/endereço/proprietário via matcher local `buildContratoMatcher`/`searchableText` (D-03: `search.ts`'s `buildMatcher` fica tipado para `Card`, não estendido a `ContratoConfig`). `usePagination`'s `resetKey` trocado da constante `"config"` para o próprio estado `query` — mudar a busca reseta a página, editar percentuais/caução (`router.refresh()`) não reseta (FILTCFG-02). Terceiro branch de estado vazio ("Nenhum contrato corresponde à busca.") para busca sem correspondência. `search.ts`/`page.tsx` permanecem byte a byte inalterados (confirmado por `git diff --quiet`). `npx tsc --noEmit`/`npm run lint`/`npm run build` verdes. Commit: `4eee7ef` (Task 1). **Human-check não bloqueante pendente** (ver Blockers) — comportamento de `resetKey` sobrevivendo a um `router.refresh()` real só é observável interagindo com a tela em produção.
+- [Phase ?]: Fase 21 (Redesenho do modelo de PDF dos relatórios financeiros) executada: plano 21-01, 2/2 tasks, paisagem+paleta cinza+lista sem grade+zebra+linha de Total nos dois PDFs; reconciliacao-pdf.ts ganhou coluna Inquilino e Contrato passou a mostrar proprietário (D-02 corrigido); 10-UI-SPEC.md atualizado. Commits e32e764/19d5061. Human-check consolidado pendente de confirmação do usuário em produção.
 
 ### Pending Todos
 
@@ -189,6 +191,6 @@ Itens reconhecidos e adiados (ver REQUIREMENTS.md):
 
 ## Session Continuity
 
-Last session: 2026-08-28T14:40:00.000Z
-Stopped at: Fase 21 discutida — CONTEXT.md pronto, falta plan-phase
-Resume file: .planning/phases/21-redesenho-do-modelo-de-pdf-dos-relat-rios-financeiros/21-CONTEXT.md
+Last session: 2026-08-28T18:52:35.367Z
+Stopped at: Fase 21 executada — plano 21-01 completo (2/2 tasks), aguardando human-check em produção
+Resume file: None
