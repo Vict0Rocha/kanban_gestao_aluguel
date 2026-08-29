@@ -34,7 +34,6 @@ import {
 } from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
 
-/** Mesmo mapeamento ícone-situação de `RelatorioFinanceiro` (Phase 8). */
 const ICONE_E_ROTULO: Record<SituacaoRelatorio, { icon: LucideIcon; label: string }> = {
   paga: { icon: CheckCircle2, label: "Pagas" },
   a_vencer: { icon: Clock, label: "A vencer" },
