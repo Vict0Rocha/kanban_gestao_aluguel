@@ -31,17 +31,18 @@ type LinhaListaPDF = {
   } | null
 }
 
-const mesFormatter = new Intl.DateTimeFormat("pt-BR", { month: "long" })
-
 /**
  * Mesma composição de `periodoLabel` em `relatorio-financeiro-pdf.ts` (não
- * exportado de lá, reimplementado aqui identicamente) — "YYYY-MM" vira "Mês
- * por extenso capitalizado + ano".
+ * exportado de lá, reimplementado aqui identicamente): intervalo de/até
+ * ("YYYY-MM-DD" cada) vira "dd/mm/aaaa a dd/mm/aaaa" — cada lado vazio
+ * relaxa aquele limite.
  */
-function periodoLabel(periodo: string): string {
-  const [ano, mes] = periodo.split("-").map(Number)
-  const mesPorExtenso = mesFormatter.format(new Date(ano, mes - 1, 1))
-  return mesPorExtenso.charAt(0).toUpperCase() + mesPorExtenso.slice(1) + ` de ${ano}`
+function periodoLabel(periodoInicio: string, periodoFim: string): string {
+  if (!periodoInicio && !periodoFim) return "Todos"
+  if (periodoInicio && periodoFim)
+    return `${formatDate(periodoInicio)} a ${formatDate(periodoFim)}`
+  if (periodoInicio) return `A partir de ${formatDate(periodoInicio)}`
+  return `Até ${formatDate(periodoFim)}`
 }
 
 export async function exportarReconciliacaoPDF(
@@ -88,9 +89,7 @@ export async function exportarReconciliacaoPDF(
     { align: "right" }
   )
 
-  const periodoAtivo = /^\d{4}-\d{2}$/.test(filtro.periodo)
-    ? periodoLabel(filtro.periodo)
-    : "Todos"
+  const periodoAtivo = periodoLabel(filtro.periodoInicio, filtro.periodoFim)
 
   // --- Tabela de filtros ativos (5 linhas, D-03) ---
   autoTable(doc, {

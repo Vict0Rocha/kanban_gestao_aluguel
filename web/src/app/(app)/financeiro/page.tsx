@@ -29,25 +29,14 @@ const SELECT_PARCELA_PADRAO =
 const SELECT_PARCELA_FILTRADA =
   "id, card_id, competencia, vencimento, valor_original, status, cards!inner(endereco, proprietario, numero, inquilino, ativo, periodo_inicio, periodo_fim, arquivado_em, percentual_administracao, percentual_comissao_primeiro_aluguel), parcela_lancamentos(id, tipo, valor, data, observacao, motivo, criado_em, profiles(full_name, email)), taxas_imobiliaria(id, origem, valor, data, observacao, criado_em, profiles(full_name, email))"
 
-/** Dia 1 do mês seguinte a "YYYY-MM", sem passar por Date — mesmo padrão usado em parcelas.ts. */
-function inicioMesSeguinte(periodoYYYYMM: string): string {
-  const [anoStr, mesStr] = periodoYYYYMM.split("-")
-  const ano = Number(anoStr)
-  const mes = Number(mesStr)
-
-  const proximoMes = mes === 12 ? 1 : mes + 1
-  const proximoAno = mes === 12 ? ano + 1 : ano
-
-  return `${proximoAno}-${String(proximoMes).padStart(2, "0")}-01`
-}
-
 export default async function FinanceiroPage({
   searchParams,
 }: {
   searchParams: Promise<{
     proprietario?: string
     inquilino?: string
-    periodo?: string
+    periodoInicio?: string
+    periodoFim?: string
     id?: string
   }>
 }) {
@@ -56,7 +45,8 @@ export default async function FinanceiroPage({
 
   const proprietario = params.proprietario?.trim() ?? ""
   const inquilino = params.inquilino?.trim() ?? ""
-  const periodo = params.periodo?.trim() ?? ""
+  const periodoInicio = params.periodoInicio?.trim() ?? ""
+  const periodoFim = params.periodoFim?.trim() ?? ""
   const idBusca = params.id?.trim() ?? ""
   // T-06.1-17: id não numérico é ignorado, não derruba a página. Calculado
   // uma vez e reusado tanto pelo filtro de parcelas quanto pela consulta da
@@ -64,9 +54,9 @@ export default async function FinanceiroPage({
   const idNumerico =
     idBusca && Number.isInteger(Number(idBusca)) ? Number(idBusca) : null
 
-  // D-03/D-04: qualquer um dos quatro presente substitui a visão padrão.
+  // D-03/D-04: qualquer um dos cinco presente substitui a visão padrão.
   const filtrosAtivos = Boolean(
-    proprietario || inquilino || periodo || idBusca
+    proprietario || inquilino || periodoInicio || periodoFim || idBusca
   )
 
   const { data: board } = await supabase
@@ -125,12 +115,15 @@ export default async function FinanceiroPage({
         if (inquilino) {
           query = query.ilike("cards.inquilino", `%${inquilino}%`)
         }
-        // T-06.1-17: período fora do formato "YYYY-MM" é ignorado
-        // silenciosamente, não derruba a página.
-        if (/^\d{4}-\d{2}$/.test(periodo)) {
-          query = query
-            .gte("vencimento", `${periodo}-01`)
-            .lt("vencimento", inicioMesSeguinte(periodo))
+        // T-06.1-17: cada limite fora do formato "YYYY-MM-DD" é ignorado
+        // silenciosamente, não derruba a página. Os dois são independentes:
+        // só "de" filtra a partir dali sem teto, só "até" filtra até ali
+        // sem piso.
+        if (/^\d{4}-\d{2}-\d{2}$/.test(periodoInicio)) {
+          query = query.gte("vencimento", periodoInicio)
+        }
+        if (/^\d{4}-\d{2}-\d{2}$/.test(periodoFim)) {
+          query = query.lte("vencimento", periodoFim)
         }
         if (idNumerico !== null) {
           query = query.eq("cards.numero", idNumerico)
@@ -247,7 +240,8 @@ export default async function FinanceiroPage({
           filtroInicial={{
             proprietario,
             inquilino,
-            periodo,
+            periodoInicio,
+            periodoFim,
             id: idBusca,
           }}
           contratoFiltro={contratoFiltro}

@@ -16,13 +16,13 @@ import {
  * duas só entram via `import()` dinâmico, dentro da função abaixo.
  */
 
-const mesFormatter = new Intl.DateTimeFormat("pt-BR", { month: "long" })
-
-/** "YYYY-MM" (o formato de `filtro.periodo`) vira "mês por extenso capitalizado + ano". */
-function periodoLabel(periodo: string): string {
-  const [ano, mes] = periodo.split("-").map(Number)
-  const mesPorExtenso = mesFormatter.format(new Date(ano, mes - 1, 1))
-  return mesPorExtenso.charAt(0).toUpperCase() + mesPorExtenso.slice(1) + ` de ${ano}`
+/** Intervalo de/até ("YYYY-MM-DD" cada) vira "dd/mm/aaaa a dd/mm/aaaa" — cada lado vazio relaxa aquele limite. */
+function periodoLabel(periodoInicio: string, periodoFim: string): string {
+  if (!periodoInicio && !periodoFim) return "Todos"
+  if (periodoInicio && periodoFim)
+    return `${formatDate(periodoInicio)} a ${formatDate(periodoFim)}`
+  if (periodoInicio) return `A partir de ${formatDate(periodoInicio)}`
+  return `Até ${formatDate(periodoFim)}`
 }
 
 /** Mesmo rótulo plural do bloco de resumo em tela (`StatTile`, Task 1 desta plano). */
@@ -97,9 +97,7 @@ export async function exportarRelatorioFinanceiroPDF(
           .map((s) => SITUACAO_ROTULO_PLURAL[s])
           .join(", ")
 
-  const periodoAtivo = /^\d{4}-\d{2}$/.test(filtro.periodo)
-    ? periodoLabel(filtro.periodo)
-    : "Todos"
+  const periodoAtivo = periodoLabel(filtro.periodoInicio, filtro.periodoFim)
 
   autoTable(doc, {
     startY: 66,

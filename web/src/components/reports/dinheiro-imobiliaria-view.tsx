@@ -15,6 +15,7 @@ import {
 } from "lucide-react"
 
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
+import { ultimoDiaDoMes } from "@/lib/kanban/parcelas"
 import {
   calcularReconciliacao,
   filtroReconciliacaoVazio,
@@ -79,11 +80,19 @@ export function DinheiroImobiliariaView({
 }) {
   // D-01 (10-UI-SPEC.md, reusado aqui): sem distinção rascunho/aplicado —
   // `filtro` É o estado aplicado, cada `onChange` recalcula na hora, sem
-  // botão "Gerar". Período pré-preenchido com o mês corrente (comportamento
-  // preservado do campo solto anterior).
-  const [filtro, setFiltro] = React.useState<FiltroReconciliacaoValores>(
-    () => ({ ...filtroReconciliacaoVazio(), periodo: hojeISO.slice(0, 7) })
-  )
+  // botão "Gerar". Período pré-preenchido com o mês corrente inteiro (1º ao
+  // último dia), comportamento preservado do antigo campo único de mês —
+  // agora como um intervalo de/até editável.
+  const [filtro, setFiltro] = React.useState<FiltroReconciliacaoValores>(() => {
+    const mesAtual = hojeISO.slice(0, 7)
+    const [ano, mes] = mesAtual.split("-").map(Number)
+    const ultimoDia = String(ultimoDiaDoMes(ano, mes)).padStart(2, "0")
+    return {
+      ...filtroReconciliacaoVazio(),
+      periodoInicio: `${mesAtual}-01`,
+      periodoFim: `${mesAtual}-${ultimoDia}`,
+    }
+  })
   // Painel fechado por padrão, mesmo padrão de relatorio-financeiro-dedicado.tsx.
   const [aberto, setAberto] = React.useState(false)
   const [exportando, setExportando] = React.useState(false)
@@ -102,7 +111,9 @@ export function DinheiroImobiliariaView({
   // tabelas reais.
   const linhas = React.useMemo<LinhaLista[]>(() => {
     const taxaLinhas: LinhaLista[] = taxas
-      .filter((taxa) => passaFiltroPeriodoReconciliacao(taxa.data, filtro.periodo))
+      .filter((taxa) =>
+        passaFiltroPeriodoReconciliacao(taxa.data, filtro.periodoInicio, filtro.periodoFim)
+      )
       .filter((taxa) => passaFiltroCardsReconciliacao(taxa.cards, filtro))
       .filter((taxa) => passaFiltroTipoReconciliacao(taxa.origem, filtro.tipos))
       .map((taxa) => ({
@@ -116,7 +127,9 @@ export function DinheiroImobiliariaView({
       }))
 
     const caucaoLinhas: LinhaLista[] = caucaoEventos
-      .filter((evento) => passaFiltroPeriodoReconciliacao(evento.data, filtro.periodo))
+      .filter((evento) =>
+        passaFiltroPeriodoReconciliacao(evento.data, filtro.periodoInicio, filtro.periodoFim)
+      )
       .filter((evento) => passaFiltroCardsReconciliacao(evento.cards, filtro))
       .filter(() => passaFiltroTipoReconciliacao("caucao", filtro.tipos))
       .map((evento) => ({
@@ -146,7 +159,7 @@ export function DinheiroImobiliariaView({
   // `contractsResetKey`. `filtro.tipos` é um Set — ordenado antes do
   // `join` para que ordem de clique nunca mude a chave de reset para a
   // mesma seleção final (Pitfall 4, 20-RESEARCH.md).
-  const resetKey = `${filtro.imovel}|${filtro.proprietario}|${filtro.inquilino}|${filtro.id}|${filtro.periodo}|${[...filtro.tipos].sort().join(",")}`
+  const resetKey = `${filtro.imovel}|${filtro.proprietario}|${filtro.inquilino}|${filtro.id}|${filtro.periodoInicio}|${filtro.periodoFim}|${[...filtro.tipos].sort().join(",")}`
   const { itensDaPagina, pagina, totalPaginas, setPagina } = usePagination(
     linhas,
     resetKey

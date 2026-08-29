@@ -29,7 +29,8 @@ export type ParcelaRelatorio = {
 export type FiltroRelatorioValores = {
   imovel: string
   proprietario: string
-  periodo: string
+  periodoInicio: string
+  periodoFim: string
   situacoes: Set<SituacaoRelatorio>
 }
 
@@ -51,7 +52,8 @@ export function filtroRelatorioVazio(): FiltroRelatorioValores {
   return {
     imovel: "",
     proprietario: "",
-    periodo: "",
+    periodoInicio: "",
+    periodoFim: "",
     situacoes: new Set(),
   }
 }
@@ -64,14 +66,22 @@ export function passaFiltroTexto(valor: string, filtro: string): boolean {
 }
 
 /**
- * D-08: filtra por `competencia`, não por `vencimento` — consistência com o
- * filtro de período já existente no Financeiro. Período fora do formato
- * "YYYY-MM" é ignorado silenciosamente (mesma regra de `financeiro/page.tsx`
- * para o parâmetro `periodo` malformado), nunca derruba o relatório.
+ * Filtra por `vencimento` (data cheia "YYYY-MM-DD"), não mais por
+ * `competencia` ("YYYY-MM"): o filtro de período virou um intervalo de
+ * datas completas (de/até), e só um campo com granularidade de dia permite
+ * um recorte que não coincide com o início/fim do mês civil (ex: 21/07 a
+ * 20/08 — ciclo de cobrança comum de aluguel). Cada limite vazio nunca
+ * filtra sozinho: só "de" restringe o piso, só "até" restringe o teto, os
+ * dois vazios não filtram nada.
  */
-export function passaFiltroPeriodo(competencia: string, periodo: string): boolean {
-  if (!/^\d{4}-\d{2}$/.test(periodo)) return true
-  return competencia.startsWith(periodo)
+export function passaFiltroPeriodo(
+  vencimento: string,
+  periodoInicio: string,
+  periodoFim: string
+): boolean {
+  if (periodoInicio && vencimento < periodoInicio) return false
+  if (periodoFim && vencimento > periodoFim) return false
+  return true
 }
 
 /**
@@ -95,7 +105,8 @@ export function calcularRelatorioFinanceiro(
 
     if (!passaFiltroTexto(endereco, filtro.imovel)) continue
     if (!passaFiltroTexto(proprietario, filtro.proprietario)) continue
-    if (!passaFiltroPeriodo(parcela.competencia, filtro.periodo)) continue
+    if (!passaFiltroPeriodo(parcela.vencimento, filtro.periodoInicio, filtro.periodoFim))
+      continue
 
     // D-06: `situacaoDaParcela` é a ÚNICA fonte da classificação em 4
     // categorias — nunca reimplementada aqui. Ela nunca devolve "parcial" na
