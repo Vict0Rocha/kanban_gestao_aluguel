@@ -1,7 +1,16 @@
 "use client"
 
 import * as React from "react"
-import { Building2, CalendarClock, FilterX, UserX, Wallet } from "lucide-react"
+import Link from "next/link"
+import {
+  ArrowUpRight,
+  Building2,
+  CalendarClock,
+  FilterX,
+  Landmark,
+  UserX,
+  Wallet,
+} from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/kanban/format"
@@ -15,10 +24,10 @@ import {
 } from "@/lib/kanban/report"
 import { buildMatcher, countCards } from "@/lib/kanban/search"
 import { SearchField } from "@/components/search-field"
+import { Button } from "@/components/ui/button"
 import { StatTile } from "@/components/reports/stat-tile"
 import { ColumnBarChart } from "@/components/reports/column-bar-chart"
 import { ContractsTable } from "@/components/reports/contracts-table"
-import { RelatorioFinanceiro } from "@/components/reports/relatorio-financeiro"
 
 const STATUS_OPTIONS: { value: ContractStatus; label: string }[] = [
   { value: "vencido", label: "Vencidos" },
@@ -140,16 +149,34 @@ export function ReportsView({
 
   return (
     <div className="flex flex-col gap-5 p-6">
-      <div>
-        <h1 className="font-heading text-2xl font-extrabold text-foreground">
-          Relatórios
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Uma visão geral da carteira para apoiar a decisão do dia.
-        </p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="font-heading text-2xl font-extrabold text-foreground">
+            Relatórios
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Uma visão geral da carteira para apoiar a decisão do dia.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            render={<Link href="/relatorios/financeiro" />}
+          >
+            <ArrowUpRight className="size-3.5" />
+            Relatório financeiro
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            render={<Link href="/relatorios/imobiliaria" />}
+          >
+            <Landmark className="size-3.5" />
+            Dinheiro da imobiliária
+          </Button>
+        </div>
       </div>
-
-      <RelatorioFinanceiro />
 
       <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

@@ -19,9 +19,9 @@ const SITUACAO_OPTIONS: { value: SituacaoRelatorio; label: string }[] = [
 
 /**
  * D-01: `campos` É o estado aplicado — não existe distinção rascunho/
- * aplicado como em `FiltroRelatorioFinanceiro` (Phase 8). Cada `onChange`
- * escreve direto no estado do pai, sem nenhum botão de submit/"Gerar
- * relatório" — é essa ausência que implementa o filtro ao vivo.
+ * aplicado. Cada `onChange` escreve direto no estado do pai, sem nenhum
+ * botão de submit/"Gerar relatório" — é essa ausência que implementa o
+ * filtro ao vivo.
  */
 export function FiltroRelatorioFinanceiroLive({
   campos,

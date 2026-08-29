@@ -1918,15 +1918,8 @@ export async function cancelarEventoCaucaoAction(
 // ------------------------------------------------------------------
 
 /**
- * Única fonte da consulta usada pelo relatório financeiro — chamada tanto
- * pela primeira carga de `relatorios/page.tsx` (RSC) quanto por cada clique
- * em "Gerar relatório" no cliente (`RelatorioFinanceiro`). Existe como action
- * (em vez de só uma função de `queries.ts`) justamente para que o cliente
- * consiga buscar dados frescos a cada clique — sem isso, um usuário com a
- * aba de Relatórios aberta há um tempo, gerando o relatório de novo, receberia
- * sempre os mesmos dados da carga inicial da página, mesmo que o contrato
- * tenha sido editado ou uma parcela paga em outra aba/dispositivo nesse meio
- * tempo.
+ * Única fonte da consulta usada pelo relatório financeiro — chamada pela
+ * carga (RSC) de `relatorios/financeiro/page.tsx`.
  *
  * D-05: propositalmente SEM `.is("cards.arquivado_em", null)` e SEM
  * `.eq("cards.ativo"/"ativo", true)` — o relatório financeiro inclui contrato
