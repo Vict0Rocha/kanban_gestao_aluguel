@@ -12,24 +12,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-const mesFormatter = new Intl.DateTimeFormat("pt-BR", { month: "long" })
-
-/**
- * `competencia` chega como "YYYY-MM-01" — nunca `new Date(competencia)`
- * direto (mesmo motivo documentado em parcelas.ts/registrar-pagamento-dialog.tsx:
- * esse construtor lê a string como UTC e adianta a data um dia no Brasil).
- * `Intl` devolve o mês por extenso em minúsculas em pt-BR — capitalizado
- * manualmente aqui porque esta célula de tabela pede "Agosto de 2026", não o
- * formato "mês/ano" minúsculo usado nos diálogos.
- */
-function competenciaLabel(competencia: string): string {
-  const [ano, mes] = competencia.split("-").map(Number)
-  const mesPorExtenso = mesFormatter.format(new Date(ano, mes - 1, 1))
-  const mesCapitalizado =
-    mesPorExtenso.charAt(0).toUpperCase() + mesPorExtenso.slice(1)
-  return `${mesCapitalizado} de ${ano}`
-}
-
 export function RelatorioFinanceiroLista({
   linhas,
   hojeISO,
@@ -59,7 +41,7 @@ export function RelatorioFinanceiroLista({
               <TableRow>
                 <TableHead>Imóvel</TableHead>
                 <TableHead>Proprietário</TableHead>
-                <TableHead>Competência</TableHead>
+                <TableHead>Inquilino</TableHead>
                 <TableHead>Vencimento</TableHead>
                 <TableHead>Situação</TableHead>
                 <TableHead className="text-right">Valor</TableHead>
@@ -93,7 +75,7 @@ export function RelatorioFinanceiroLista({
                       {parcela.cards?.proprietario ?? ""}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {competenciaLabel(parcela.competencia)}
+                      {parcela.cards?.inquilino ?? ""}
                     </TableCell>
                     <TableCell className="tabular-nums text-muted-foreground">
                       {formatDate(parcela.vencimento)}

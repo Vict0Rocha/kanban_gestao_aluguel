@@ -22,7 +22,7 @@ export type ParcelaRelatorio = {
   vencimento: string
   valor_original: number
   status: StatusParcela
-  cards: { endereco: string; proprietario: string } | null
+  cards: { endereco: string; proprietario: string; inquilino: string | null } | null
   parcela_lancamentos: LancamentoResumo[] | null
 }
 
