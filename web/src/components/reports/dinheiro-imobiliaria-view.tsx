@@ -92,8 +92,8 @@ export function DinheiroImobiliariaView({
   )
 
   const totais = React.useMemo(
-    () => calcularReconciliacao(taxas, caucaoEventos, filtro.periodo, filtro.tipos),
-    [taxas, caucaoEventos, filtro.periodo, filtro.tipos]
+    () => calcularReconciliacao(taxas, caucaoEventos, filtro),
+    [taxas, caucaoEventos, filtro]
   )
 
   // A-02 (13-07-PLAN.md): a "linha unificada" da lista (taxa + caução no

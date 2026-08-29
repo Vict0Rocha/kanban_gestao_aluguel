@@ -168,13 +168,17 @@ export type ReconciliacaoTotais = {
 
 /**
  * Única função de agregação do relatório de reconciliação — chamada só pelo
- * componente cliente (`DinheiroImobiliariaView`), nunca no servidor.
+ * componente cliente (`DinheiroImobiliariaView`), nunca no servidor. Aplica
+ * os mesmos 6 campos de `filtro` que `passaFiltroCardsReconciliacao` já
+ * aplica na lista (`linhas`, dinheiro-imobiliaria-view.tsx) — os totais
+ * precisam bater com o que a lista mostra, senão os StatTile e o resumo do
+ * PDF (que consome este mesmo `totais`) ignoram imóvel/proprietário/
+ * inquilino/ID enquanto a lista abaixo os respeita.
  */
 export function calcularReconciliacao(
   taxas: TaxaImobiliariaRelatorio[],
   caucaoEventos: CaucaoEventoRelatorio[],
-  periodo: string,
-  tipos: Set<TipoMovimentoReconciliacao>
+  filtro: FiltroReconciliacaoValores
 ): ReconciliacaoTotais {
   let administracao = 0
   let comissao = 0
@@ -183,15 +187,17 @@ export function calcularReconciliacao(
   let caucaoUsada = 0
 
   for (const taxa of taxas) {
-    if (!passaFiltroPeriodoReconciliacao(taxa.data, periodo)) continue
-    if (!passaFiltroTipoReconciliacao(taxa.origem, tipos)) continue
+    if (!passaFiltroPeriodoReconciliacao(taxa.data, filtro.periodo)) continue
+    if (!passaFiltroTipoReconciliacao(taxa.origem, filtro.tipos)) continue
+    if (!passaFiltroCardsReconciliacao(taxa.cards, filtro)) continue
     if (taxa.origem === "administracao") administracao += taxa.valor
     else comissao += taxa.valor
   }
 
   for (const evento of caucaoEventos) {
-    if (!passaFiltroPeriodoReconciliacao(evento.data, periodo)) continue
-    if (!passaFiltroTipoReconciliacao("caucao", tipos)) continue
+    if (!passaFiltroPeriodoReconciliacao(evento.data, filtro.periodo)) continue
+    if (!passaFiltroTipoReconciliacao("caucao", filtro.tipos)) continue
+    if (!passaFiltroCardsReconciliacao(evento.cards, filtro)) continue
     if (evento.tipo === "recebido") caucaoRecebida += evento.valor
     else if (evento.tipo === "devolvido") caucaoDevolvida += evento.valor
     else caucaoUsada += evento.valor
