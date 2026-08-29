@@ -18,23 +18,7 @@ import {
 
 const mesFormatter = new Intl.DateTimeFormat("pt-BR", { month: "long" })
 
-/**
- * Mesmo padrão de `competenciaLabel` em `relatorio-financeiro-lista.tsx`
- * (não exportado de lá, então reimplementado aqui identicamente) — a versão
- * de linha da tabela recebe "YYYY-MM-01".
- */
-function competenciaLabelLinha(competencia: string): string {
-  const [ano, mes] = competencia.split("-").map(Number)
-  const mesPorExtenso = mesFormatter.format(new Date(ano, mes - 1, 1))
-  return mesPorExtenso.charAt(0).toUpperCase() + mesPorExtenso.slice(1) + ` de ${ano}`
-}
-
-/**
- * Mesma lógica de `competenciaLabelLinha`, mas a partir de "YYYY-MM" (o
- * formato de `filtro.periodo`, sem o dia) — não um terceiro formato: só a
- * mesma composição "mês por extenso capitalizado + ano" a partir de uma
- * string de entrada com um campo a menos.
- */
+/** "YYYY-MM" (o formato de `filtro.periodo`) vira "mês por extenso capitalizado + ano". */
 function periodoLabel(periodo: string): string {
   const [ano, mes] = periodo.split("-").map(Number)
   const mesPorExtenso = mesFormatter.format(new Date(ano, mes - 1, 1))
@@ -195,7 +179,7 @@ export async function exportarRelatorioFinanceiroPDF(
         cells: [
           l.cards?.endereco ?? "",
           l.cards?.proprietario ?? "",
-          competenciaLabelLinha(l.competencia),
+          l.cards?.inquilino ?? "",
           formatDate(l.vencimento),
           SITUACAO_ROTULO_SINGULAR[situacao],
           formatCurrency(valor),
@@ -207,7 +191,7 @@ export async function exportarRelatorioFinanceiroPDF(
     autoTable(doc, {
       startY: afterResumoY + 16,
       theme: "plain",
-      head: [["Imóvel", "Proprietário", "Competência", "Vencimento", "Situação", "Valor"]],
+      head: [["Imóvel", "Proprietário", "Inquilino", "Vencimento", "Situação", "Valor"]],
       // Mesma ordenação cronológica (linhas já vem ordenada por vencimento de
       // quem chamou — não reordenada aqui).
       body: bodyRows.map((r) => r.cells),
