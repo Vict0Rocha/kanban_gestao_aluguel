@@ -31,7 +31,7 @@ export function FiltroRelatorioFinanceiroLive({
   onChange: (updater: (atual: FiltroRelatorioValores) => FiltroRelatorioValores) => void
 }) {
   function atualizarCampo(
-    campo: "imovel" | "proprietario" | "periodo",
+    campo: "imovel" | "proprietario" | "periodoInicio" | "periodoFim",
     valor: string
   ) {
     onChange((atual) => ({ ...atual, [campo]: valor }))
@@ -40,13 +40,14 @@ export function FiltroRelatorioFinanceiroLive({
   const temFiltroPreenchido = Boolean(
     campos.imovel.trim() ||
       campos.proprietario.trim() ||
-      campos.periodo.trim() ||
+      campos.periodoInicio.trim() ||
+      campos.periodoFim.trim() ||
       campos.situacoes.size > 0
   )
 
   return (
     <div className="mt-4 rounded-2xl border border-border bg-card px-6 py-4">
-      <div className="grid grid-cols-[repeat(3,1fr)] gap-3">
+      <div className="grid grid-cols-[repeat(4,1fr)] gap-3">
         <div className="flex flex-col gap-2">
           <Label htmlFor="filtro-rel-live-imovel">Imóvel</Label>
           <Input
@@ -70,12 +71,25 @@ export function FiltroRelatorioFinanceiroLive({
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="filtro-rel-live-periodo">Período</Label>
+          <Label htmlFor="filtro-rel-live-periodo-inicio">Período de</Label>
           <Input
-            id="filtro-rel-live-periodo"
-            type="month"
-            value={campos.periodo}
-            onChange={(event) => atualizarCampo("periodo", event.target.value)}
+            id="filtro-rel-live-periodo-inicio"
+            type="date"
+            value={campos.periodoInicio}
+            onChange={(event) =>
+              atualizarCampo("periodoInicio", event.target.value)
+            }
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="filtro-rel-live-periodo-fim">Período até</Label>
+          <Input
+            id="filtro-rel-live-periodo-fim"
+            type="date"
+            value={campos.periodoFim}
+            onChange={(event) =>
+              atualizarCampo("periodoFim", event.target.value)
+            }
           />
         </div>
       </div>

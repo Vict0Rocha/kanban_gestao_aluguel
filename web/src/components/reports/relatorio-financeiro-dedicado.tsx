@@ -85,7 +85,8 @@ export function RelatorioFinanceiroDedicado({
         const proprietario = p.cards?.proprietario ?? ""
         if (!passaFiltroTexto(endereco, filtro.imovel)) return false
         if (!passaFiltroTexto(proprietario, filtro.proprietario)) return false
-        if (!passaFiltroPeriodo(p.competencia, filtro.periodo)) return false
+        if (!passaFiltroPeriodo(p.vencimento, filtro.periodoInicio, filtro.periodoFim))
+          return false
         // D-06: `situacaoDaParcela` nunca devolve "parcial" na prática para os
         // dados desta fase (mesmo cast de `calcularRelatorioFinanceiro`).
         const situacao = situacaoDaParcela(

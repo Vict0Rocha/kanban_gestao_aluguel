@@ -37,7 +37,13 @@ export function FiltroReconciliacao({
   ) => void
 }) {
   function atualizarCampo(
-    campo: "imovel" | "proprietario" | "inquilino" | "id" | "periodo",
+    campo:
+      | "imovel"
+      | "proprietario"
+      | "inquilino"
+      | "id"
+      | "periodoInicio"
+      | "periodoFim",
     valor: string
   ) {
     onChange((atual) => ({ ...atual, [campo]: valor }))
@@ -48,13 +54,14 @@ export function FiltroReconciliacao({
       campos.proprietario.trim() ||
       campos.inquilino.trim() ||
       campos.id.trim() ||
-      campos.periodo.trim() ||
+      campos.periodoInicio.trim() ||
+      campos.periodoFim.trim() ||
       campos.tipos.size > 0
   )
 
   return (
     <div className="mt-3 rounded-2xl border border-border bg-card px-5 py-4">
-      <div className="grid grid-cols-[repeat(5,1fr)] gap-3">
+      <div className="grid grid-cols-[repeat(6,1fr)] gap-3">
         <div className="flex flex-col gap-2">
           <Label htmlFor="filtro-reconc-imovel">Imóvel</Label>
           <Input
@@ -101,12 +108,25 @@ export function FiltroReconciliacao({
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="filtro-reconc-periodo">Período</Label>
+          <Label htmlFor="filtro-reconc-periodo-inicio">Período de</Label>
           <Input
-            id="filtro-reconc-periodo"
-            type="month"
-            value={campos.periodo}
-            onChange={(event) => atualizarCampo("periodo", event.target.value)}
+            id="filtro-reconc-periodo-inicio"
+            type="date"
+            value={campos.periodoInicio}
+            onChange={(event) =>
+              atualizarCampo("periodoInicio", event.target.value)
+            }
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="filtro-reconc-periodo-fim">Período até</Label>
+          <Input
+            id="filtro-reconc-periodo-fim"
+            type="date"
+            value={campos.periodoFim}
+            onChange={(event) =>
+              atualizarCampo("periodoFim", event.target.value)
+            }
           />
         </div>
       </div>

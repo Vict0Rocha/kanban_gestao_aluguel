@@ -17,7 +17,8 @@ import { Label } from "@/components/ui/label"
 export type FiltroValores = {
   proprietario: string
   inquilino: string
-  periodo: string
+  periodoInicio: string
+  periodoFim: string
   id: string
 }
 
@@ -59,8 +60,11 @@ export function FiltroParcelas({
     if (campos.inquilino.trim()) {
       params.set("inquilino", campos.inquilino.trim())
     }
-    if (campos.periodo.trim()) {
-      params.set("periodo", campos.periodo.trim())
+    if (campos.periodoInicio.trim()) {
+      params.set("periodoInicio", campos.periodoInicio.trim())
+    }
+    if (campos.periodoFim.trim()) {
+      params.set("periodoFim", campos.periodoFim.trim())
     }
     if (campos.id.trim()) {
       params.set("id", campos.id.trim())
@@ -71,7 +75,13 @@ export function FiltroParcelas({
   }
 
   function limpar() {
-    setCampos({ proprietario: "", inquilino: "", periodo: "", id: "" })
+    setCampos({
+      proprietario: "",
+      inquilino: "",
+      periodoInicio: "",
+      periodoFim: "",
+      id: "",
+    })
     router.push("/financeiro")
     // D-04/D-05: Limpar NÃO fecha o drawer — o usuário fica com o
     // formulário vazio e pronto para preencher de novo.
@@ -120,7 +130,7 @@ export function FiltroParcelas({
 
       <CollapsiblePanel>
         <div className="mt-3 rounded-2xl border border-border bg-card px-5 py-4">
-          <div className="grid grid-cols-[repeat(4,1fr)_auto] items-end gap-3">
+          <div className="grid grid-cols-[repeat(5,1fr)_auto] items-end gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="filtro-proprietario">Proprietário</Label>
               <Input
@@ -146,13 +156,24 @@ export function FiltroParcelas({
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="filtro-periodo">Período (vencimento)</Label>
+              <Label htmlFor="filtro-periodo-inicio">Vencimento de</Label>
               <Input
-                id="filtro-periodo"
-                type="month"
-                value={campos.periodo}
+                id="filtro-periodo-inicio"
+                type="date"
+                value={campos.periodoInicio}
                 onChange={(event) =>
-                  atualizarCampo("periodo", event.target.value)
+                  atualizarCampo("periodoInicio", event.target.value)
+                }
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="filtro-periodo-fim">Vencimento até</Label>
+              <Input
+                id="filtro-periodo-fim"
+                type="date"
+                value={campos.periodoFim}
+                onChange={(event) =>
+                  atualizarCampo("periodoFim", event.target.value)
                 }
               />
             </div>

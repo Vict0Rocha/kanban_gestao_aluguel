@@ -43,16 +43,20 @@ export type CaucaoEventoRelatorio = {
 }
 
 /**
- * Mesmo corpo de `passaFiltroPeriodo` (relatorio-financeiro.ts), mas
- * comparando `data` (não `competencia`) contra "YYYY-MM". Período fora do
- * formato é ignorado silenciosamente — nunca derruba o relatório.
+ * Mesmo corpo de `passaFiltroPeriodo` (relatorio-financeiro.ts): `data` já é
+ * uma data cheia "YYYY-MM-DD", então o intervalo de/até compara direto,
+ * sem precisar trocar de campo. Cada limite vazio nunca filtra sozinho: só
+ * "de" restringe o piso, só "até" restringe o teto, os dois vazios não
+ * filtram nada.
  */
 export function passaFiltroPeriodoReconciliacao(
   data: string,
-  periodo: string
+  periodoInicio: string,
+  periodoFim: string
 ): boolean {
-  if (!/^\d{4}-\d{2}$/.test(periodo)) return true
-  return data.startsWith(periodo)
+  if (periodoInicio && data < periodoInicio) return false
+  if (periodoFim && data > periodoFim) return false
+  return true
 }
 
 /**
@@ -72,7 +76,8 @@ export type FiltroReconciliacaoValores = {
   proprietario: string
   inquilino: string
   id: string
-  periodo: string
+  periodoInicio: string
+  periodoFim: string
   tipos: Set<TipoMovimentoReconciliacao>
 }
 
@@ -82,7 +87,8 @@ export function filtroReconciliacaoVazio(): FiltroReconciliacaoValores {
     proprietario: "",
     inquilino: "",
     id: "",
-    periodo: "",
+    periodoInicio: "",
+    periodoFim: "",
     tipos: new Set(),
   }
 }
@@ -187,7 +193,10 @@ export function calcularReconciliacao(
   let caucaoUsada = 0
 
   for (const taxa of taxas) {
-    if (!passaFiltroPeriodoReconciliacao(taxa.data, filtro.periodo)) continue
+    if (
+      !passaFiltroPeriodoReconciliacao(taxa.data, filtro.periodoInicio, filtro.periodoFim)
+    )
+      continue
     if (!passaFiltroTipoReconciliacao(taxa.origem, filtro.tipos)) continue
     if (!passaFiltroCardsReconciliacao(taxa.cards, filtro)) continue
     if (taxa.origem === "administracao") administracao += taxa.valor
@@ -195,7 +204,10 @@ export function calcularReconciliacao(
   }
 
   for (const evento of caucaoEventos) {
-    if (!passaFiltroPeriodoReconciliacao(evento.data, filtro.periodo)) continue
+    if (
+      !passaFiltroPeriodoReconciliacao(evento.data, filtro.periodoInicio, filtro.periodoFim)
+    )
+      continue
     if (!passaFiltroTipoReconciliacao("caucao", filtro.tipos)) continue
     if (!passaFiltroCardsReconciliacao(evento.cards, filtro)) continue
     if (evento.tipo === "recebido") caucaoRecebida += evento.valor
