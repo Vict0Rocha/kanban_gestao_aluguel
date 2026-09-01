@@ -130,14 +130,19 @@ export function CaucaoHistoricoSheet({
               Registrar caução recebida
             </Button>
           ) : (
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setDialogoAberto("devolvido")}>
-                Devolver caução
+            <>
+              <Button variant="outline" onClick={() => setDialogoAberto("recebido")}>
+                Adicionar recebimento
               </Button>
-              <Button variant="default" onClick={() => setDialogoAberto("usado")}>
-                Registrar uso
-              </Button>
-            </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setDialogoAberto("devolvido")}>
+                  Devolver caução
+                </Button>
+                <Button variant="default" onClick={() => setDialogoAberto("usado")}>
+                  Registrar uso
+                </Button>
+              </div>
+            </>
           )}
         </SheetFooter>
       </SheetContent>
