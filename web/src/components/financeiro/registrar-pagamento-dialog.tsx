@@ -3,9 +3,15 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 
+import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/kanban/format"
-import type { OrigemTaxa } from "@/lib/kanban/taxas"
+import {
+  ORIGENS_TAXA,
+  percentualDaOrigem,
+  type OrigemTaxa,
+} from "@/lib/kanban/taxas"
 import { registrarPagamento } from "@/lib/kanban/queries"
+import { TAXA_ORIGEM } from "@/components/financeiro/taxa-origem-label"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -61,8 +67,9 @@ export function RegistrarPagamentoDialog({
   competencia,
   valorDevido,
   valorPago,
-  percentualAplicavel,
-  origemPercentual,
+  percentualAdministracao,
+  percentualComissaoPrimeiroAluguel,
+  origemSugerida,
   todayISO,
   open,
   onOpenChange,
@@ -72,20 +79,30 @@ export function RegistrarPagamentoDialog({
   competencia: string
   valorDevido: number
   valorPago: number
-  percentualAplicavel: number
-  origemPercentual: OrigemTaxa
+  percentualAdministracao: number
+  percentualComissaoPrimeiroAluguel: number
+  /** Tipo já marcado ao abrir (D-08: comissão do 1º aluguel na parcela de
+   * menor competência do contrato, administração nas demais). É só o ponto de
+   * partida — o usuário pode trocar, e o que ele deixar marcado é gravado. */
+  origemSugerida: OrigemTaxa
   todayISO: string
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
   const router = useRouter()
+  const percentualDe = (tipo: OrigemTaxa) =>
+    percentualDaOrigem(tipo, percentualAdministracao, percentualComissaoPrimeiroAluguel)
   const [valor, setValor] = React.useState(() =>
     valorInicial(valorDevido, valorPago)
   )
   const [data, setData] = React.useState(todayISO)
   const [observacao, setObservacao] = React.useState("")
+  const [origem, setOrigem] = React.useState<OrigemTaxa>(origemSugerida)
   const [taxa, setTaxa] = React.useState(() =>
-    calcularTaxaInicial(percentualAplicavel, valorInicial(valorDevido, valorPago))
+    calcularTaxaInicial(
+      percentualDe(origemSugerida),
+      valorInicial(valorDevido, valorPago)
+    )
   )
   const [taxaTocada, setTaxaTocada] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -101,14 +118,27 @@ export function RegistrarPagamentoDialog({
       setValor(valorInicialCalculado)
       setData(todayISO)
       setObservacao("")
-      setTaxa(calcularTaxaInicial(percentualAplicavel, valorInicialCalculado))
+      setOrigem(origemSugerida)
+      setTaxa(
+        calcularTaxaInicial(percentualDe(origemSugerida), valorInicialCalculado)
+      )
       setTaxaTocada(false)
       setError(null)
     }
   }
 
+  // Trocar o tipo troca também o percentual da sugestão — mesma regra de
+  // "Valor recebido" (abaixo): a taxa que o usuário já digitou nunca é
+  // sobrescrita.
+  function handleOrigemChange(nova: OrigemTaxa) {
+    setOrigem(nova)
+    if (!taxaTocada) {
+      setTaxa(calcularTaxaInicial(percentualDe(nova), valor))
+    }
+  }
+
   const origemLabel =
-    origemPercentual === "administracao" ? "administração" : "comissão do primeiro aluguel"
+    origem === "administracao" ? "administração" : "comissão do primeiro aluguel"
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -136,7 +166,8 @@ export function RegistrarPagamentoDialog({
         parsedValor,
         data,
         observacao.trim() || null,
-        parsedTaxa
+        parsedTaxa,
+        origem
       )
       onOpenChange(false)
       router.refresh()
@@ -153,7 +184,7 @@ export function RegistrarPagamentoDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Registrar pagamento</DialogTitle>
           <p className="text-sm text-muted-foreground">
@@ -180,10 +211,37 @@ export function RegistrarPagamentoDialog({
                 // editado o campo de taxa diretamente nesta abertura do
                 // diálogo — nesse caso o valor dele nunca é sobrescrito.
                 if (!taxaTocada) {
-                  setTaxa(calcularTaxaInicial(percentualAplicavel, e.target.value))
+                  setTaxa(calcularTaxaInicial(percentualDe(origem), e.target.value))
                 }
               }}
             />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label id="tipo-recebimento-imobiliaria">
+              Tipo de recebimento da imobiliária
+            </Label>
+            <div
+              role="group"
+              aria-labelledby="tipo-recebimento-imobiliaria"
+              className="inline-flex items-center gap-1 self-start rounded-full bg-muted p-1"
+            >
+              {ORIGENS_TAXA.map((opcao) => (
+                <button
+                  key={opcao}
+                  type="button"
+                  aria-pressed={origem === opcao}
+                  onClick={() => handleOrigemChange(opcao)}
+                  className={cn(
+                    "rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                    origem === opcao
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {TAXA_ORIGEM[opcao].label}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="taxa-imobiliaria">Taxa da imobiliária (R$)</Label>
@@ -201,7 +259,8 @@ export function RegistrarPagamentoDialog({
               }}
             />
             <p className="text-xs text-muted-foreground">
-              Sugestão: {percentualAplicavel}% de {origemLabel} sobre o valor recebido.
+              Sugestão: {percentualDe(origem)}% de {origemLabel} sobre o valor
+              recebido. Para não cobrar taxa neste pagamento, informe 0,00.
             </p>
           </div>
           <div className="flex flex-col gap-1.5">

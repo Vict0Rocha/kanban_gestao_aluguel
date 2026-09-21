@@ -7,7 +7,7 @@ import { Banknote, History, Lock, Unlock } from "lucide-react"
 import { conciliarParcela } from "@/lib/kanban/queries"
 import { formatCurrency, formatDate } from "@/lib/kanban/format"
 import type { LinhaParcela } from "@/lib/kanban/parcelas"
-import { percentualAplicavel } from "@/lib/kanban/taxas"
+import { origemTaxa } from "@/lib/kanban/taxas"
 import { AjustarParcelaDialog } from "@/components/financeiro/ajustar-parcela-dialog"
 import { ConciliarFalhaToast } from "@/components/financeiro/conciliar-falha-toast"
 import { DestravarParcelaDialog } from "@/components/financeiro/destravar-parcela-dialog"
@@ -71,15 +71,11 @@ function AcoesCell({
   // D-01/D-08: se o contrato não tiver entrada no mapa (consulta de
   // primeira competência falhou, ver financeiro/page.tsx), assume que a
   // própria parcela é a primeira — fallback seguro que nunca derruba a
-  // tela por causa disso.
+  // tela por causa disso. Só decide o tipo que já vem marcado no diálogo de
+  // pagamento; o usuário pode trocá-lo.
   const primeiraCompetencia =
     primeiraCompetenciaPorCard[linha.cardId] ?? linha.competencia
-  const { percentual, origem } = percentualAplicavel(
-    linha.competencia,
-    primeiraCompetencia,
-    linha.percentualAdministracao,
-    linha.percentualComissaoPrimeiroAluguel
-  )
+  const origemSugerida = origemTaxa(linha.competencia, primeiraCompetencia)
 
   return (
     <TableCell className="flex items-center gap-2">
@@ -146,8 +142,9 @@ function AcoesCell({
         competencia={linha.competencia}
         valorDevido={linha.valorDevido}
         valorPago={linha.valorPago}
-        percentualAplicavel={percentual}
-        origemPercentual={origem}
+        percentualAdministracao={linha.percentualAdministracao}
+        percentualComissaoPrimeiroAluguel={linha.percentualComissaoPrimeiroAluguel}
+        origemSugerida={origemSugerida}
         todayISO={todayISO}
         open={dialogoAberto === "pagamento"}
         onOpenChange={(open) => setDialogoAberto(open ? "pagamento" : null)}
@@ -202,7 +199,7 @@ export function ParcelasTable({
   mensagemVazia?: string
   /** A-02 (13-04-PLAN.md): menor `competencia` por `card_id`, calculada uma
    * vez em financeiro/page.tsx para todos os contratos — `AcoesCell` usa
-   * para decidir a `origem` da taxa sugerida (D-08). */
+   * para decidir o tipo de taxa pré-selecionado no pagamento (D-08). */
   primeiraCompetenciaPorCard: Record<string, string>
   /** Chave de identidade do filtro ativo — decide quando a paginação volta
    * para a página 1. Mutações que disparam `router.refresh()` sem mudar o
