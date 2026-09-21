@@ -1,5 +1,6 @@
 import type { ActionResult, Card, CardDetailsInput } from "./types"
 import type { AlertStatus, AlertType } from "./alerts"
+import type { OrigemTaxa } from "./taxas"
 import {
   ajustarParcelaAction,
   arquivarCardAction,
@@ -133,10 +134,18 @@ export async function registrarPagamento(
   valor: number,
   data: string,
   observacao: string | null,
-  taxaImobiliaria: number
+  taxaImobiliaria: number,
+  origem: OrigemTaxa
 ) {
   return unwrap(
-    registrarPagamentoAction(parcelaId, valor, data, observacao, taxaImobiliaria)
+    registrarPagamentoAction(
+      parcelaId,
+      valor,
+      data,
+      observacao,
+      taxaImobiliaria,
+      origem
+    )
   )
 }
 

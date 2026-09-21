@@ -11,7 +11,7 @@ import {
   type LancamentoResumo,
   type ParcelaCandidataPoda,
 } from "./parcelas"
-import { origemTaxa } from "./taxas"
+import { ORIGENS_TAXA, type OrigemTaxa } from "./taxas"
 import { hojeEmCuiaba } from "./format"
 import type { ParcelaRelatorio } from "./relatorio-financeiro"
 import type {
@@ -1283,7 +1283,8 @@ export async function registrarPagamentoAction(
   valor: number,
   data: string,
   observacao: string | null,
-  taxaImobiliaria: number
+  taxaImobiliaria: number,
+  origem: OrigemTaxa
 ): Promise<ActionResult> {
   const sessao = await requireUser()
   if (!sessao) return { ok: false, error: NAO_AUTENTICADO }
@@ -1293,7 +1294,8 @@ export async function registrarPagamentoAction(
     valorLancamento(valor, "Informe um valor de pagamento válido.") ??
     dataObrigatoria(data) ??
     textoOpcional(observacao, "Observação", 2000) ??
-    valorNaoNegativo(taxaImobiliaria, "Informe um valor de taxa válido.")
+    valorNaoNegativo(taxaImobiliaria, "Informe um valor de taxa válido.") ??
+    (ORIGENS_TAXA.includes(origem) ? null : "Tipo de recebimento inválido.")
   if (invalido) return { ok: false, error: invalido }
 
   // D-04/D-15: a trava real. A ocultação na tela (filtrarParcelasVisiveis
@@ -1347,14 +1349,16 @@ export async function registrarPagamentoAction(
   const erroStatus = await recalcularEGravarStatus(sessao.supabase, parcelaId)
   if (erroStatus) return { ok: false, error: erroStatus }
 
-  // A-01 (13-04-PLAN.md): a `origem` gravada é sempre recalculada aqui, a
-  // partir do `card_id`/`competencia` reais da parcela — nunca confiada a um
-  // valor calculado no cliente. Isso evita que uma aba desatualizada (com os
-  // percentuais editados em outra aba entre o carregamento da página e o
-  // clique em "Registrar pagamento") grave uma `origem` errada.
+  // O tipo da taxa (`origem`, validado acima) é escolha explícita do usuário
+  // no diálogo — a imobiliária pode cobrar a comissão do primeiro aluguel só
+  // no segundo mês, ou abrir mão da taxa, então o servidor deixou de
+  // recalculá-lo a partir da competência (era A-01/A-02, 13-04-PLAN.md). O
+  // diálogo só PRÉ-SELECIONA o tipo padrão (D-08, `origemTaxa` em taxas.ts);
+  // o que o usuário confirmou na tela é o que fica gravado. O `card_id`,
+  // esse sim, continua vindo do banco a partir da parcela — nunca do cliente.
   const { data: parcelaDaTaxa, error: erroParcelaDaTaxa } = await sessao.supabase
     .from("parcelas")
-    .select("card_id, competencia")
+    .select("card_id")
     .eq("id", parcelaId)
     .maybeSingle()
 
@@ -1363,28 +1367,7 @@ export async function registrarPagamentoAction(
     return { ok: false, error: erroDoBanco(erroParcelaDaTaxa?.code, "registrar a taxa da imobiliária") }
   }
 
-  const { card_id: cardIdDaTaxa, competencia: competenciaDaParcela } =
-    parcelaDaTaxa as unknown as { card_id: string; competencia: string }
-
-  // A-02: o banco já devolve o mínimo (`order by competencia asc limit 1`),
-  // sem trazer linha a mais — mesmo padrão documentado em taxas.ts.
-  const { data: primeiraParcela, error: erroPrimeiraParcela } = await sessao.supabase
-    .from("parcelas")
-    .select("competencia")
-    .eq("card_id", cardIdDaTaxa)
-    .order("competencia", { ascending: true })
-    .limit(1)
-    .maybeSingle()
-
-  if (erroPrimeiraParcela || !primeiraParcela) {
-    console.error("registrarPagamento (primeira competência)", erroPrimeiraParcela)
-    return { ok: false, error: erroDoBanco(erroPrimeiraParcela?.code, "registrar a taxa da imobiliária") }
-  }
-
-  const origem = origemTaxa(
-    competenciaDaParcela,
-    (primeiraParcela as unknown as { competencia: string }).competencia
-  )
+  const { card_id: cardIdDaTaxa } = parcelaDaTaxa as unknown as { card_id: string }
 
   const { data: taxaInserida, error: erroTaxa } = await sessao.supabase
     .from("taxas_imobiliaria")

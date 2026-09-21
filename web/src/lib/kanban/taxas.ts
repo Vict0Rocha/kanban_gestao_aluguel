@@ -10,12 +10,24 @@
  * `valorDevido`/`valorPago`/`status` de uma parcela.
  */
 
-export type OrigemTaxa = "administracao" | "comissao_primeiro_aluguel"
+/**
+ * Tipos de recebimento da imobiliária que uma baixa pode registrar. Lista
+ * única para o seletor do diálogo de pagamento e para a validação de
+ * `registrarPagamentoAction` — espelha `taxas_imobiliaria_origem_valida`
+ * (migração 20260824000000).
+ */
+export const ORIGENS_TAXA = ["administracao", "comissao_primeiro_aluguel"] as const
+
+export type OrigemTaxa = (typeof ORIGENS_TAXA)[number]
 
 /**
  * Implementa D-08: "primeira parcela" de um contrato é a de menor
  * `competencia` para aquele `card_id`. Comparação de strings ISO diretas —
  * mesmo padrão de `competenciaNoPeriodo` (parcelas.ts) — nunca `Date`.
+ *
+ * Só define o tipo PRÉ-SELECIONADO no diálogo de pagamento: quem decide o
+ * tipo gravado é o usuário (a comissão do primeiro aluguel pode ser cobrada
+ * só no segundo mês, por exemplo).
  */
 export function origemTaxa(
   competencia: string,
@@ -38,31 +50,10 @@ export function percentualDaOrigem(
 }
 
 /**
- * Chama `origemTaxa` e depois `percentualDaOrigem`, devolvendo os dois juntos
- * para quem consome (componente de cliente) não precisar de duas chamadas.
- */
-export function percentualAplicavel(
-  competencia: string,
-  primeiraCompetenciaDoContrato: string,
-  percentualAdministracao: number,
-  percentualComissaoPrimeiroAluguel: number
-): { percentual: number; origem: OrigemTaxa } {
-  const origem = origemTaxa(competencia, primeiraCompetenciaDoContrato)
-  const percentual = percentualDaOrigem(
-    origem,
-    percentualAdministracao,
-    percentualComissaoPrimeiroAluguel
-  )
-  return { percentual, origem }
-}
-
-/**
  * A-02: reduz um array plano de `(card_id, competencia)` para a menor
  * `competencia` por `card_id` — comparação de string ISO, sem `Date`. Puro,
  * sem consulta — quem chama já trouxe as linhas (financeiro/page.tsx, para
- * TODOS os `card_id` de uma vez; a Server Action de pagamento usa o caminho
- * de UM `card_id` por vez, direto no banco, via `order by competencia asc
- * limit 1`).
+ * TODOS os `card_id` de uma vez).
  */
 export function primeiraCompetenciaPorCard(
   linhas: { card_id: string; competencia: string }[]
